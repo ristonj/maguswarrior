@@ -1,0 +1,2129 @@
+<!DOCTYPE html><html><head>
+      <title>ux-design-specification</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="file:////home/jriston/.vscode-server/extensions/shd101wyy.markdown-preview-enhanced-0.8.25/crossnote/dependencies/katex/katex.min.css">
+      
+      
+      
+      <script type="text/javascript" src="file:////home/jriston/.vscode-server/extensions/shd101wyy.markdown-preview-enhanced-0.8.25/crossnote/dependencies/mermaid/mermaid.min.js" charset="UTF-8"></script>
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-details{margin:0;padding:0;border:none}.markdown-preview .md-toc summary.md-toc-link-wrapper{cursor:pointer;list-style-position:outside}.markdown-preview .md-toc summary.md-toc-link-wrapper::marker{font-size:.85em}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='0']{margin-left:12px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='1']{margin-left:28px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='2']{margin-left:44px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='3']{margin-left:60px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='4']{margin-left:76px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='5']{margin-left:80px}.markdown-preview a.tag,.markdown-preview a.tag:active,.markdown-preview a.tag:link,.markdown-preview a.tag:visited,.markdown-preview span.tag{display:inline-block;background-color:var(--vscode-badge-background,rgba(127,127,127,.18));color:var(--vscode-badge-foreground,currentColor);border-radius:2em;font-size:.85em;font-weight:500;padding:.05em .55em;line-height:1.5;white-space:nowrap;text-decoration:none;text-shadow:none;box-shadow:none;transition:background-color .12s ease,opacity .12s ease}.markdown-preview a.tag{cursor:pointer}.markdown-preview a.tag:focus,.markdown-preview a.tag:hover{background-color:var(--vscode-badge-background,rgba(127,127,127,.32));color:var(--vscode-badge-foreground,currentColor);opacity:.85;text-decoration:none;outline:0}.markdown-preview .wikilink-embed-content{border-left:3px solid var(--vscode-textBlockQuote-border,rgba(128,128,128,.3));background:var(--vscode-textBlockQuote-background,rgba(128,128,128,.05));margin:.5em 0;padding:.5em .75em;border-radius:0 3px 3px 0}.markdown-preview .wikilink-embed-content.wikilink-embed-error{border-left-color:var(--vscode-errorForeground,#cf222e);color:var(--vscode-errorForeground,#cf222e);font-style:italic;opacity:.8}.markdown-preview .wikilink-embed-content h1:first-child,.markdown-preview .wikilink-embed-content h2:first-child,.markdown-preview .wikilink-embed-content h3:first-child,.markdown-preview .wikilink-embed-content h4:first-child,.markdown-preview .wikilink-embed-content h5:first-child,.markdown-preview .wikilink-embed-content h6:first-child{margin-top:.25em}.markdown-preview .wikilink-embed-content .wikilink-embed-content{margin:.25em 0;padding:.25em .5em}.markdown-preview .block-id{display:none}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-details{margin:0;padding:0;border:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='0']{padding-left:0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='1']{padding-left:16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='2']{padding-left:32px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='3']{padding-left:48px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='4']{padding-left:64px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='5']{padding-left:80px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script>
+    </head>
+    <body for="html-export">
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="ux-design-specification--magus-warrior">UX Design Specification — Magus Warrior </h1>
+<p><strong>Author:</strong> John Riston<br>
+<strong>Date:</strong> 2026-05-08</p>
+<hr>
+<h2 id="executive-summary">Executive Summary </h2>
+<h3 id="project-vision">Project Vision </h3>
+<p>Magus Warrior is a faithful solo mobile adaptation of Mage Knight Ultimate Edition for<br>
+Android (Godot 4 + C#). One hero (Thomas), one scenario (First Reconnaissance, 4 rounds),<br>
+card-driven tactical adventure on a procedurally placed hex map. The game targets MK fans<br>
+who want the authentic feel of the physical game in a phone-native, 5-minute-session format.</p>
+<p>The primary design pillar is <strong>Faithful Feel</strong> — every UX decision should serve the feeling<br>
+of playing physical Mage Knight, not the feeling of playing a generic mobile game.</p>
+<h3 id="target-users">Target Users </h3>
+<p><strong>Primary:</strong> Mage Knight veterans (10+ plays of the physical game). They know the rules,<br>
+they know the card taxonomy, they know the phase structure. They are frustrated by the<br>
+physical game's setup time and space requirements. They want speed and fidelity.</p>
+<p><strong>Secondary:</strong> MK-curious players (own the game, played 1–5 times). They understand the<br>
+concept but are still internalising the rules. They need contextual help to bridge from<br>
+"I know what a Spell card is" to "I know which phases it's legal to play one."</p>
+<p><strong>Design implication:</strong> The UI must work for both. Context-sensitive help is a first-class<br>
+feature. A veteran toggle to disable it is equally first-class. Help cannot be the kind<br>
+of thing you bolt on later — it must be a designed layout zone from day one. The veteran<br>
+toggle governs both help text visibility and decision pacing — veterans move at their own<br>
+speed; curious players may benefit from a more guided, sequenced rhythm.</p>
+<p>Both audiences need the same information. The difference is not <em>what</em> they need — it's<br>
+<em>how fast</em> they can parse it. Veterans are scanning; curious players are reading. The<br>
+design goal is <strong>legibility at both speeds</strong> on the same data.</p>
+<p><strong>Device context:</strong> Landscape-only on a mid-tier Android phone (Samsung Galaxy S21 as<br>
+baseline). Sessions as short as 5 minutes; game must re-orient cleanly on every resume.<br>
+Touch-only (tap, pinch, long-press). No stylus assumption.</p>
+<h3 id="key-design-challenges">Key Design Challenges </h3>
+<p><strong>1. No prior screen contract (root cause of previous attempt failure)</strong><br>
+The previous implementation suffered from features placed without defined layout zones —<br>
+overlapping UI, unclear ownership, and components that couldn't be tested in isolation.<br>
+The UX LLD must solve this by defining an explicit screen contract: named layout zones,<br>
+rules about what can coexist, and clear layering/z-order semantics. Every feature gets<br>
+placed against this contract, not against gut feel.</p>
+<p><strong>2. Combat legibility: scanability vs. readability on the same screen</strong><br>
+Four sequential combat phases (Ranged/Siege → Block → Assign Damage → Attack). During<br>
+each phase, the player must simultaneously track: current phase, hand contents, running<br>
+attack/block totals, enemy stats and resistances, unit states, and available mana.<br>
+The challenge is not reducing this information — both audiences need it all. The<br>
+challenge is <strong>legibility</strong>: veterans must be able to scan for the number they need;<br>
+curious players must be able to read the label they don't yet know. Type hierarchy,<br>
+icon-vs-text choices, and label verbosity are the design levers, not information hiding.<br>
+Key stats (attack total, block total, current phase) must be always-visible in the HUD<br>
+— never tucked behind an interaction.</p>
+<p><strong>3. Phase legality communication — two distinct help layers</strong><br>
+The player must know <em>immediately</em> what's legal right now. Silent rejection teaches<br>
+nothing. The legality system must provide two distinct help layers:</p>
+<ul>
+<li><strong>Card-level:</strong> "Why is this card unavailable right now?" (wrong phase, insufficient<br>
+mana, wound) — triggered by tapping an unavailable card</li>
+<li><strong>Phase-level:</strong> "What should I be doing this phase?" — ambient guidance for curious<br>
+players, dismissible by veterans<br>
+Both layers must educate without interrupting flow.</li>
+</ul>
+<p><strong>4. Mana state complexity — Day/Night restriction as a learning challenge</strong><br>
+Simultaneously live: dice selections, crystal tokens, Day/Night source restrictions,<br>
+exhausted source dice, and the running mana total. The Day/Night restriction (Gold<br>
+restricted to Day, Black restricted to Night) is a specific learning pain point — it<br>
+is unintuitive for new players and easy to misremember. The mana zone must make<br>
+currently-selectable sources <em>unmistakably obvious</em>, not merely present — players<br>
+should never need to reason through which dice are available.</p>
+<p><strong>5. Hand layout and expand surface (contract prerequisite)</strong><br>
+The hand scroll direction and card expand surface must be decided before any gesture<br>
+work can begin. This is a prerequisite contract decision, not a UX question. Hand<br>
+layout: 7 cards visible by default in landscape; at 8+ cards the hand scrolls<br>
+horizontally, with the 8th card partially clipped + fade gradient + › indicator to<br>
+signal more. Scroll is acceptable and expected — real play regularly produces 11+<br>
+card hands (Tactics bonuses, Planning tactic, Great Start). The design goal is<br>
+discoverability, not simultaneity: the clipped edge makes clear that more cards<br>
+exist; one swipe reaches them. The contract must specify: hand layout format, expand<br>
+trigger, expand surface bounds, and what happens to the rest of the hand while a<br>
+card is expanded.</p>
+<p><strong>6. Testability per epic</strong><br>
+UX components must be testable in isolation per epic. This requires each layout zone<br>
+to have an <strong>isolated state harness</strong>: a defined set of state inputs and expected<br>
+render outputs that can be verified without running the full game loop. The UX LLD<br>
+must specify zone boundaries and state inputs explicitly — without this, the<br>
+architecture cannot implement the harness, and integration testing becomes the<br>
+only verification path.</p>
+<h3 id="design-opportunities">Design Opportunities </h3>
+<p><strong>1. Cognitive rhythm preservation</strong><br>
+Physical Mage Knight has a specific decision beat: assess hand → pick card → read it<br>
+→ decide → commit. That rhythm <em>is</em> the faithful feel — not the visual layout of the<br>
+physical card, not the spatial arrangement of the table. A mobile design that<br>
+preserves this beat will feel faithful even if it looks nothing like the physical game.</p>
+<p>Two moments in this beat demand explicit design attention:</p>
+<ul>
+<li>The <strong>decide</strong> moment: the player needs to feel in control, unhurried, with full<br>
+information available before committing</li>
+<li>The <strong>commit</strong> moment: playing a card must feel final and satisfying — a snap, not<br>
+a form submission. This is as important as the decision itself.</li>
+</ul>
+<p>For curious players, this rhythm may benefit from sequenced guidance — directing<br>
+attention through the beat rather than presenting everything simultaneously. The<br>
+veteran toggle governs both help visibility and this pacing.</p>
+<p><strong>2. Physical game muscle memory as an asset</strong><br>
+MK veterans have physical intuitions: pick up a card, read it, decide, place it. The<br>
+tap-to-expand model mirrors this gesture. Lean into it — the UX should feel like a<br>
+digital extension of the physical game's rhythm.</p>
+<p><strong>3. Phase gating as a legibility engine — filter play, not vision</strong><br>
+The game's phase structure is a natural filter for <em>playability</em>, not <em>visibility</em>.<br>
+During Movement, combat cards cannot be played — but they must still be visible,<br>
+because veterans are planning across phases. The phase system reduces what the player<br>
+can <em>do</em>, not what they can <em>see</em>. The UX job is to make the current phase<br>
+unmistakably clear and let the phase-legality rendering (greyed/red states) do the<br>
+filtering work — without hiding the full hand from view.</p>
+<p><strong>4. Interruption-first as a differentiator</strong><br>
+Mobile games that nail session resume become daily habits. A "exactly where you left<br>
+off, immediately re-oriented" experience is a meaningful differentiator for a game<br>
+this complex. This should be treated as a core feature, not a save-system detail.</p>
+<p><strong>5. Help system as teaching, not blocking</strong><br>
+The inline context-sensitive help is an opportunity to turn the secondary audience<br>
+(curious newcomers) into veterans over time. The help system should answer the two<br>
+questions players actually ask: "why can't I do this?" and "what should I do now?"<br>
+— not provide generic card-text glossaries. Situational, triggered by player action,<br>
+dismissible permanently as mastery grows.</p>
+<hr>
+<h2 id="core-user-experience">Core User Experience </h2>
+<h3 id="defining-experience">Defining Experience </h3>
+<p>The heartbeat of Magus Warrior is the <strong>card play loop</strong>:</p>
+<blockquote>
+<p>assess hand → select card → expand → <strong>reconsider?</strong> (back returns to<br>
+hand-assess with full hand visible — no reopen cost) → decide<br>
+(Play / Play Sideways / Power / Cancel) → play gesture (satisfying<br>
+snap, still reversible) → undo gate event (if triggered)</p>
+</blockquote>
+<p>The reconsideration beat is explicit and first-class. In physical Mage Knight,<br>
+players frequently expand a card, think "wait no," and scan the hand again before<br>
+deciding. Back navigation from the expanded card view must land cleanly in<br>
+hand-assess mode with the full hand visible, scrolled to the same position. A hard<br>
+dismiss/reopen cycle is not acceptable — it adds friction that does not exist in<br>
+the physical game.</p>
+<p>Everything else — map navigation, site entry, mana selection, unit management —<br>
+either serves this loop or gates access to it.</p>
+<p><strong>Undo and the play gesture are distinct events.</strong> Playing a card stages it and<br>
+should feel satisfying and deliberate — a physical snap, not a form submission. The<br>
+card remains reversible. The undo gate is triggered separately by information reveal<br>
+events: card drawn, tile flipped, enemy drawn, die rolled, card revealed in offer replenishment, face-down enemy revealed.</p>
+<ul>
+<li>The <strong>play gesture</strong> gets a visual snap — the card moves, the HUD updates</li>
+<li>The <strong>undo gate event</strong> gets a distinct signal — the undo affordance visibly<br>
+changes state so the player knows the window has closed</li>
+</ul>
+<p><strong>Undo animation:</strong> Undo plays as the action in reverse with an ~80ms ease-in at<br>
+the start of the reversal. The ease-in signals intentionality ("the game heard you,<br>
+it's walking it back"). Without it, undo reads as error correction. With it, it<br>
+reads as a rewind.</p>
+<p><strong>Undo de-emphasis in committed states:</strong> When the player has staged multiple cards<br>
+and resolution appears imminent (3+ cards played, or enemy resolution in progress),<br>
+the undo affordance shifts to a receded state — ~55% opacity, border softens from<br>
+solid to dashed, scale reduces ~10%. Still tappable. Not hidden. The visual contrast<br>
+between full-weight undo (free to reconsider) and receded undo (world is moving)<br>
+teaches intentionality without explanation.</p>
+<h3 id="platform-strategy">Platform Strategy </h3>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Platform</td>
+<td>Android only (v1); landscape-only</td>
+</tr>
+<tr>
+<td>Input</td>
+<td>Touch: tap, pinch-to-zoom+pan, long-press</td>
+</tr>
+<tr>
+<td>Baseline device</td>
+<td>Samsung Galaxy S21 (Snapdragon 888, 6GB RAM, Android 12)</td>
+</tr>
+<tr>
+<td>Offline</td>
+<td>Fully required — cloud save is opportunistic, never blocking</td>
+</tr>
+<tr>
+<td>Session length</td>
+<td>5 minutes to 2 hours; both are valid; game re-orients on every resume</td>
+</tr>
+<tr>
+<td>Gestures v1</td>
+<td>Tap (select/play), pinch (map zoom), long-press (help/details)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Map navigation:</strong> Hex taps execute immediately if the move is legal. Moves to<br>
+already-revealed hexes are reversible (no new information). Moves that flip a new<br>
+tile trigger the undo gate (tile reveal = new information). No confirmation step —<br>
+the undo system is the safety net.</p>
+<p><strong>Tutorial:</strong> Inline on the first run. The tutorial wraps around the actual game,<br>
+triggering contextually as new situations arise. It does not run as a separate mode.<br>
+The <code>showHelpText</code> flag disables it permanently once set.</p>
+<p><strong>Player flags (one flag, one behaviour):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Controls</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showHelpText: bool</code></td>
+<td>All help text: tooltips, disabled card explanations, phase guidance, first-time prompts</td>
+<td>true</td>
+</tr>
+<tr>
+<td><code>animationSpeed: float</code></td>
+<td>Animation timing multiplier (0.5x / 1x / 2x)</td>
+<td>1x (post-v1)</td>
+</tr>
+<tr>
+<td><code>skipAnimations: bool</code></td>
+<td>Skip all animations to final state globally</td>
+<td>false (post-v1)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="effortless-interactions">Effortless Interactions </h3>
+<table>
+<thead>
+<tr>
+<th>Interaction</th>
+<th>Why effortless</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Auto-resolution of non-choices</td>
+<td>Never prompt when there is only one legal target, one legal mana source, or one legal resource type — resolve automatically</td>
+</tr>
+<tr>
+<td>Map pan and zoom</td>
+<td>The map is the world, not a menu. Navigation must feel physical and frictionless</td>
+</tr>
+<tr>
+<td>Session resume</td>
+<td>Game state is instantly visible and correctly oriented on every resume</td>
+</tr>
+<tr>
+<td>Undo</td>
+<td>Always one tap; available until the gate; gate state always visible</td>
+</tr>
+<tr>
+<td>Phase-illegal card feedback</td>
+<td>Tapping an unavailable card immediately explains why (via long-press tooltip if <code>showHelpText</code> is true)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="critical-success-moments">Critical Success Moments </h3>
+<p><strong>Make-or-break (failure here breaks everything):</strong></p>
+<ul>
+<li>Tapping a phase-illegal card and getting silent rejection with no path to<br>
+understanding — if this happens without explanation, curious players quit</li>
+<li>Session resume landing in a confusing state — if the player can't orient in<br>
+2 seconds, the mobile-native promise is broken</li>
+</ul>
+<p><strong>Peak success moments:</strong></p>
+<ol>
+<li><strong>First combat chain</strong> — playing 3 cards in sequence that together defeat an<br>
+enemy none could beat alone. First taste of the power escalation arc.</li>
+<li><strong>The undo save</strong> — making a mistake, hitting undo, and feeling the game has<br>
+your back. The undo animation (action in reverse, ease-in) must feel like<br>
+relief, not error correction. This moment teaches players to take risks.</li>
+<li><strong>First power spike</strong> — reaching for a card in round 3 and realising you can<br>
+do something impossible in round 1. The UX must surface this delta explicitly —<br>
+not just in the player's head. Round-over-round capability comparison is a<br>
+named responsibility of the feedback loop.</li>
+<li><strong>City discovery</strong> — the win condition. The castle rises from the hex (~500ms),<br>
+then text unfurls: "City Found." The half-second before the text appears is<br>
+where the accomplishment lives — the player's brain registers "wait... is that—"<br>
+before the confirmation lands. This beat must not be shortcut with an immediate<br>
+notification. The player discovered a city; they did not receive a toast.</li>
+</ol>
+<h3 id="experience-principles">Experience Principles </h3>
+<ol>
+<li>
+<p><strong>The screen contract is law.</strong> Every pixel has an owner. No feature is placed<br>
+without a zone assignment. Overlapping ownership is a design failure.</p>
+</li>
+<li>
+<p><strong>Legibility at both speeds — at both zoom levels.</strong> Veterans scan; curious<br>
+players read. The same data must serve both — at compact hand size (pre-expand<br>
+scan) and at expanded card view. Compact cards must convey enough to make the<br>
+"worth expanding?" decision without opening every card.</p>
+</li>
+<li>
+<p><strong>Cognitive rhythm over visual fidelity.</strong> The decision beat (assess → reconsider<br>
+→ decide → commit) is the faithful feel. The commit moment has finality — a snap.<br>
+The reconsideration beat is free and cheap.</p>
+</li>
+<li>
+<p><strong>Reversibility as confidence.</strong> Undo is always available until the gate. The<br>
+gate state is always visible. In committed states, undo recedes visually but<br>
+never disappears. Players take better risks when they can see the safety net and<br>
+exactly when it closes.</p>
+</li>
+<li>
+<p><strong>Teach through why, not what.</strong> Help answers "why can't I do this?" and "what<br>
+should I do now?" — delivered via long-press HUD tooltip, not card-level text.<br>
+Gated behind <code>showHelpText</code>. Situational, not encyclopaedic.</p>
+</li>
+<li>
+<p><strong>Tutorial wraps, never blocks.</strong> The first run is the tutorial. <code>showHelpText</code><br>
+disables it permanently. Pacing and animation speed are separate flags — one<br>
+flag, one behaviour.</p>
+</li>
+<li>
+<p><strong>Close the feedback loop.</strong> Every action produces a visible HUD delta. Animated<br>
+counter transitions confirm resolution. Chained effects animate sequentially.<br>
+Round-over-round capability delta is a named feedback responsibility, not<br>
+incidental.</p>
+</li>
+</ol>
+<h3 id="ux-contract-requirements">UX Contract Requirements </h3>
+<p><strong>Interaction budgets and thresholds:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Card expand animation</td>
+<td>&lt; 150ms; expands within hand bounds; adjacent cards shift, never disappear</td>
+</tr>
+<tr>
+<td>Card collapse (on second tap)</td>
+<td>Instantaneous — no animation budget</td>
+</tr>
+<tr>
+<td>Action button separation</td>
+<td>Play / Play Sideways / Power / Cancel: minimum 44px; Cancel positionally distinct</td>
+</tr>
+<tr>
+<td>Gesture disambiguation</td>
+<td>Pan activates only after ≥8px drag; tap and pan mutually exclusive within a gesture</td>
+</tr>
+<tr>
+<td>Chained effect animation</td>
+<td>Sequential; 250–400ms per step; 800ms total cap; highlight persists 600ms after final step</td>
+</tr>
+<tr>
+<td>Undo animation</td>
+<td>Action in reverse; ~80ms ease-in at reversal start; communicates intentionality</td>
+</tr>
+<tr>
+<td>City discovery animation</td>
+<td>Castle rises ~500ms before text unfurls; discovery pause must not be shortcut</td>
+</tr>
+</tbody>
+</table>
+<p><strong>State and reactivity rules:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One card expanded at a time</td>
+<td>Tapping a second card collapses the first instantly, then expands second</td>
+</tr>
+<tr>
+<td>Expand state ownership</td>
+<td>UI-local (card node owns expanded state)</td>
+</tr>
+<tr>
+<td>Back from expanded view</td>
+<td>Returns to hand-assess mode, full hand visible, same scroll position — no hard reopen</td>
+</tr>
+<tr>
+<td>Action button availability</td>
+<td>Recomputes on every game state change, not only phase transition; pre-flight disables rather than post-flight explains</td>
+</tr>
+<tr>
+<td>Hand display availability</td>
+<td>Reactively bound to game state; recomputes on every action</td>
+</tr>
+<tr>
+<td>Undo gate — functional</td>
+<td>Gates immediately on gate event; input gating and visual signal explicitly decoupled</td>
+</tr>
+<tr>
+<td>Undo gate — visual signal</td>
+<td>Fires on animation completion; max visual lag = 150ms; never swallowed</td>
+</tr>
+<tr>
+<td>Undo gate — no false window</td>
+<td>During ≤150ms lag, undo is already functionally disabled; UI never accepts an undo it cannot honour</td>
+</tr>
+<tr>
+<td>Undo gate — persistence</td>
+<td>Gate state is part of save payload; restored exactly on resume</td>
+</tr>
+<tr>
+<td>Undo de-emphasis</td>
+<td>In committed states (3+ cards staged or resolution in progress): ~55% opacity, dashed border, ~10% scale reduction; still tappable</td>
+</tr>
+<tr>
+<td>Tutorial layer reactivity</td>
+<td>Reactive to <code>showHelpText</code>; dismiss is immediate, not deferred</td>
+</tr>
+<tr>
+<td>Veteran toggle timing</td>
+<td><code>showHelpText</code> first surfaces at the first tutorial trigger during a non-decision moment</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Session resume:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Element</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 (first frame)</td>
+<td>Current phase indicator</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Staged cards and running totals</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Enemy state</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Hand display</td>
+</tr>
+<tr>
+<td>No expanded card state persists through resume. Input locked until all zones fully rendered.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Disabled card help:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Card-level text</td>
+<td>Zero — no explanatory text on the card itself, ever</td>
+</tr>
+<tr>
+<td>Disabled indicator</td>
+<td>Greyed overlay + small icon (reads at compact size)</td>
+</tr>
+<tr>
+<td>Explanation trigger</td>
+<td>Long-press on disabled card → HUD tooltip (top or bottom of screen, not over card)</td>
+</tr>
+<tr>
+<td>Tooltip content</td>
+<td>Plain language reason: wrong phase / insufficient mana / wound</td>
+</tr>
+<tr>
+<td>Tooltip dismissal</td>
+<td>On release or after 2 seconds</td>
+</tr>
+<tr>
+<td>Gate</td>
+<td>Behind <code>showHelpText</code>; if false, long-press produces nothing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Visual and legibility standards:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unavailable card state</td>
+<td>≥40% opacity reduction + secondary indicator; indicator IS the help affordance (long-press trigger)</td>
+</tr>
+<tr>
+<td>Wound card treatment</td>
+<td>Full card background red at compact size</td>
+</tr>
+<tr>
+<td>Mana source distinction</td>
+<td>Dice and crystals use distinct shape language, not colour alone</td>
+</tr>
+<tr>
+<td>Running mana total</td>
+<td>Updates synchronously on selection</td>
+</tr>
+<tr>
+<td>Help text derivation</td>
+<td>Generated from same rule data that governs legality; cannot diverge</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Screen layer stack (z-order contract):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Contents</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5 — System</td>
+<td>Tutorial prompts, undo gate signal</td>
+<td>Always on top</td>
+</tr>
+<tr>
+<td>4 — Modal</td>
+<td>Site interaction screens</td>
+<td>Occludes all below; back returns to layer 3</td>
+</tr>
+<tr>
+<td>3 — Overlay</td>
+<td>Expanded card view</td>
+<td>Occludes game state; rest of hand dims but visible</td>
+</tr>
+<tr>
+<td>2 — Game state</td>
+<td>Hand, staged area, mana zone, units zone</td>
+<td>Primary play surface</td>
+</tr>
+<tr>
+<td>1 — Base</td>
+<td>Hex map, HUD</td>
+<td>Always visible beneath all layers</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Player flags:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Behaviour</th>
+<th>Ships</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showHelpText: bool</code></td>
+<td>All help text on/off; permanent once set</td>
+<td>v1</td>
+</tr>
+<tr>
+<td><code>skipAnimations: bool</code></td>
+<td>Skip all animations to final state</td>
+<td>post-v1</td>
+</tr>
+<tr>
+<td><code>animationSpeed: float</code></td>
+<td>Animation timing multiplier</td>
+<td>post-v1</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="desired-emotional-response">Desired Emotional Response </h2>
+<h3 id="primary-emotional-goals">Primary Emotional Goals </h3>
+<p><strong>Dominance</strong> is the primary target emotion. The player ends a successful run not<br>
+feeling "skilled" but feeling like they <em>commanded</em> the situation. Thomas was an<br>
+unstoppable force that became more unstoppable. The UX's job is to not interrupt<br>
+the dominance arc, and at peak moments, to amplify it.</p>
+<p><strong>Trust</strong> is the prerequisite for dominance. Players who don't trust the safety net<br>
+play conservatively. Players who trust it take the aggressive plays that produce<br>
+dominance. Trust is built by the undo system — earned through consistency, broken<br>
+on the first unexpected exception.</p>
+<p><strong>Anticipation</strong> is the emotional on-ramp at run start. The three starting tiles<br>
+(starting tile + tiles 1 and 2) animate in face-up sequentially — the player sees<br>
+the shape of their known world before entering it. Beyond those edges is nothing;<br>
+new tiles only appear when the player explores off an edge. It is a v1 feature,<br>
+not post-v1 polish.</p>
+<p><strong>Accomplishment</strong> is the arc resolution at city discovery. Full victory emotion.<br>
+Not rationed, not held back for a later city-fall moment. The player earned it.</p>
+<h3 id="emotional-journey">Emotional Journey </h3>
+<table>
+<thead>
+<tr>
+<th>Moment</th>
+<th>Target emotion</th>
+<th>Audience</th>
+<th>UX mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Run start</td>
+<td>Anticipation</td>
+<td>Both</td>
+<td>Three starting tiles (start + tiles 1 and 2) animate in face-up sequentially; beyond those edges is nothing until explored; 4s with explicit "tap to begin" before first input; skippable via <code>skipAnimations</code> after first run</td>
+</tr>
+<tr>
+<td>First move</td>
+<td>Foothold</td>
+<td>Curious</td>
+<td>Distinct audio-visual signal on first successful hex traversal — not implicit; unmistakable "I did something right"</td>
+</tr>
+<tr>
+<td>First phase-illegal tap</td>
+<td>Confidence, not frustration</td>
+<td>Both</td>
+<td>Help fires immediately; player understands why, not just blocked</td>
+</tr>
+<tr>
+<td>Undo discovery</td>
+<td>"Wait — I can undo?" → Trust</td>
+<td>Curious</td>
+<td>Round-1 tooltip surfaces undo existence proactively; no scripted mistake scenario required</td>
+</tr>
+<tr>
+<td>Undo save (curious)</td>
+<td>Relief → Trust</td>
+<td>Curious</td>
+<td>Ease-in reverse animation; safety net is demonstrably real</td>
+</tr>
+<tr>
+<td>Undo save (veteran)</td>
+<td>Tactical satisfaction</td>
+<td>Veteran</td>
+<td>"I outplanned myself" — spotted the better line and took it; same animation, different read</td>
+</tr>
+<tr>
+<td>Player Discovery</td>
+<td>"I figured that out myself"</td>
+<td>Both</td>
+<td>First off-script card combo: half-beat pause + warm audio cue + quiet end-of-round "Your discovery" log entry; no fanfare — the game notices without announcing</td>
+</tr>
+<tr>
+<td>First combat chain</td>
+<td>"Oh — <em>this</em> is it"</td>
+<td>Both</td>
+<td>Three cards resolve together; combined effect shown in feedback loop</td>
+</tr>
+<tr>
+<td>Round 2 → Round 3</td>
+<td>Hunger</td>
+<td>Both</td>
+<td>Capability delta visible; power growing and felt</td>
+</tr>
+<tr>
+<td>First power spike</td>
+<td>Dominance preview</td>
+<td>Both</td>
+<td>A card does something impossible in round 1; delta surfaced explicitly</td>
+</tr>
+<tr>
+<td>City discovery</td>
+<td>Full victory</td>
+<td>Both</td>
+<td>Castle rises (~500ms) → "City Found" unfurls → 2–3s silence → victory resolution. Arrival, not notification. Full victory emotion — not rationed.</td>
+</tr>
+<tr>
+<td>Loss (round limit)</td>
+<td>"I know what I'll do differently"</td>
+<td>Both</td>
+<td>Narrative sentence ("You were X hexes from the city with Y rounds remaining") + round 1 vs. final capability comparison</td>
+</tr>
+</tbody>
+</table>
+<h3 id="micro-emotions">Micro-Emotions </h3>
+<p><strong>Confidence vs. Confusion</strong><br>
+The phase legality system is the primary driver. Confidence = player always knows<br>
+what's legal and why. Confusion = silent rejection. The two-layer help system is<br>
+the mechanism. Confusion at this point is the single greatest threat to the<br>
+dominance arc.</p>
+<p><strong>Trust vs. Skepticism</strong><br>
+The undo system builds trust through predictability — same signal, same behaviour,<br>
+every time. The round-1 tooltip surfaces undo existence before the player needs it.<br>
+One unexpected exception breaks trust.</p>
+<p><strong>Relief vs. Tactical Satisfaction (undo save)</strong><br>
+Audience-dependent. For curious players: relief — "the game saved me." For<br>
+veterans: tactical satisfaction — "I saw the better play and took it." The ease-in<br>
+reverse animation is identical; the emotional read diverges by audience. Both are<br>
+valid; neither is designed away.</p>
+<p><strong>Foothold (curious players, first 3 minutes)</strong><br>
+Dominance is the arc's end. Curious players need an intermediate "I did something<br>
+right" signal or they disengage before the arc reaches them. The foothold beat is<br>
+the first rung — a successful move, a legal card played, a round survived. Requires<br>
+a distinct audio-visual signal; must not blend into background noise.</p>
+<p><strong>Player Discovery (bridge beat)</strong><br>
+Between foothold and first combat chain, the player needs to feel they are <em>building</em><br>
+dominance, not just waiting for it. The Player Discovery beat — first off-script card<br>
+combination that succeeds — bridges this gap. It is quiet: no achievement popup, no<br>
+fanfare. A half-beat pause, a warmer sound cue, and a small end-of-round log entry:<br>
+<em>"You found that Rage + Swiftness breaks a fortified position faster than anything<br>
+the order taught you."</em> The game notices without announcing. This is the mastery<br>
+recognition beat — the moment the player feels <em>seen</em> during the run.</p>
+<p><strong>Anticipation vs. Anxiety (run start)</strong><br>
+The 4-second animation deals in the three starting tiles face-up sequentially, with<br>
+"tap to begin" before the first input. Curious players get mental breathing room;<br>
+veterans experience it as ceremony. The empty edges beyond those tiles are the<br>
+mystery — no face-down tiles exist to signal "something's out there." Both audiences<br>
+benefit from the orientation pause.</p>
+<p><strong>"I know what I'll do differently" (loss)</strong><br>
+Not frustration. Not despair. Analytical clarity. The loss screen delivers this<br>
+through narrative proximity ("You were X hexes away") and capability delta (round 1<br>
+vs. final). The exit state is intelligence, not punishment.</p>
+<h3 id="design-implications">Design Implications </h3>
+<table>
+<thead>
+<tr>
+<th>Target emotion</th>
+<th>UX design approach</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Dominance</strong></td>
+<td>Power escalation surfaced explicitly at round boundaries; Player Discovery beat confirms mastery in-run</td>
+</tr>
+<tr>
+<td><strong>Trust</strong></td>
+<td>Undo gate always visible; round-1 tooltip surfaces undo before it's needed; ease-in reverse animation on every undo</td>
+</tr>
+<tr>
+<td><strong>Anticipation</strong></td>
+<td>Run-start tile animation + 4s "tap to begin" pause; v1, not polish</td>
+</tr>
+<tr>
+<td><strong>Accomplishment</strong></td>
+<td>City discovery: full victory, protected beats before and after text; arrival framing</td>
+</tr>
+<tr>
+<td><strong>"I know what I'll do differently"</strong></td>
+<td>Loss screen: narrative sentence + capability comparison; analytical and warm</td>
+</tr>
+</tbody>
+</table>
+<h3 id="emotions-to-avoid">Emotions to Avoid </h3>
+<table>
+<thead>
+<tr>
+<th>Emotion</th>
+<th>How it arises</th>
+<th>Prevention</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Confusion</td>
+<td>Silent rejection of illegal card tap</td>
+<td>Two-layer phase legality help; never silent</td>
+</tr>
+<tr>
+<td>Frustration</td>
+<td>Information not findable under pressure</td>
+<td>Always-visible HUD stats; long-press tooltip on demand</td>
+</tr>
+<tr>
+<td>Cheapness</td>
+<td>Undo feels like error correction</td>
+<td>Ease-in reverse animation; rewind, not glitch-fix</td>
+</tr>
+<tr>
+<td>Overwhelm</td>
+<td>Undifferentiated combat information</td>
+<td>Legibility at both speeds; scannable always-visible stats</td>
+</tr>
+<tr>
+<td>Punished</td>
+<td>Loss screen mournful or accusatory</td>
+<td>Narrative-first; "what to do differently" is the exit state</td>
+</tr>
+<tr>
+<td>Invisible</td>
+<td>Player does something clever and the game ignores it</td>
+<td>Player Discovery beat ensures the game notices</td>
+</tr>
+</tbody>
+</table>
+<h3 id="emotional-design-principles">Emotional Design Principles </h3>
+<ol>
+<li>
+<p><strong>Amplify the arc, don't interrupt it.</strong> Every interaction that interrupts the<br>
+dominance arc — silent rejection, confusing state, unexpected undo failure — is<br>
+a design failure against the primary emotional goal.</p>
+</li>
+<li>
+<p><strong>Trust is earned through consistency, broken on the first exception.</strong> Design<br>
+for the exception first, not last.</p>
+</li>
+<li>
+<p><strong>Anticipation is architecture, not polish.</strong> The run-start map animation is an<br>
+emotional on-ramp. It ships in v1.</p>
+</li>
+<li>
+<p><strong>Loss is information, not punishment.</strong> The exit state is "I know exactly what<br>
+I'll do differently." Narrative-first, data second.</p>
+</li>
+<li>
+<p><strong>Designed moments, not incidental ones.</strong> Six peak emotional beats (run-start<br>
+anticipation, foothold, undo discovery, Player Discovery, first power spike, city<br>
+discovery) are explicitly designed — each has a named UX responsibility.</p>
+</li>
+<li>
+<p><strong>The game notices.</strong> Players who do something smart deserve to feel seen. The<br>
+Player Discovery beat is the mechanism. No fanfare — just quiet recognition.</p>
+</li>
+</ol>
+<hr>
+<h2 id="ux-pattern-analysis--inspiration">UX Pattern Analysis &amp; Inspiration </h2>
+<h3 id="into-the-breach--pattern-analysis">Into the Breach — Pattern Analysis </h3>
+<p>Into the Breach is the primary UX reference for Magus Warrior. It is one of the<br>
+most information-dense strategy games on mobile, yet players never feel overwhelmed.<br>
+The critical insight: information density is managed through legibility architecture<br>
+— not through hiding information.</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Into the Breach Approach</th>
+<th>Relevance to Magus Warrior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Information before commitment</td>
+<td>All outcomes visible before confirming a move</td>
+<td>Card effects visible in expanded view before playing; never require commitment to see what a card does</td>
+</tr>
+<tr>
+<td>Layered grid communication</td>
+<td>Grid cells carry phase, threat, and effect information via icon layering</td>
+<td>Hex map carries terrain, movement cost, and occupation state without modal overlays</td>
+</tr>
+<tr>
+<td>Turn order visibility</td>
+<td>Enemy intentions permanently visible</td>
+<td>Current phase and upcoming phase always visible in HUD; player never surprised by phase transition</td>
+</tr>
+<tr>
+<td>Undo as first-class</td>
+<td>Undo is a named system, not a back button</td>
+<td>Undo has dedicated affordance; gate state permanently visible; signal distinct from any other action</td>
+</tr>
+<tr>
+<td>Color as primary signal</td>
+<td>Threat, safety, and selection states communicated via color hierarchy — never position alone</td>
+<td>Phase-legality states (available, phase-illegal, exhausted, wound) use a defined color hierarchy as primary signal; shape/icon as secondary</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spirit-island--pattern-analysis">Spirit Island — Pattern Analysis </h3>
+<p>Spirit Island was identified for its unit representation and animation philosophy —<br>
+specifically the way figure postures and animations communicate game state at a glance.</p>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Spirit Island Approach</th>
+<th>Relevance to Magus Warrior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Silhouette-first unit design</td>
+<td>Units identifiable by silhouette at table distance; detail is secondary</td>
+<td>Units and card type categories distinguishable at compact hand size by shape, not label</td>
+</tr>
+<tr>
+<td>State-communicating animations</td>
+<td>Figure postures and placement communicate game state (exhausted, wounded, active)</td>
+<td>Card and unit state transitions animate to final state, not snap; state legible without reading label</td>
+</tr>
+<tr>
+<td>Phase communication via board state</td>
+<td>The board tells you what phase it is; no banner required</td>
+<td>HUD phase indicator reinforced by board state; not carried by HUD alone</td>
+</tr>
+<tr>
+<td>Zone discipline</td>
+<td>Each zone has exactly one type of information; nothing bleeds</td>
+<td>Screen contract enforces zone discipline; card zone never carries mana information; mana zone never carries card state</td>
+</tr>
+</tbody>
+</table>
+<h3 id="transferable-ux-patterns">Transferable UX Patterns </h3>
+<p><strong>Navigation patterns:</strong></p>
+<ul>
+<li>Persistent map view beneath all layers — player never loses spatial orientation</li>
+<li>Back gesture always returns to a named state, never to an undefined position</li>
+<li>Zoom preserves center point; never snaps to default zoom on state change</li>
+</ul>
+<p><strong>Interaction patterns:</strong></p>
+<ul>
+<li>Progressive disclosure: compact → expanded → action — three steps maximum from<br>
+hand to played card</li>
+<li>Single-selection model: one expanded card, one selected hex, one active unit —<br>
+never two simultaneous selections</li>
+<li>Auto-resolution of non-choices: if only one option is legal, apply it silently</li>
+</ul>
+<p><strong>Visual patterns:</strong></p>
+<ul>
+<li>Color as primary signal, shape as secondary, label as tertiary — accessible<br>
+without full color vision</li>
+<li>Active state uses contrast increase; inactive state uses contrast decrease;<br>
+no state relies on animation alone</li>
+<li>Feedback always co-located with the action: card play feedback appears on<br>
+the staged area, not as a toast at screen edge</li>
+</ul>
+<h3 id="anti-patterns-to-avoid">Anti-Patterns to Avoid </h3>
+<table>
+<thead>
+<tr>
+<th>Anti-pattern</th>
+<th>Example</th>
+<th>Cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Silent rejection</td>
+<td>Tapping an illegal card with no feedback</td>
+<td>Breaks phase legality teaching; top cause of newcomer drop</td>
+</tr>
+<tr>
+<td>Modal information stacking</td>
+<td>Tutorial popup over "card drawn" popup over live game state</td>
+<td>Destroys cognitive rhythm; player loses orientation</td>
+</tr>
+<tr>
+<td>Orphaned state</td>
+<td>Round ends but staged card area not cleared; units show stale state</td>
+<td>Breaks trust; player must reason about what's real</td>
+</tr>
+<tr>
+<td>Animation as blocking gate</td>
+<td>Player cannot input until a non-skippable animation finishes</td>
+<td>Destroys veteran flow</td>
+</tr>
+<tr>
+<td>Tooltip displacement</td>
+<td>Help text appears over the thing being described</td>
+<td>Blocks the information the player needs</td>
+</tr>
+<tr>
+<td>Color-only differentiation</td>
+<td>Mana types distinguished by color alone</td>
+<td>Fails for color-blind players and in low-light conditions</td>
+</tr>
+<tr>
+<td>Zoom-reset on state change</td>
+<td>Map snaps to default zoom whenever game state changes</td>
+<td>Breaks spatial memory; feels punitive</td>
+</tr>
+<tr>
+<td>Progress without feedback</td>
+<td>Long operation (save, deck shuffle) with no visible signal</td>
+<td>Produces false-frozen reads; player taps again, double-executes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="design-inspiration-strategy">Design Inspiration Strategy </h3>
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Applies to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Adopt directly</strong></td>
+<td>Into the Breach: information-before-commitment in card expand; color-as-primary-signal hierarchy; undo as first-class named affordance</td>
+</tr>
+<tr>
+<td><strong>Adapt for context</strong></td>
+<td>Spirit Island: silhouette-first design adapted for portrait-format cards at phone scale; state-communicating animation adapted for card play snap</td>
+</tr>
+<tr>
+<td><strong>Avoid</strong></td>
+<td>Mobile casual game conventions: reward fanfare popups, tap-to-dismiss tutorials, swipe navigation through hand, progress bars on card play</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="design-system-foundation">Design System Foundation </h2>
+<h3 id="design-system-choice">Design System Choice </h3>
+<p><strong>Token-first custom design system using Godot 4's Theme + Resource architecture.</strong></p>
+<p>All visual decisions — color, typography, spacing, animation timing — are defined as<br>
+Godot Resource constants consumed by components. No component hard-codes a value. This<br>
+approach gives a solo developer the ability to tune the entire visual language from one<br>
+place, and ensures the testable isolated components from the screen contract all share<br>
+the same language without coordination overhead.</p>
+<p>No external UI framework. Everything is Godot-native.</p>
+<h3 id="visual-identity">Visual Identity </h3>
+<p><strong>Direction: Dark Fantasy — faithful to physical Mage Knight card art.</strong></p>
+<p>The physical Mage Knight card aesthetic establishes the reference: deep dark backgrounds,<br>
+rich parchment-and-stone textures where structural, gold/bronze borders and accent lines<br>
+on interactive surfaces, high-contrast white and warm-cream text for readability, and<br>
+vivid illustrated art as the dominant visual mass of each card.</p>
+<p>The mobile adaptation carries this aesthetic into UI chrome — HUD panels, mana zones,<br>
+phase indicators — without requiring illustrated art for every surface. Structure surfaces<br>
+use dark stone tones; interactive elements use gold/bronze accent language; state changes<br>
+use the established color hierarchy rather than bright flat colors.</p>
+<p><strong>Day/Night palette shift:</strong> During Night rounds, the base background deepens by ~15%<br>
+(<code>#0F0C09</code>), and the UI chrome shifts from gold to a cooler bronze (<code>#8B7355</code>). This<br>
+reinforces the Day/Night cycle at the ambient level without requiring explicit notification.</p>
+<h3 id="color-token-palette">Color Token Palette </h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>color.background.base</code></td>
+<td><code>#1A1510</code></td>
+<td>Deepest background; map underlayer, base panels</td>
+</tr>
+<tr>
+<td><code>color.background.surface</code></td>
+<td><code>#2A221A</code></td>
+<td>Panel surfaces; HUD background, card backs</td>
+</tr>
+<tr>
+<td><code>color.background.raised</code></td>
+<td><code>#3A2E22</code></td>
+<td>Raised surfaces; staged area, expanded card background</td>
+</tr>
+<tr>
+<td><code>color.accent.gold</code></td>
+<td><code>#C8962A</code></td>
+<td>Interactive borders, active selection, action buttons</td>
+</tr>
+<tr>
+<td><code>color.accent.gold.dim</code></td>
+<td><code>#7A5A18</code></td>
+<td>Inactive interactive borders; available but not selected</td>
+</tr>
+<tr>
+<td><code>color.text.primary</code></td>
+<td><code>#F0E8D4</code></td>
+<td>Primary readable text; card names, stat values, phase label</td>
+</tr>
+<tr>
+<td><code>color.text.secondary</code></td>
+<td><code>#B8A882</code></td>
+<td>Secondary text; card subtext, help labels, zone labels</td>
+</tr>
+<tr>
+<td><code>color.text.disabled</code></td>
+<td><code>#5A4E3A</code></td>
+<td>Disabled/unavailable text</td>
+</tr>
+<tr>
+<td><code>color.state.available</code></td>
+<td><code>#F0E8D4</code></td>
+<td>Card available to play (default)</td>
+</tr>
+<tr>
+<td><code>color.state.unavailable</code></td>
+<td><code>#3A3028</code></td>
+<td>Card unavailable: phase-illegal or insufficient mana</td>
+</tr>
+<tr>
+<td><code>color.state.wound</code></td>
+<td><code>#8B1A1A</code></td>
+<td>Wound card full-background treatment</td>
+</tr>
+<tr>
+<td><code>color.state.selected</code></td>
+<td><code>#C8962A</code></td>
+<td>Selected/staged card border</td>
+</tr>
+<tr>
+<td><code>color.mana.red</code></td>
+<td><code>#C0392B</code></td>
+<td>Red mana (fire)</td>
+</tr>
+<tr>
+<td><code>color.mana.blue</code></td>
+<td><code>#2471A3</code></td>
+<td>Blue mana (cold)</td>
+</tr>
+<tr>
+<td><code>color.mana.green</code></td>
+<td><code>#1E8449</code></td>
+<td>Green mana (nature)</td>
+</tr>
+<tr>
+<td><code>color.mana.white</code></td>
+<td><code>#D5D8DC</code></td>
+<td>White mana (light)</td>
+</tr>
+<tr>
+<td><code>color.mana.gold</code></td>
+<td><code>#D4AC0D</code></td>
+<td>Gold mana — Day only</td>
+</tr>
+<tr>
+<td><code>color.mana.black</code></td>
+<td><code>#4A235A</code></td>
+<td>Black mana — Night only</td>
+</tr>
+<tr>
+<td><code>color.mana.exhausted</code></td>
+<td><code>#2D2D2D</code></td>
+<td>Exhausted mana source (shape preserved, color desaturated)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="typography-scale">Typography Scale </h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Size</th>
+<th>Weight</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type.display</code></td>
+<td>24sp</td>
+<td>Bold</td>
+<td>City discovery "City Found"; major beat moments</td>
+</tr>
+<tr>
+<td><code>type.heading</code></td>
+<td>18sp</td>
+<td>SemiBold</td>
+<td>Card names at expanded size; phase label in HUD</td>
+</tr>
+<tr>
+<td><code>type.body</code></td>
+<td>14sp</td>
+<td>Regular</td>
+<td>Card text; help tooltips; site modal descriptions</td>
+</tr>
+<tr>
+<td><code>type.label</code></td>
+<td>12sp</td>
+<td>Medium</td>
+<td>HUD stat labels; zone identifiers</td>
+</tr>
+<tr>
+<td><code>type.compact</code></td>
+<td>10sp</td>
+<td>Regular</td>
+<td>Compact card name; unit state labels</td>
+</tr>
+<tr>
+<td><code>type.micro</code></td>
+<td>9sp</td>
+<td>Regular</td>
+<td>Secondary indicators; end-of-round log entries</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Font direction:</strong> A single readable serif for body/display text (faithful to physical<br>
+card art parchment feel), a clean condensed sans-serif for stat values and HUD numbers<br>
+(scanability). Both sourced from open-license fonts — no runtime licensing complications.</p>
+<h3 id="spacing--layout-tokens">Spacing &amp; Layout Tokens </h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>space.xs</code></td>
+<td>4dp</td>
+<td>Icon-to-label gap; tight internal padding</td>
+</tr>
+<tr>
+<td><code>space.sm</code></td>
+<td>8dp</td>
+<td>Card internal padding; button label padding</td>
+</tr>
+<tr>
+<td><code>space.md</code></td>
+<td>16dp</td>
+<td>Zone separation; panel padding</td>
+</tr>
+<tr>
+<td><code>space.lg</code></td>
+<td>24dp</td>
+<td>Major section separation; modal padding</td>
+</tr>
+<tr>
+<td><code>space.xl</code></td>
+<td>40dp</td>
+<td>Safe area insets on Samsung Galaxy S21</td>
+</tr>
+<tr>
+<td><code>touch.min</code></td>
+<td>44dp</td>
+<td>Minimum touch target (all interactive elements)</td>
+</tr>
+<tr>
+<td><code>card.compact.width</code></td>
+<td>72dp</td>
+<td>Card width in hand (compact)</td>
+</tr>
+<tr>
+<td><code>card.compact.height</code></td>
+<td>100dp</td>
+<td>Card height in hand (compact)</td>
+</tr>
+<tr>
+<td><code>card.expanded.width</code></td>
+<td>220dp</td>
+<td>Card width expanded</td>
+</tr>
+<tr>
+<td><code>card.expanded.height</code></td>
+<td>320dp</td>
+<td>Card expanded — fits in landscape with HUD visible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="animation-duration-tokens">Animation Duration Tokens </h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Value</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anim.instant</code></td>
+<td>0ms</td>
+<td>Collapse second card on new expand</td>
+</tr>
+<tr>
+<td><code>anim.micro</code></td>
+<td>80ms</td>
+<td>Ease-in at undo reversal start</td>
+</tr>
+<tr>
+<td><code>anim.snap</code></td>
+<td>150ms</td>
+<td>Card expand; undo gate visual signal max lag</td>
+</tr>
+<tr>
+<td><code>anim.standard</code></td>
+<td>300ms</td>
+<td>Single chained effect step</td>
+</tr>
+<tr>
+<td><code>anim.deliberate</code></td>
+<td>500ms</td>
+<td>Castle rise at city discovery</td>
+</tr>
+<tr>
+<td><code>anim.chain.cap</code></td>
+<td>800ms</td>
+<td>Total budget for any chained effect sequence</td>
+</tr>
+<tr>
+<td><code>anim.beat.silence</code></td>
+<td>2000ms–3000ms</td>
+<td>Post-"City Found" silence before victory resolution</td>
+</tr>
+</tbody>
+</table>
+<h3 id="component-architecture">Component Architecture </h3>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Type</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CardCompact</code></td>
+<td>Godot scene (Control)</td>
+<td>Consumes card data; reads from theme; testable with mock CardData</td>
+</tr>
+<tr>
+<td><code>CardExpanded</code></td>
+<td>Godot scene (Control)</td>
+<td>Owns expand state; action buttons built in; z-layer 3</td>
+</tr>
+<tr>
+<td><code>HUDPanel</code></td>
+<td>Godot scene (Control)</td>
+<td>Phase, mana total, attack/block totals; always layer 1</td>
+</tr>
+<tr>
+<td><code>ManaZone</code></td>
+<td>Godot scene (Control)</td>
+<td>Dice + crystal tokens; shape-primary rendering</td>
+</tr>
+<tr>
+<td><code>StagedArea</code></td>
+<td>Godot scene (Control)</td>
+<td>Accumulates played cards; shows running totals</td>
+</tr>
+<tr>
+<td><code>HexTile</code></td>
+<td>Godot scene (Node2D)</td>
+<td>Custom CanvasItem render; not a Control node</td>
+</tr>
+<tr>
+<td><code>UnitToken</code></td>
+<td>Godot scene (Node2D)</td>
+<td>Silhouette-first sprite; state via posture animation</td>
+</tr>
+<tr>
+<td><code>SiteModal</code></td>
+<td>Godot scene (Control)</td>
+<td>Layer 4; full-screen occluder; back returns to layer 3/2</td>
+</tr>
+<tr>
+<td><code>TutorialOverlay</code></td>
+<td>Godot scene (Control)</td>
+<td>Layer 5; reactive to <code>showHelpText</code>; always on top</td>
+</tr>
+<tr>
+<td><code>UndoAffordance</code></td>
+<td>Godot scene (Control)</td>
+<td>Standalone component; gate state drives opacity/border/scale</td>
+</tr>
+</tbody>
+</table>
+<p>All Control-node components accept an isolated state harness: a defined <code>mock_state</code><br>
+export that bypasses the game loop for per-epic testing.</p>
+<h3 id="implementation-approach">Implementation Approach </h3>
+<ol>
+<li><strong>Token resource first.</strong> Create <code>DesignTokens.tres</code> before any component work.<br>
+All colors, spacings, and animation durations live here. No component is written<br>
+until tokens exist.</li>
+<li><strong>Godot Theme file second.</strong> Import tokens into a <code>.theme</code> file that wires colors<br>
+and fonts to Godot's built-in Control style overrides. All standard controls<br>
+draw from this theme automatically.</li>
+<li><strong>Custom components third.</strong> Each component is a self-contained Godot scene with<br>
+a clear interface (<code>CardData</code> in, rendered card out). Components reference<br>
+<code>DesignTokens</code> — never raw values.</li>
+<li><strong>State harness per component.</strong> Each component scene includes an <code>@export var mock_state</code> that allows rendering in isolation for per-epic testing without a<br>
+running game loop.</li>
+</ol>
+<hr>
+<h2 id="defining-core-experience">Defining Core Experience </h2>
+<h3 id="defining-experience-1">Defining Experience </h3>
+<blockquote>
+<p><em>"Build a hand into a weapon and tear through whatever stands between you and the city."</em></p>
+</blockquote>
+<p>The defining experience of Magus Warrior is not card management — it is the cognitive<br>
+leap from <em>"I have these cards"</em> to <em>"I see what these cards can do together."</em> The card<br>
+play loop is the mechanism; the moment of combination clarity is the feeling. When a<br>
+player stages three cards whose combined effect defeats an enemy that none could beat<br>
+alone, that is the moment the game becomes Magus Warrior rather than a card inventory.</p>
+<p>Every UX decision serves this moment: the hand must be readable before expansion,<br>
+expansion must be fast enough to feel like "picking up," staging must feel deliberate<br>
+and satisfying, and the undo system must be trustworthy enough that the player takes<br>
+the aggressive play rather than the safe one.</p>
+<h3 id="user-mental-model">User Mental Model </h3>
+<p>Players bring the physical Mage Knight frame directly. Their existing mental model:</p>
+<ul>
+<li><strong>Pick up a card</strong> → tap to expand (direct mapping)</li>
+<li><strong>Read it, think</strong> → expanded view with full text visible before any commitment</li>
+<li><strong>Decide to play or return it</strong> → Play/Cancel from expanded; back = clean return to hand</li>
+<li><strong>Place it face-up</strong> → stage gesture; satisfying snap; HUD updates</li>
+<li><strong>Reconsider sequence</strong> → undo; reverses the last action; visual rewind</li>
+</ul>
+<p><strong>Where the mental model diverges from physical MK:</strong><br>
+The hand in physical MK is private and tangible — players hold cards, fan them, physically<br>
+reorder them. Mobile replaces physicality with legibility: 7 cards visible by default with<br>
+horizontal scroll at 8+, a one-tap expand for inspection. The design goal is not to<br>
+simulate holding cards but to preserve the cognitive rhythm of holding and considering<br>
+them — discoverability matters, not forced simultaneity.</p>
+<p><strong>Where users get confused (existing digital card games):</strong></p>
+<ol>
+<li>Phase legality changes hand contents without explanation (cards grey out, no reason given)</li>
+<li>Committing a card when they meant to examine it (no reconsideration beat)</li>
+<li>Undo closing without warning (missed the gate; played an assumption they can't reverse)</li>
+</ol>
+<p>Magus Warrior's design addresses all three directly.</p>
+<h3 id="success-criteria-for-core-experience">Success Criteria for Core Experience </h3>
+<p>The card play loop succeeds when:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Observable signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>"This just works"</td>
+<td>Player examines and stages cards without consulting help in session 2</td>
+</tr>
+<tr>
+<td>Smart / accomplished</td>
+<td>Player stages a combo without being told to; recognises the combination themselves</td>
+</tr>
+<tr>
+<td>Doing it right</td>
+<td>HUD totals update synchronously; staged cards visible; phase label matches intention</td>
+</tr>
+<tr>
+<td>Speed</td>
+<td>Tap-to-expand &lt; 150ms; no hesitation visible between examine and decide</td>
+</tr>
+<tr>
+<td>Auto-resolution</td>
+<td>No prompts for single-legal-target situations; flow never interrupts for non-choices</td>
+</tr>
+<tr>
+<td>Undo trust</td>
+<td>Player uses undo to explore a better line, not to escape an error</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Failure state:</strong> Player taps a phase-illegal card and receives silence. This is the<br>
+single highest-priority failure mode — it breaks the mental model, teaches nothing, and<br>
+breaks trust in the phase system as a legibility engine.</p>
+<h3 id="novel-ux-patterns">Novel UX Patterns </h3>
+<p><strong>Established patterns (no education required):</strong></p>
+<ul>
+<li>Tap to inspect / tap to play maps directly to pick-up-and-read physical metaphor</li>
+<li>Staged area as "committed but reversible" maps to placing cards face-up on a table</li>
+<li>Phase indicator as always-visible context (borrowed from Into the Breach turn order)</li>
+</ul>
+<p><strong>Novel pattern: Undo with a visible, functional gate</strong></p>
+<p>Most mobile strategy games treat undo as either unlimited (no weight) or absent (punishing).<br>
+Magus Warrior's undo has a functional gate triggered by information reveal — and the gate<br>
+state is always visible. Players need to learn:</p>
+<ol>
+<li>Undo exists and is reliable (round-1 tooltip surfaces this before they need it)</li>
+<li>The gate state is meaningful — it tells them when the window closes</li>
+<li>Within the undo window, aggressive plays are safe to try</li>
+</ol>
+<p>The gate is not punitive — it is informational. Teaching it is the undo discovery beat's<br>
+job, not a tutorial modal's.</p>
+<p><strong>Novel pattern: Reconsideration beat as first-class</strong></p>
+<p>The back-from-expanded action returns to hand-assess with no cost. In most card game UIs,<br>
+returning a card after expanding it has friction. Here, reconsideration is part of the<br>
+designed loop. Players who expand every card before deciding should feel comfortable doing<br>
+so, not guilty about it.</p>
+<h3 id="experience-mechanics">Experience Mechanics </h3>
+<p><strong>Full card play loop — step by step:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Player action</th>
+<th>System response</th>
+<th>Reversible?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Assess</td>
+<td>Views compact hand</td>
+<td>All cards visible; phase-illegal cards dimmed; no interaction required</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>2. Examine</td>
+<td>Taps a card</td>
+<td>Card expands in &lt; 150ms; action buttons appear; rest of hand dims but visible</td>
+<td>Yes — tap Cancel or back area</td>
+</tr>
+<tr>
+<td>3. Reconsider</td>
+<td>Taps Cancel or back area</td>
+<td>Card collapses instantly; hand returns to assess state; same scroll position</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>4. Decide</td>
+<td>Taps Play / Play Sideways / Power</td>
+<td>Card snaps to staged area; HUD totals update; satisfying snap animation</td>
+<td>Yes — undo still open</td>
+</tr>
+<tr>
+<td>5. Continue</td>
+<td>May examine more cards</td>
+<td>Same loop; multiple cards can be staged; HUD shows cumulative totals</td>
+<td>Yes until gate</td>
+</tr>
+<tr>
+<td>6. Gate event</td>
+<td>New information revealed</td>
+<td>Undo gate closes functionally immediately; visual signal fires within 150ms</td>
+<td>No — gate is permanent</td>
+</tr>
+<tr>
+<td>7. Resolve</td>
+<td>Phase action executes</td>
+<td>Effects resolve; chained animation plays (≤800ms total); feedback co-located</td>
+<td>No</td>
+</tr>
+<tr>
+<td>8. Draw / advance</td>
+<td>Phase advances</td>
+<td>New cards drawn if applicable; next phase activates; hand re-renders</td>
+<td>N/A</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Undo mechanics — gate event table:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Gate trigger</th>
+<th>Functional close</th>
+<th>Visual signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Card drawn from deck</td>
+<td>Immediately on draw trigger</td>
+<td>Undo affordance shifts: 55% opacity, dashed border, −10% scale</td>
+</tr>
+<tr>
+<td>Hex tile revealed</td>
+<td>Immediately on tile flip trigger</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Enemy drawn</td>
+<td>Immediately on enemy appear trigger</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Die rolled</td>
+<td>Immediately on die roll trigger</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Card revealed in offer replenishment</td>
+<td>Immediately when new card slides into Spell or Advanced Action offer after purchase</td>
+<td>Same</td>
+</tr>
+<tr>
+<td>Face-down enemy revealed</td>
+<td>Immediately when a Keep/Mage Tower enemy flips face-up on adjacent-during-Day reveal</td>
+<td>Same</td>
+</tr>
+</tbody>
+</table>
+<p>Undo reversal animation: staged card(s) return to hand in reverse play order with ~80ms<br>
+ease-in at reversal start. The ease-in signals intentionality — the game walking it back,<br>
+not a glitch correction.</p>
+<hr>
+<h2 id="visual-design-foundation">Visual Design Foundation </h2>
+<h3 id="color-system-accessibility-audit">Color System Accessibility Audit </h3>
+<p>The color tokens defined in the Design System Foundation were chosen for dark fantasy<br>
+aesthetic alignment. This section verifies those choices against legibility and<br>
+accessibility requirements.</p>
+<p><strong>Contrast ratios (WCAG AA minimum: 4.5:1 for normal text, 3:1 for large text/UI):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Foreground token</th>
+<th>Background token</th>
+<th>Ratio</th>
+<th>Usage</th>
+<th>Compliant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>color.text.primary</code> (<a class="tag" data-tag="F0E8D4" href="tag://F0E8D4">#F0E8D4</a>)</td>
+<td><code>color.background.surface</code> (<a class="tag" data-tag="2A221A" href="tag://2A221A">#2A221A</a>)</td>
+<td>~11.2:1</td>
+<td>Card body text, HUD labels</td>
+<td>✅ AAA</td>
+</tr>
+<tr>
+<td><code>color.text.primary</code> (<a class="tag" data-tag="F0E8D4" href="tag://F0E8D4">#F0E8D4</a>)</td>
+<td><code>color.background.base</code> (<a class="tag" data-tag="1A1510" href="tag://1A1510">#1A1510</a>)</td>
+<td>~13.1:1</td>
+<td>Phase label, stat values</td>
+<td>✅ AAA</td>
+</tr>
+<tr>
+<td><code>color.text.secondary</code> (<a class="tag" data-tag="B8A882" href="tag://B8A882">#B8A882</a>)</td>
+<td><code>color.background.surface</code> (<a class="tag" data-tag="2A221A" href="tag://2A221A">#2A221A</a>)</td>
+<td>~6.1:1</td>
+<td>Help text, zone labels</td>
+<td>✅ AA</td>
+</tr>
+<tr>
+<td><code>color.accent.gold</code> (<a class="tag" data-tag="C8962A" href="tag://C8962A">#C8962A</a>)</td>
+<td><code>color.background.base</code> (<a class="tag" data-tag="1A1510" href="tag://1A1510">#1A1510</a>)</td>
+<td>~5.8:1</td>
+<td>Action button borders, selection</td>
+<td>✅ AA</td>
+</tr>
+<tr>
+<td><code>color.text.disabled</code> (<a class="tag" data-tag="5A4E3A" href="tag://5A4E3A">#5A4E3A</a>)</td>
+<td><code>color.background.surface</code> (<a class="tag" data-tag="2A221A" href="tag://2A221A">#2A221A</a>)</td>
+<td>~1.9:1</td>
+<td>Unavailable card text</td>
+<td>⚠️ Intentional — disabled state, not readable content</td>
+</tr>
+<tr>
+<td><code>color.state.wound</code> (<a class="tag" data-tag="8B1A1A" href="tag://8B1A1A">#8B1A1A</a>)</td>
+<td><code>color.background.surface</code> (<a class="tag" data-tag="2A221A" href="tag://2A221A">#2A221A</a>)</td>
+<td>~2.4:1</td>
+<td>Wound card background</td>
+<td>⚠️ Background treatment only; label uses <code>color.text.primary</code> over it</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Intentional non-compliance:</strong> Disabled/unavailable states use low contrast deliberately —<br>
+they communicate "not available" through legibility degradation. This is a design choice,<br>
+not an oversight. The long-press tooltip provides the accessible path to understanding why.</p>
+<p><strong>Night palette shift:</strong> The deepened Night background (<code>#0F0C09</code>) increases contrast for<br>
+<code>color.text.primary</code> further (~14.8:1). No accessibility regression on Night rounds.</p>
+<p><strong>Day/Night implementation note:</strong> The ambient background deepening is a lighting decision,<br>
+not a color token decision. Implement via Godot <code>Environment</code> + <code>WorldEnvironment</code> (renderer<br>
+controls the darkness). Token-driven chrome color shift (gold → bronze) uses two generated<br>
+<code>.theme</code> files (<code>day.theme</code>, <code>night.theme</code>) emitted from a single <code>DesignTokens.tres</code><br>
+source-of-truth tool. This avoids runtime <code>Theme</code> mutation, which Godot 4 does not support<br>
+cleanly.</p>
+<h3 id="non-color-differentiation">Non-Color Differentiation </h3>
+<p>Every color-differentiated state also has a non-color indicator:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Color signal</th>
+<th>Non-color signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Card unavailable (phase-illegal)</td>
+<td>Desaturated overlay to <code>#3A3028</code></td>
+<td>Opacity reduction ≥40%; small phase-lock icon</td>
+</tr>
+<tr>
+<td>Card unavailable (wound)</td>
+<td>Full background <code>#8B1A1A</code></td>
+<td>Red at compact size + distinct card back silhouette</td>
+</tr>
+<tr>
+<td>Mana source: type</td>
+<td>Distinct hue per mana type</td>
+<td>Distinct shape per mana type (circle = die placeholder; final shapes locked in design directions)</td>
+</tr>
+<tr>
+<td>Mana source: exhausted</td>
+<td>Desaturated to <code>#2D2D2D</code></td>
+<td>Horizontal strikethrough line across shape</td>
+</tr>
+<tr>
+<td>Undo gate open</td>
+<td>Full-weight border (<code>color.accent.gold</code>)</td>
+<td>Full opacity + solid border</td>
+</tr>
+<tr>
+<td>Undo gate closed</td>
+<td>Receded state</td>
+<td>55% opacity + dashed border + ~10% scale reduction</td>
+</tr>
+<tr>
+<td>Current phase</td>
+<td>Phase-specific accent</td>
+<td>Bold label + icon; never colour alone</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mana shape language (critical accessibility requirement):</strong><br>
+Each mana type requires a distinct geometric token shape so colour-blind players can<br>
+identify sources by shape alone. <code>ManaType</code> enum names and count must be locked before<br>
+any mana-rendering code is written. Specific shapes are finalised in Step 9 (Design<br>
+Directions). Circle placeholder is acceptable for prototyping only.</p>
+<h3 id="typography-accessibility">Typography Accessibility </h3>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Minimum readable size</td>
+<td><code>type.micro</code> (9sp) used only for non-critical secondary info; all decision-relevant text ≥ <code>type.label</code> (12sp)</td>
+</tr>
+<tr>
+<td>Line height</td>
+<td>1.4× minimum for body text; 1.2× acceptable for labels and HUD values</td>
+</tr>
+<tr>
+<td>Letter spacing</td>
+<td>+0.02em on <code>type.compact</code> for card names at compact size</td>
+</tr>
+<tr>
+<td>Font weight for disabled</td>
+<td>No weight reduction on disabled cards — weight is a legibility tool, not a state indicator</td>
+</tr>
+</tbody>
+</table>
+<h3 id="spatial-foundation-summary">Spatial Foundation Summary </h3>
+<p><strong>Density philosophy:</strong> Dense by default at the game state layer; spacious only where<br>
+decision-making demands it. HUD is compact — pixel-efficient. Expanded card view is<br>
+generous — the player is reading and deciding.</p>
+<p><strong>Touch target compliance:</strong> All interactive surfaces ≥ 44dp (<code>touch.min</code>). On Galaxy S21<br>
+baseline at 1080×2400, this equates to ~12mm — compliant with Google Material guidance.</p>
+<p><strong>Safe area strategy:</strong> <code>space.xl</code> (40dp) minimum safe area inset on all four edges.<br>
+On Galaxy S21 with Android 12 gesture navigation, bottom inset extends to 48dp minimum.<br>
+Implemented via <code>DisplayServer.get_display_safe_area()</code> in root scene <code>_Ready()</code>.</p>
+<p><strong>Layout density table:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Zone</th>
+<th>Density</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HUD (layer 1)</td>
+<td>High — minimal padding</td>
+<td>Always visible; scanning only</td>
+</tr>
+<tr>
+<td>Hand (compact cards)</td>
+<td>High — cards close together</td>
+<td>7 cards visible; 8+ scrolls with clipped-edge affordance</td>
+</tr>
+<tr>
+<td>Staged area</td>
+<td>Medium — cards with separation</td>
+<td>Player needs to distinguish staged cards</td>
+</tr>
+<tr>
+<td>Expanded card</td>
+<td>Low — generous padding</td>
+<td>Decision surface; requires reading</td>
+</tr>
+<tr>
+<td>Site modal</td>
+<td>Medium</td>
+<td>Information density + action buttons</td>
+</tr>
+<tr>
+<td>Tutorial overlay</td>
+<td>Low</td>
+<td>Reading-first; must not feel cramped</td>
+</tr>
+</tbody>
+</table>
+<p><strong>HUD layout validation note:</strong> The dense HUD layout with 44dp touch targets requires<br>
+real-pixels prototyping on device before specs are locked. Specifically: hand layout<br>
+behaviour with 7+ cards in landscape on a 6.2-inch screen must be validated in Godot<br>
+with actual <code>HBoxContainer</code> layout math before the hand zone contract is finalised.</p>
+<hr>
+<h2 id="player-journey-flows">Player Journey Flows </h2>
+<h3 id="1-the-turn-loop">1. The Turn Loop </h3>
+<div class="mermaid">flowchart TD
+    A([Turn Start\nCards in hand from previous draw]) --&gt; B[Assess hand\nPhase-illegal cards dimmed]
+    B --&gt; C{Regular turn\nor Rest?}
+    C --&gt;|Rest| D[Play or discard\nat least one card]
+    D --&gt; E([Turn End])
+    C --&gt;|Regular| F{Move?}
+    F --&gt;|Yes| G([→ Movement])
+    G --&gt; F
+    F --&gt;|Done moving| H{Choose action}
+    H --&gt;|Fight| I([→ Combat Encounter])
+    H --&gt;|Interact| J([→ Site Interaction])
+    H --&gt;|No action| E
+    I --&gt; E
+    J --&gt; E
+</div><p><strong>Resting is declared at the start of the turn</strong>, before any movement. When Resting, the<br>
+player cannot move, initiate combat, or interact with locals — they must play or discard<br>
+at least one card (unless their hand is empty with cards still in the deck).</p>
+<p><strong>If taking a Regular turn</strong>, movement must be completed before any action. Once combat<br>
+or a site interaction begins, no further movement is possible — unless the undo gate is<br>
+still open, in which case the player may revert the action choice and return to the<br>
+movement decision.</p>
+<h3 id="2-movement">2. Movement </h3>
+<div class="mermaid">flowchart TD
+    A([Movement Phase]) --&gt; B[Tap target hex]
+    B --&gt; C{Sufficient Move points?}
+    C --&gt;|No| D[Hex stays greyed\nLong-press: cost reason]
+    D --&gt; B
+    C --&gt;|Yes| E{Hex already revealed?}
+    E --&gt;|Yes — known tile| F[Move resolves\nUndo available]
+    E --&gt;|No — new tile| G[Pay move cost\nTile flips face-up\nEnemies and sites placed on tile]
+    G --&gt; H[Undo gate closes]
+    H --&gt; I[Player may continue moving]
+    F --&gt; I
+    I --&gt; J{More Move to spend?}
+    J --&gt;|Yes| B
+    J --&gt;|No / done| K([End Movement Phase\nReturn to Turn Loop → Choose action])
+</div><p>Revealing a new tile populates it with tokens (enemies, sites) but does <strong>not</strong> trigger an<br>
+encounter. The player may continue moving after a reveal. Encounters and site interactions<br>
+are chosen after movement ends, back in the Turn Loop.</p>
+<p><strong>First Reconnaissance special rule:</strong> The player scores 1 Fame immediately upon revealing<br>
+any tile, regardless of type. The Fame track updates at the moment of reveal; any<br>
+resulting level-up is resolved at End of Turn.</p>
+<h3 id="3-combat-encounter">3. Combat Encounter </h3>
+<div class="mermaid">flowchart TD
+    A([Enter Combat]) --&gt; B[Display enemy\nArmor · Resistances · Fortification · Abilities · Attacks]
+    B --&gt; C[Phase 1: Ranged/Siege\nOptional — play before enemy attacks]
+    C --&gt; CF{Is enemy fortified?}
+    CF --&gt;|Double fortified\nCannot play ranged or siege| G
+    CF --&gt;|Single fortified| CS[Siege attacks only]
+    CF --&gt;|Not fortified| CN[Ranged or Siege attacks]
+    CS --&gt; D{Play cards?}
+    CN --&gt; D
+    D --&gt;|Skip| G
+    D --&gt;|Yes| E{Total ≥ Armor?}
+    E --&gt;|Yes — enemy defeated outright| P
+    E --&gt;|No — insufficient\nNo damage dealt| G
+    G[Phase 2: Block\nEnemy attacks — must cover all damage]
+    G --&gt; H{Block total ≥ enemy attack?}
+    H --&gt;|Yes — fully blocked| I[No wounds taken]
+    H --&gt;|No — unblocked damage| AD{Assign damage\nRemaining: N points}
+    AD --&gt;|Assign to unit| UD[Unit becomes Wounded\nSubtract unit Armor from N]
+    AD --&gt;|Assign to hero| HD[Take ⌈N ÷ hero Armor⌉ wound cards]
+    UD --&gt; UDR{Damage points remain?}
+    UDR --&gt;|Yes — assign more| AD
+    UDR --&gt;|No — all absorbed| I
+    HD --&gt; K{Wounds gained this combat\n≥ unmodified Hand limit?\nKnock out}
+    K --&gt;|Yes — Knock out| L[Discard all non-Wound cards\nUnits and Skills still usable]
+    K --&gt;|No| I
+    I --&gt; M[Phase 3: Melee Attack\nAttack total must meet or exceed Armor]
+    L --&gt; M
+    M --&gt; N{Attack total ≥ Armor?}
+    N --&gt;|No — enemy survives| O[Combat ends — enemy remains]
+    N --&gt;|Yes — enemy defeated| P[Gain Fame\nEnemy token removed\nLevel-Up resolved at End of Turn]
+    O --&gt; Q([Combat End])
+    P --&gt; Q
+</div><h3 id="4-site-interaction">4. Site Interaction </h3>
+<div class="mermaid">flowchart TD
+    A([Arrive at Site]) --&gt; B{Site type}
+    B --&gt;|Village| V{Village action?}
+    B --&gt;|Keep| KP{Keep action?}
+    B --&gt;|Monastery| MN{Monastery action?}
+    B --&gt;|Mage Tower| MT{Mage Tower action?}
+    B --&gt;|Ruins / Dungeon| RD{Explore?}
+    B --&gt;|City| CT[Cannot enter or conquer\nin First Recon\nReveal = win trigger only]
+    CT --&gt; K
+
+    V --&gt;|Recruit unit\nPay Influence| VR[Unit added to units zone\nOffer replenishes Round start]
+    V --&gt;|Buy Healing\n3 Influence per point| VH[Healing points gained]
+    V --&gt;|Leave| K
+    VR --&gt; V
+    VH --&gt; V
+
+    KP --&gt;|Recruit unit\nPay Influence| KR[Unit added to units zone\nOffer replenishes Round start]
+    KP --&gt;|Leave| K
+    KR --&gt; KP
+
+    MN --&gt;|Buy Healing\n2 Influence per point| MNH[Healing points gained]
+    MN --&gt;|Recruit unit\nPay Influence| MNR[Unit added to units zone\nOffer replenishes Round start]
+    MN --&gt;|Buy Advanced Action\n6 Influence from Unit offer| MNA[AA to top of deck\nOffer replenishes Round start]
+    MN --&gt;|Burn Monastery\n−3 Reputation immediately| MNB[Fight purple token\nUnits cannot assist]
+    MN --&gt;|Leave| K
+    MNH --&gt; MN
+    MNR --&gt; MN
+    MNA --&gt; MN
+    MNB --&gt; MNC{Enemy defeated?}
+    MNC --&gt;|Yes| MNW[Gain Artifact\nMonastery marked defeated]
+    MNC --&gt;|No| K
+    MNW --&gt; K
+
+    MT --&gt;|Buy Spell\n7 Influence + matching mana| MTS[Spell to top of deck\nOffer replenished immediately]
+    MT --&gt;|Recruit unit\nPay Influence| MTR[Unit added to units zone\nOffer replenishes Round start]
+    MT --&gt;|Leave| K
+    MTS --&gt; MTG[New card revealed in offer\nUndo gate closes]
+    MTG --&gt; MT
+    MTR --&gt; MT
+
+    RD --&gt;|Pay cost| RDE[Reveal reward\nUndo gate closes on reveal]
+    RD --&gt;|Leave| K
+    RDE --&gt; K
+
+    K([Close modal — return to map])
+</div><h3 id="5-end-of-turn">5. End of Turn </h3>
+<div class="mermaid">flowchart TD
+    A([Turn ends]) --&gt; B[Return all mana dice to Source]
+    B --&gt; C[Clear play area\nDiscard played cards]
+    C --&gt; D{Space benefit?}
+    D --&gt;|Magical glade| E[May throw away one Wound card]
+    D --&gt;|Crystal mine| F[Gain one crystal]
+    D --&gt;|None| G
+    E --&gt; G
+    F --&gt; G
+    G{Site combat rewards\nto collect?}
+    G --&gt;|Yes| H[Collect crystals · artifacts\n· spells · AAs · units\nFame and Reputation already applied live]
+    G --&gt;|No| I
+    H --&gt; I{Fame track crossed\na level line this turn?}
+    I --&gt;|Yes| J([→ Level-Up])
+    I --&gt;|No| K[Draw cards up to Hand limit]
+    J --&gt; K
+    K --&gt; L([Turn complete])
+</div><h3 id="5a-level-up">5a. Level-Up </h3>
+<div class="mermaid">flowchart TD
+    A([End of Turn — Level-Up]) --&gt; B{Odd level?}
+    B --&gt;|Yes| C[Apply stat increase\nLevel 3: +Armor · Level 5: +Hand size · alternating]
+    B --&gt;|No| D
+    C --&gt; D[+1 Command token if odd level\nUnit capacity increases]
+    D --&gt; E[Draw 2 Advanced Actions from offer deck]
+    E --&gt; F{Choose acquisition path}
+    F --&gt;|Keep one freely| G[Add chosen AA to deck\nReturn other to offer]
+    F --&gt;|Take from common offer\nRestricted path| H[Take end-of-row AA only\nReturn both drawn AAs to offer]
+    G --&gt; I{Odd level — skill selection?}
+    H --&gt; I
+    I --&gt;|Yes| J[Draw 2 from personal skill pile\nKeep one / place other in common\nOR take from common offer]
+    I --&gt;|No| K
+    J --&gt; K([Return to End of Turn — draw cards])
+</div><h3 id="6-session-resume">6. Session Resume </h3>
+<div class="mermaid">flowchart TD
+    A([App Opens]) --&gt; B[Load serialized game state]
+    B --&gt; C[Render Frame 1:\nPhase indicator visible]
+    C --&gt; D[Render staged cards\nand running HUD totals]
+    D --&gt; E[Render enemy state\nif combat in progress]
+    E --&gt; F[Render hand\nNo expanded card state restored]
+    F --&gt; G{All zones rendered?}
+    G --&gt;|No| F
+    G --&gt;|Yes| H[Unlock input]
+    H --&gt; I{Undo gate state?}
+    I --&gt;|Gate open| J[Undo affordance: full weight]
+    I --&gt;|Gate closed| K[Undo affordance: receded state\n55% opacity · dashed border]
+    J --&gt; L([Player reoriented — continue turn])
+    K --&gt; L
+</div><h3 id="7-mana-selection">7. Mana Selection </h3>
+<p>When a player plays a Spell or uses a Power action that requires mana, the source is chosen<br>
+from available dice and crystal inventory. Auto-resolution applies when only one legal color<br>
+exists.</p>
+<div class="mermaid">flowchart TD
+    A([Card Requires Mana]) --&gt; B{How many valid\nmana colors available?}
+    B --&gt;|Exactly one| C[Auto-resolve: consume that source\nNo picker shown]
+    B --&gt;|Multiple| D[Show mana picker\nHighlight available sources only]
+    D --&gt; E{Player picks source}
+    E --&gt;|Source die| F[Die exhausted\nMana token added to pool]
+    E --&gt;|Crystal| G[Crystal consumed\nMana token added to pool]
+    F --&gt; H{Powered spell?\nRequires 2nd mana}
+    G --&gt; H
+    H --&gt;|Yes — needs Black mana| I{Night round?}
+    I --&gt;|No — Day| J[Powered play illegal\nBlack unavailable]
+    I --&gt;|Yes| K[Repeat picker for Black source]
+    K --&gt; L[Second mana consumed]
+    H --&gt;|No — done| M[Card effect resolves]
+    L --&gt; M
+    J --&gt; N([Return to hand — cannot power this card])
+    C --&gt; M
+    M --&gt; O([Continue card play loop])
+</div><p><strong>Auto-resolution rule:</strong> Single valid color → auto-select, no picker shown. Multiple valid<br>
+colors → show picker with only available sources lit. Exhausted dice and wrong-color crystals<br>
+are shown greyed, not hidden.</p>
+<p><strong>Powered spells:</strong> Require one basic color + one Black. If not a Night round, the Power<br>
+button is pre-flight disabled — the player never attempts a powered play they cannot<br>
+complete.</p>
+<h3 id="8-round-start--tactics-selection">8. Round Start / Tactics Selection </h3>
+<p>Each round begins before the first move. The player selects a Tactics card from the<br>
+appropriate Day or Night deck, setting initiative order for the round. The dummy player<br>
+receives a random remaining card.</p>
+<div class="mermaid">flowchart TD
+    A([Round Starts]) --&gt; B{Day or Night round?}
+    B --&gt;|Day\nRounds 1 and 3| C[Reveal Day Tactics deck\nFace-up cards shown]
+    B --&gt;|Night\nRounds 2 and 4| D[Reveal Night Tactics deck\nFace-up cards shown]
+    C --&gt; E[Player selects one tactic card]
+    D --&gt; E
+    E --&gt; F[Dummy receives random remaining card]
+    F --&gt; G{Compare initiative numbers}
+    G --&gt;|Player lower number| H[Player acts first this round]
+    G --&gt;|Dummy lower number| I[Dummy acts first this round]
+    H --&gt; J[Tactic card held — effect active for round]
+    I --&gt; J
+    J --&gt; K{Tactic card has resource effect?\ne.g. Planning: +1 hand draw\nMana Steal: holds Source die}
+    K --&gt;|Yes| L[Apply resource effect immediately\nTactic zone shows active card]
+    K --&gt;|No — structural effect only| M[Effect governs round structure]
+    L --&gt; N([Begin Turn Loop])
+    M --&gt; N
+</div><p><strong>Tactic zone:</strong> The active tactic card occupies a dedicated zone defined in the Screen<br>
+Contract. It is visible for the entire round and removed at round end. Planning (+1 hand<br>
+draw) and Mana Steal (holds a Source die) have persistent resource effects; structural<br>
+tactics have no zone presence beyond the card itself.</p>
+<h3 id="9-end-of-round">9. End of Round </h3>
+<div class="mermaid">flowchart TD
+    A([Round End Announced]) --&gt; B{Was this Round 4?}
+    B --&gt;|Yes| C([→ Game End])
+    B --&gt;|No| D[Flip Day/Night board\nDay → Night or Night → Day]
+    D --&gt; E[Reset Source\nReroll all mana dice]
+    E --&gt; F[Refresh Unit offer\nReturn old offer to decks\nDeal new units: players + 2\nRegular units only — no Elite in First Recon]
+    F --&gt; G[Refresh Advanced Action offer\nRemove lowest · shift down · add new top]
+    G --&gt; H[Refresh Spell offer\nSame process as Advanced Action offer]
+    H --&gt; I[Collect all Tactic cards from previous round\nDisplay new round deck face-up]
+    I --&gt; J[Each player:\nFlip Banner Artifacts and Skill tokens\nReady all Units — Wounded units not healed\nShuffle all Deed cards into new deck\nDraw to Hand limit]
+    J --&gt; K([→ Round Start / Tactics Selection])
+</div><hr>
+<h3 id="journey-patterns">Journey Patterns </h3>
+<p>Three patterns recur across all flows and must be standardized in the Screen Contract:</p>
+<p><strong>P1 — Back always returns to a named state</strong><br>
+Every flow has a clean exit back to a defined predecessor state: Movement → hexmap; site<br>
+modal → hexmap; card expand → hand-assess at same scroll position. No flow exits to an<br>
+undefined position.</p>
+<p><strong>P2 — Auto-resolution of single-option decisions</strong><br>
+Whenever only one legal option exists (one valid mana color, one legal target hex, one<br>
+valid action) the system resolves silently without prompting. The picker appears only when<br>
+genuine choice exists.</p>
+<p><strong>P3 — Undo gate on information reveal</strong><br>
+The undo gate closes on any information reveal event — see the gate event table for the<br>
+complete and authoritative list. The pattern is consistent across all flows: functional<br>
+close is immediate on the reveal trigger; the visual signal (55% opacity, dashed border,<br>
+−10% scale) fires within 150ms. This list will grow as more game systems are specified.</p>
+<h3 id="flow-optimization-principles">Flow Optimization Principles </h3>
+<p><strong>Pre-flight disable, not post-flight explain</strong><br>
+Every flow shows illegal actions greyed before the player attempts them. The Power button<br>
+on a spell during Day is already disabled. A hex is already greyed if move cost exceeds<br>
+available Move. The player never executes an action only to be told it failed.</p>
+<p><strong>Progressive disclosure: three steps maximum</strong><br>
+From any flow entry point to a played card: hand-assess → expand → action button. No flow<br>
+requires more than three steps to reach commitment. Mana selection is embedded in the play<br>
+sequence, not a modal gate before it.</p>
+<p><strong>Exit states are always playable</strong><br>
+Every flow branches to a resumable game state. Combat ends at enemy-defeated or<br>
+combat-end. Site Interaction ends at modal-close. Mana selection ends at pool-updated. No<br>
+flow exits mid-state.</p>
+<p><strong>Minimal undo exposure</strong><br>
+The undo affordance is present throughout all flows but visually recedes in committed<br>
+states (3+ cards staged). The safety net remains visible without encouraging casual use of<br>
+a gate-closing tool.</p>
+
+      </div>
+      
+      
+    
+    
+    <script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+
+
+var MERMAID_CONFIG = ({"startOnLoad":false});
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "default"
+}
+
+mermaid.initialize(MERMAID_CONFIG || {})
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+} else {
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+}
+</script>
+    
+    
+    
+  
+    </body></html>

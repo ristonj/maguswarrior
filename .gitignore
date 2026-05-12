@@ -1,0 +1,10 @@
+# BMAD personal config — installer-managed per-user, never commit
+_bmad/config.user.toml
+_bmad/custom/config.user.toml
+
+# Personal files unrelated to game project
+generate_resume.py
+github_profile_README.md
+riston_jf.pdf
+riston_jf_updated.pdf
+data/

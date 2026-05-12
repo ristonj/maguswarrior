@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magus Warrior — UX Design Directions</title>
+<style>
+  :root {
+    --bg-base: #1A1510;
+    --bg-surface: #2A221A;
+    --bg-raised: #3A2E22;
+    --accent-gold: #C8962A;
+    --accent-gold-dim: #7A5A18;
+    --text-primary: #F0E8D4;
+    --text-secondary: #B8A882;
+    --text-disabled: #5A4E3A;
+    --state-unavailable: #3A3028;
+    --state-wound: #8B1A1A;
+    --mana-red: #C0392B;
+    --mana-blue: #2471A3;
+    --mana-green: #1E8449;
+    --mana-white: #D5D8DC;
+    --mana-gold: #D4AC0D;
+    --mana-black: #4A235A;
+    --mana-exhausted: #2D2D2D;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0D0B08;
+    color: var(--text-primary);
+    font-family: Georgia, 'Times New Roman', serif;
+    padding: 24px;
+  }
+
+  .page-title    { text-align: center; font-size: 22px; color: var(--accent-gold); margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .page-subtitle { text-align: center; font-size: 13px; color: var(--text-secondary); margin-bottom: 40px; }
+
+  .direction-block   { margin-bottom: 60px; }
+  .direction-label   { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-gold); margin-bottom: 6px; }
+  .direction-title   { font-size: 18px; color: var(--text-primary); margin-bottom: 4px; }
+  .direction-tagline { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; font-style: italic; }
+
+  .phone-frame {
+    background: #111; border-radius: 8px; padding: 6px;
+    display: inline-block; border: 1px solid #333;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .screen {
+    width: 760px; height: 342px;
+    background: var(--bg-base); border-radius: 4px;
+    overflow: hidden; position: relative;
+    font-family: 'Arial Narrow', Arial, sans-serif;
+  }
+
+  /* ─── HEX MAP ─── */
+  .hex-map {
+    background:
+      radial-gradient(circle at 30% 40%, rgba(30,40,20,0.6) 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, rgba(20,30,40,0.5) 0%, transparent 40%),
+      var(--bg-base);
+    position: absolute;
+  }
+  .hex-cell           { position: absolute; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); display: flex; align-items: center; justify-content: center; font-size: 9px; color: rgba(200,150,42,0.5); font-family: 'Arial Narrow', Arial, sans-serif; background: rgba(36,28,16,0.55); filter: drop-shadow(0 0 1.5px rgba(200,150,42,0.25)); }
+  .hex-cell.revealed  { background: rgba(48,38,24,0.75);  filter: drop-shadow(0 0 2px rgba(200,150,42,0.5)); }
+  .hex-cell.current   { background: rgba(200,150,42,0.12); filter: drop-shadow(0 0 3px rgba(200,150,42,0.9)); color: var(--accent-gold); }
+  .hex-cell.face-down { background: rgba(12,9,6,0.95);    filter: drop-shadow(0 0 1px rgba(200,150,42,0.12)); }
+  .hex-grid { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+
+  /* ─── HAND CARDS ─── */
+  /* Available (in hand): dim border, neutral — "I could play this" */
+  .card-compact {
+    width: 52px; height: 74px; border-radius: 3px;
+    border: 1px solid var(--accent-gold-dim);
+    background: var(--bg-raised);
+    display: flex; flex-direction: column; padding: 3px;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .card-compact.unavailable { background: var(--state-unavailable); border-color: #4A3A2A; opacity: 0.5; }
+  .card-compact.selected    { border-color: var(--accent-gold); border-width: 2px; box-shadow: 0 0 6px rgba(200,150,42,0.4); }
+  .card-compact.wound       { background: var(--state-wound); border-color: #6B1414; }
+  .card-art      { flex: 1; background: rgba(0,0,0,0.3); border-radius: 2px; margin-bottom: 2px; }
+  .card-art-mock { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 14px; opacity: 0.6; }
+  .card-name     { font-size: 6px; color: var(--text-primary); text-align: center; line-height: 1.2; font-family: 'Arial Narrow', Arial, sans-serif; }
+  .card-name.dim { color: var(--text-disabled); }
+
+  /* Staged (played/committed): stronger border, warm glow, gold name — "this is active right now" */
+  .card-staged {
+    width: 44px; height: 62px; border-radius: 3px;
+    border: 2px solid var(--accent-gold);
+    background: rgba(52,40,24,0.95);
+    display: flex; flex-direction: column; padding: 3px;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(200,150,42,0.5), inset 0 0 6px rgba(200,150,42,0.07);
+  }
+  .card-staged .card-art-mock { opacity: 0.9; }
+  .staged-name   { font-size: 6px; color: var(--accent-gold); text-align: center; line-height: 1.2; font-family: 'Arial Narrow', Arial, sans-serif; }
+  .staged-effect { font-size: 5px; color: var(--text-secondary); text-align: center; font-family: 'Arial Narrow', Arial, sans-serif; margin-top: 1px; }
+
+  /* Empty staged slot: dashed placeholder */
+  .staged-slot-empty {
+    width: 44px; height: 62px; border-radius: 3px;
+    border: 1px dashed #3A2E20;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.45; flex-shrink: 0;
+  }
+
+  /* ─── HUD ─── */
+  .hud-panel    { background: var(--bg-surface); border-bottom: 1px solid var(--accent-gold-dim); display: flex; align-items: center; padding: 0 10px; gap: 10px; }
+  .hud-phase    { font-size: 9px; color: var(--accent-gold); text-transform: uppercase; letter-spacing: 0.1em; white-space: nowrap; }
+  .hud-stat     { display: flex; flex-direction: column; align-items: center; }
+  .hud-stat-value { font-size: 14px; font-weight: bold; color: var(--text-primary); font-family: 'Arial Narrow', Arial, sans-serif; line-height: 1; }
+  .hud-stat-label { font-size: 7px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+  .hud-divider  { width: 1px; background: var(--accent-gold-dim); align-self: stretch; margin: 4px 0; }
+  .hud-spacer   { flex: 1; }
+  .hud-round    { font-size: 9px; color: var(--text-secondary); }
+  .hud-undo {
+    width: 28px; height: 20px; border: 1px solid var(--accent-gold); border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--accent-gold); cursor: pointer;
+  }
+  .hud-menu {
+    width: 24px; height: 20px; border: 1px solid var(--accent-gold-dim); border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--text-secondary); cursor: pointer;
+  }
+
+  /* ─── MANA ECONOMY ─── */
+  .mana-orb {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 7px; color: rgba(255,255,255,0.7);
+    font-family: 'Arial Narrow', Arial, sans-serif;
+  }
+  .mana-orb.exhausted  { background: var(--mana-exhausted) !important; opacity: 0.4; }
+  .mana-orb.red        { background: var(--mana-red); }
+  .mana-orb.blue       { background: var(--mana-blue); }
+  .mana-orb.green      { background: var(--mana-green); }
+  .mana-orb.white      { background: var(--mana-white); color: #333; }
+  .mana-orb.gold-mana  { background: var(--mana-gold); color: #333; }
+  .mana-orb.black-mana { background: var(--mana-black); }
+
+  .source-die {
+    width: 20px; height: 20px; border-radius: 3px;
+    border: 1px solid rgba(255,255,255,0.2);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 8px; color: rgba(255,255,255,0.85);
+    font-family: 'Arial Narrow', Arial, sans-serif; flex-shrink: 0;
+  }
+  .source-die.ex { background: var(--mana-exhausted) !important; opacity: 0.35; }
+
+  .xtal { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+  /* ─── UNIT CARD ─── */
+  .unit-card {
+    position: relative; width: 36px; height: 50px; border-radius: 3px;
+    border: 1px solid var(--accent-gold-dim); background: var(--bg-raised);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex-shrink: 0; gap: 2px;
+  }
+  .unit-card.spent   { opacity: 0.55; border-color: #3A2E22; }
+  .unit-card.wounded { border-color: #8B1A1A; background: rgba(139,26,26,0.12); }
+  .unit-cmd {
+    position: absolute; top: -5px; right: -5px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent-gold); border: 1px solid #F0E8D4; z-index: 1;
+  }
+  .unit-cmd.on-unit {
+    top: 2px; right: 2px; width: 8px; height: 8px;
+    background: transparent; border: 1px dashed var(--accent-gold-dim);
+  }
+  .unit-lbl   { font-size: 5px; color: var(--text-secondary); text-align: center; line-height: 1.2; font-family: 'Arial Narrow', Arial, sans-serif; }
+  .unit-lbl.w { color: #C0392B; }
+
+  .zone-label { font-size: 7px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6; white-space: nowrap; }
+
+  /* ─── DIRECTION 1 ─── */
+  .d1-hud        { position: absolute; top: 0;    left: 0; right: 0; height: 32px;  z-index: 5; }
+  .d1-map        { position: absolute; top: 32px; left: 0; right: 0; bottom: 128px; }
+  .d1-game-state { position: absolute; bottom: 0; left: 0; right: 0; height: 128px; background: rgba(26,21,16,0.95); border-top: 1px solid var(--accent-gold-dim); }
+  /* Row 1: hand cards + units. Overflow hidden; scroll indicator overlaid. */
+  .d1-hand-row   { display: flex; align-items: flex-end; gap: 4px; padding: 6px 10px 4px; overflow: hidden; height: 88px; position: relative; }
+  /* Row 2: two fixed zones — staged (left) + mana economy (right) */
+  .d1-mana-row   { display: flex; align-items: center; height: 40px; border-top: 1px solid rgba(200,150,42,0.1); }
+  .d1-staged-zone { width: 136px; flex-shrink: 0; display: flex; align-items: center; gap: 5px; padding: 0 10px; }
+  .d1-econ-zone   { flex: 1; display: flex; align-items: center; gap: 0; padding: 0 8px; }
+
+  /* ─── DIRECTION 2 ─── */
+  .d2-hud-top   { position: absolute; top: 0;    left: 0;    right: 0; height: 28px;  z-index: 5; }
+  .d2-left-strip{ position: absolute; top: 28px; left: 0;    bottom: 100px; width: 52px; background: rgba(42,34,26,0.92); border-right: 1px solid var(--accent-gold-dim); display: flex; flex-direction: column; align-items: center; padding: 6px 0; gap: 3px; z-index: 4; overflow: hidden; }
+  .d2-map       { position: absolute; top: 28px; left: 52px; right: 0; bottom: 100px; }
+  .d2-hand-strip{ position: absolute; bottom: 0; left: 0;    right: 0; height: 100px; background: rgba(26,21,16,0.97); border-top: 1px solid var(--accent-gold-dim); display: flex; align-items: center; padding: 0 12px; gap: 5px; }
+
+  /* ─── DIRECTION 3 ─── */
+  .d3-hud     { position: absolute; top: 0;    left: 0; right: 0;  height: 32px;  z-index: 5; }
+  .d3-map     { position: absolute; top: 32px; left: 0; right: 0;  bottom: 118px; }
+  .d3-bottom  { position: absolute; bottom: 0; left: 0; right: 0;  height: 118px; background: rgba(26,21,16,0.97); border-top: 1px solid var(--accent-gold-dim); display: flex; }
+  .d3-hand-col{ flex: 1; display: flex; align-items: center; padding: 8px 10px; gap: 4px; border-right: 1px solid var(--accent-gold-dim); overflow: hidden; }
+  .d3-info-col{ width: 200px; display: flex; flex-direction: column; padding: 5px 8px; gap: 4px; }
+
+  /* ─── OVERLAY STATES ─── */
+  .overlay-dim { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.55); z-index: 8; }
+  .card-expanded-overlay {
+    position: absolute; width: 160px; background: var(--bg-raised);
+    border: 1px solid var(--accent-gold); border-radius: 4px; padding: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.7), 0 0 8px rgba(200,150,42,0.2); z-index: 10;
+  }
+  .expanded-card-art  { width: 100%; height: 80px; background: rgba(0,0,0,0.4); border-radius: 3px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .expanded-card-name { font-size: 10px; color: var(--text-primary); margin-bottom: 3px; font-family: Georgia, serif; }
+  .expanded-card-type { font-size: 8px; color: var(--text-secondary); margin-bottom: 6px; }
+  .expanded-card-text { font-size: 8px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px; }
+  .action-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+  .action-btn { padding: 3px 6px; border-radius: 2px; font-size: 7px; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; font-family: 'Arial Narrow', Arial, sans-serif; }
+  .btn-play   { background: var(--accent-gold); color: #1A1510; }
+  .btn-side   { background: transparent; border: 1px solid var(--accent-gold); color: var(--accent-gold); }
+  .btn-cancel { background: transparent; border: 1px solid #5A4E3A; color: #7A6A5A; }
+
+  /* ─── PAGE CHROME ─── */
+  .pro-con       { display: flex; gap: 32px; margin-top: 12px; font-size: 12px; }
+  .pro-con-col   { flex: 1; }
+  .pro-con-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; }
+  .pro-con-title.pro { color: #4A9A4A; }
+  .pro-con-title.con { color: #9A4A4A; }
+  .pro-con-item  { color: var(--text-secondary); margin-bottom: 3px; padding-left: 12px; position: relative; line-height: 1.4; }
+  .pro-con-item::before { position: absolute; left: 0; }
+  .pro-con-item.pro::before { content: '+'; color: #4A9A4A; }
+  .pro-con-item.con::before { content: '−'; color: #9A4A4A; }
+
+  .direction-states { display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; }
+  .state-label      { font-size: 10px; color: var(--text-secondary); margin-bottom: 6px; text-align: center; }
+  .state-container  { display: flex; flex-direction: column; align-items: center; }
+
+  hr.divider { border: none; border-top: 1px solid rgba(200,150,42,0.15); margin: 48px 0; }
+
+  .chosen-tag {
+    display: inline-block; background: var(--accent-gold); color: #1A1510;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 2px 8px; border-radius: 2px; margin-left: 12px; vertical-align: middle;
+  }
+  .annotation {
+    margin-top: 10px; font-size: 11px; color: var(--text-secondary);
+    max-width: 760px; line-height: 1.6; font-family: 'Arial Narrow', Arial, sans-serif;
+  }
+  .annotation strong { color: var(--accent-gold); }
+</style>
+</head>
+<body>
+
+<div class="page-title">Magus Warrior — UX Design Directions</div>
+<div class="page-subtitle">Three landscape layout approaches · Dark Fantasy · Physical MK art direction · Galaxy S21 baseline (912×412dp logical)</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DIRECTION 1: Top HUD + Full-width bottom hand
+═══════════════════════════════════════════════════════════ -->
+<div class="direction-block">
+  <div class="direction-label">Direction 1</div>
+  <div class="direction-title">The Classic Strip <span class="chosen-tag">Selected</span></div>
+  <div class="direction-tagline">Top HUD · Full-width map · Hand (scrollable at 8+) · Dedicated staged zone · Source/Mana/Crystals</div>
+
+  <div class="phone-frame">
+    <div class="screen">
+
+      <!-- HUD: phase · running totals · round · menu · undo -->
+      <div class="d1-hud hud-panel">
+        <div class="hud-phase">🥾 Movement</div>
+        <div class="hud-divider"></div>
+        <div class="hud-stat"><span class="hud-stat-value">2</span><span class="hud-stat-label">Move</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Atk</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Blk</span></div>
+        <div class="hud-spacer"></div>
+        <div class="hud-round">Round 1 · Day</div>
+        <div class="hud-divider"></div>
+        <div class="hud-menu">☰</div>
+        <div class="hud-undo">↺</div>
+      </div>
+
+      <!-- Hex map -->
+      <div class="d1-map hex-map">
+        <div class="hex-grid">
+          <div class="hex-cell"          style="left:12px; top:6px;  width:68px;height:59px;">▲</div>
+          <div class="hex-cell revealed"  style="left:12px; top:65px; width:68px;height:59px;">~</div>
+          <div class="hex-cell"          style="left:12px; top:124px;width:68px;height:59px;">▲</div>
+          <div class="hex-cell revealed"  style="left:63px; top:36px; width:68px;height:59px;">◆</div>
+          <div class="hex-cell face-down" style="left:63px; top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell current"   style="left:114px;top:6px;  width:68px;height:59px;">⚑</div>
+          <div class="hex-cell revealed"  style="left:114px;top:65px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:114px;top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell revealed"  style="left:165px;top:36px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:165px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:6px;  width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:65px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:267px;top:36px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:267px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:318px;top:6px;  width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:318px;top:65px; width:68px;height:59px;"></div>
+        </div>
+        <div style="position:absolute;left:135px;top:22px;width:26px;height:26px;border-radius:50%;background:var(--accent-gold);border:2px solid #F0E8D4;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:2;">⚔</div>
+        <div style="position:absolute;left:186px;top:52px;width:26px;height:26px;border-radius:50%;background:#8B1A1A;border:2px solid #C0392B;display:flex;align-items:center;justify-content:center;font-size:12px;z-index:2;">☠</div>
+      </div>
+
+      <!-- Game state strip (128px) -->
+      <div class="d1-game-state">
+
+        <!-- Row 1 (88px): scrollable hand + units zone -->
+        <div class="d1-hand-row">
+          <!-- Hand cards: 8 cards shown, last one partially clipped to signal scroll -->
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">↑</div></div><div class="card-name">March</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">🛡</div></div><div class="card-name">Block</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">↑</div></div><div class="card-name">March</div></div>
+          <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">✦</div></div><div class="card-name dim">Fireball</div></div>
+          <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">☽</div></div><div class="card-name dim">Tranquility</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">⚡</div></div><div class="card-name">Swiftness</div></div>
+          <div class="card-compact wound"><div class="card-art"><div class="card-art-mock" style="color:#C0392B;">✕</div></div><div class="card-name" style="color:#C0392B;">Wound</div></div>
+          <!-- 8th card clipped — signals scrollability -->
+          <div class="card-compact" style="opacity:0.6;"><div class="card-art"><div class="card-art-mock">⚔</div></div><div class="card-name">Rage</div></div>
+          <!-- Scroll fade gradient overlay -->
+          <div style="position:absolute;right:130px;top:0;bottom:0;width:32px;background:linear-gradient(to right,transparent,rgba(26,21,16,0.92));pointer-events:none;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;">
+            <span style="font-size:12px;color:var(--accent-gold-dim);">›</span>
+          </div>
+          <!-- Units zone -->
+          <div style="flex:1;min-width:4px;"></div>
+          <div style="display:flex;flex-direction:column;gap:3px;padding-left:8px;border-left:1px solid var(--accent-gold-dim);flex-shrink:0;">
+            <div class="zone-label">Units 2/3</div>
+            <div style="display:flex;gap:3px;">
+              <div class="unit-card"><div class="unit-cmd"></div><div style="font-size:13px;">🌾</div><div class="unit-lbl">Peasants</div></div>
+              <div class="unit-card spent"><div class="unit-cmd on-unit"></div><div style="font-size:13px;">🏹</div><div class="unit-lbl">Crossbow</div></div>
+              <div class="unit-card wounded"><div class="unit-cmd"></div><div style="font-size:13px;">🌿</div><div class="unit-lbl w">Herbalist</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2 (40px): STAGED (fixed left zone) | MANA ECONOMY (flex right zone) -->
+        <div class="d1-mana-row">
+
+          <!-- LEFT: Staged — dedicated fixed zone, never shares space with mana economy -->
+          <div class="d1-staged-zone">
+            <div class="zone-label">Staged</div>
+            <!-- One card played this turn (Swiftness → Move +2, reflected in HUD) -->
+            <div class="card-staged">
+              <div class="card-art"><div class="card-art-mock" style="font-size:12px;">⚡</div></div>
+              <div class="staged-name">Swiftness</div>
+              <div class="staged-effect">Move +2</div>
+            </div>
+            <!-- Empty slot: room for more staged cards -->
+            <div class="staged-slot-empty"><span style="font-size:10px;color:var(--text-disabled);">+</span></div>
+          </div>
+
+          <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:4px 0;flex-shrink:0;"></div>
+
+          <!-- RIGHT: Mana economy — Source · Mana · Crystals -->
+          <div class="d1-econ-zone">
+            <!-- Source dice: 3 for solo — Black die locked/exhausted during Day; Gold available during Day -->
+            <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+              <div class="zone-label">Source</div>
+              <div style="display:flex;gap:3px;">
+                <div class="source-die" style="background:var(--mana-blue);">B</div>
+                <div class="source-die" style="background:var(--mana-red);">R</div>
+                <div class="source-die ex" style="background:var(--mana-black);">☾</div>
+              </div>
+            </div>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:4px 8px;flex-shrink:0;"></div>
+            <!-- Mana tokens: taken from source this turn, disappear at turn end -->
+            <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+              <div class="zone-label">Mana</div>
+              <div class="mana-orb blue" style="width:18px;height:18px;font-size:7px;">B</div>
+            </div>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:4px 8px;flex-shrink:0;"></div>
+            <!-- Crystals: persistent inventory, tap to expand by color or convert to token -->
+            <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+              <div class="zone-label">Crystals</div>
+              <div style="display:flex;align-items:center;gap:4px;background:rgba(42,34,26,0.8);border:1px solid var(--accent-gold-dim);border-radius:3px;padding:3px 8px;cursor:pointer;min-height:26px;">
+                <span style="font-size:9px;color:var(--accent-gold);">◆</span>
+                <span style="font-size:11px;font-weight:bold;color:var(--text-primary);font-family:'Arial Narrow',Arial,sans-serif;">5</span>
+                <span style="font-size:7px;color:var(--text-secondary);">▾</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="annotation">
+    <strong>Card hierarchy:</strong> Hand cards (dim border, neutral) → Staged cards (gold border, warm glow, effect label) → the visual jump signals a state change, not just a position change. The staged zone is fixed-width so playing 4 attack cards never pushes Source/Mana/Crystals off screen. Staged cards scroll within their zone if needed.
+    <br>
+    <strong>Hand scroll:</strong> 7 cards comfortable. 8th card partially clips + fade gradient + › signals more. Player swipes hand row to reach them. Wound cards count toward the limit and scroll like any other.
+    <br>
+    <strong>HUD totals</strong> (Move: 2) are the output of staged cards — shown at top because you need them while looking at the map. No redundant total in the bottom strip.
+  </div>
+
+  <div class="pro-con">
+    <div class="pro-con-col">
+      <div class="pro-con-title pro">Strengths</div>
+      <div class="pro-con-item pro">Maximum map height — most of screen is exploration space</div>
+      <div class="pro-con-item pro">Staged zone is fixed — adding cards never displaces mana economy</div>
+      <div class="pro-con-item pro">Three mana zones (Source · Mana · Crystals) correctly model the economy</div>
+      <div class="pro-con-item pro">Hand scroll is expected mobile behaviour — 7 cards is generous</div>
+      <div class="pro-con-item pro">Unit zone scales to level 7+ with horizontal scroll</div>
+      <div class="pro-con-item pro">HUD is clean: running totals only, no redundant display</div>
+    </div>
+    <div class="pro-con-col">
+      <div class="pro-con-title con">Tradeoffs</div>
+      <div class="pro-con-item con">Bottom strip is 128dp — map canvas loses 18dp vs. original 110dp</div>
+      <div class="pro-con-item con">Scrollable hand means some cards are hidden by default</div>
+      <div class="pro-con-item con">Card offers require deliberate ☰ tap — no ambient offer visibility</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════
+     DIRECTION 2: Top HUD + Left info strip + Bottom hand
+═══════════════════════════════════════════════════════════ -->
+<div class="direction-block">
+  <div class="direction-label">Direction 2</div>
+  <div class="direction-title">The Left-Rail</div>
+  <div class="direction-tagline">Narrow left strip for source+mana+units · Map fills center · Full-width hand at bottom</div>
+
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="d2-hud-top hud-panel" style="height:28px;">
+        <div class="hud-phase">🥾 Movement</div>
+        <div class="hud-divider"></div>
+        <div class="hud-stat"><span class="hud-stat-value">2</span><span class="hud-stat-label">Move</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Atk</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Blk</span></div>
+        <div class="hud-spacer"></div>
+        <div class="hud-round">Round 1 · Day</div>
+        <div class="hud-divider"></div>
+        <div class="hud-menu">☰</div>
+        <div class="hud-undo">↺</div>
+      </div>
+      <div class="d2-left-strip">
+        <div class="zone-label" style="font-size:6px;writing-mode:vertical-rl;transform:rotate(180deg);">Source</div>
+        <div style="display:flex;gap:2px;">
+          <div class="source-die" style="background:var(--mana-blue);width:18px;height:18px;font-size:7px;">B</div>
+          <div class="source-die" style="background:var(--mana-red);width:18px;height:18px;font-size:7px;">R</div>
+        </div>
+        <div class="source-die ex" style="background:var(--mana-black);width:18px;height:18px;font-size:7px;">☾</div>
+        <div style="width:36px;height:1px;background:var(--accent-gold-dim);"></div>
+        <div class="zone-label" style="font-size:6px;writing-mode:vertical-rl;transform:rotate(180deg);">Mana</div>
+        <div class="mana-orb blue" style="width:20px;height:20px;font-size:8px;">B</div>
+        <div style="width:36px;height:1px;background:var(--accent-gold-dim);"></div>
+        <div class="zone-label" style="font-size:6px;writing-mode:vertical-rl;transform:rotate(180deg);">Units</div>
+        <div class="unit-card" style="width:34px;height:46px;"><div class="unit-cmd"></div><div style="font-size:12px;">🏹</div><div class="unit-lbl" style="font-size:4px;">Crossbow</div></div>
+        <div style="font-size:7px;color:var(--text-secondary);">+2 ▾</div>
+      </div>
+      <div class="d2-map hex-map">
+        <div class="hex-grid">
+          <div class="hex-cell"          style="left:8px; top:6px;  width:68px;height:59px;">▲</div>
+          <div class="hex-cell revealed"  style="left:8px; top:65px; width:68px;height:59px;">~</div>
+          <div class="hex-cell"          style="left:8px; top:124px;width:68px;height:59px;">▲</div>
+          <div class="hex-cell revealed"  style="left:59px;top:36px; width:68px;height:59px;">◆</div>
+          <div class="hex-cell face-down" style="left:59px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell current"   style="left:110px;top:6px;  width:68px;height:59px;">⚑</div>
+          <div class="hex-cell revealed"  style="left:110px;top:65px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:110px;top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell revealed"  style="left:161px;top:36px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:161px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:212px;top:6px;  width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:212px;top:65px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:263px;top:36px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:263px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:314px;top:6px;  width:68px;height:59px;"></div>
+        </div>
+        <div style="position:absolute;left:132px;top:23px;width:24px;height:24px;border-radius:50%;background:var(--accent-gold);border:2px solid #F0E8D4;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;">⚔</div>
+        <div style="position:absolute;left:183px;top:53px;width:24px;height:24px;border-radius:50%;background:#8B1A1A;border:2px solid #C0392B;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;">☠</div>
+      </div>
+      <div class="d2-hand-strip">
+        <div class="card-compact"><div class="card-art"><div class="card-art-mock">↑</div></div><div class="card-name">March</div></div>
+        <div class="card-compact"><div class="card-art"><div class="card-art-mock">🛡</div></div><div class="card-name">Block</div></div>
+        <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">✦</div></div><div class="card-name dim">Fireball</div></div>
+        <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">☽</div></div><div class="card-name dim">Tranquility</div></div>
+        <div class="card-compact"><div class="card-art"><div class="card-art-mock">⚡</div></div><div class="card-name">Swiftness</div></div>
+        <div class="card-compact wound"><div class="card-art"><div class="card-art-mock" style="color:#C0392B;">✕</div></div><div class="card-name" style="color:#C0392B;">Wound</div></div>
+        <div style="flex:1;min-width:8px;border-left:1px solid var(--accent-gold-dim);margin-left:4px;padding-left:10px;display:flex;gap:6px;align-items:center;">
+          <div class="zone-label">Staged:</div>
+          <div class="card-staged" style="width:36px;height:50px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">⚡</div></div><div class="staged-name" style="font-size:5px;">Swiftness</div><div class="staged-effect">Move +2</div></div>
+          <div style="flex:1;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pro-con">
+    <div class="pro-con-col">
+      <div class="pro-con-title pro">Strengths</div>
+      <div class="pro-con-item pro">Source dice, mana tokens, and units have dedicated vertical space</div>
+      <div class="pro-con-item pro">Staged area sits naturally in the bottom-right dead zone</div>
+      <div class="pro-con-item pro">HUD stays clean — mana economy in left rail, not top bar</div>
+    </div>
+    <div class="pro-con-col">
+      <div class="pro-con-title con">Tradeoffs</div>
+      <div class="pro-con-item con">52dp left strip reduces map width — tighter canvas</div>
+      <div class="pro-con-item con">At level 7 (4 units) only 1 unit card visible — rest behind +N▾</div>
+      <div class="pro-con-item con">Crystals have no clear home — would need to overflow into left strip or bottom</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════
+     DIRECTION 3: Top HUD + Split bottom (hand left / info right)
+═══════════════════════════════════════════════════════════ -->
+<div class="direction-block">
+  <div class="direction-label">Direction 3</div>
+  <div class="direction-title">The Split Bottom</div>
+  <div class="direction-tagline">Top HUD · Map 70% height · Bottom split: hand (left) · staged+source+mana+units (right)</div>
+
+  <div class="phone-frame">
+    <div class="screen">
+      <div class="d3-hud hud-panel">
+        <div class="hud-phase">🥾 Movement</div>
+        <div class="hud-divider"></div>
+        <div class="hud-stat"><span class="hud-stat-value">2</span><span class="hud-stat-label">Move</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Atk</span></div>
+        <div class="hud-stat"><span class="hud-stat-value">0</span><span class="hud-stat-label">Blk</span></div>
+        <div class="hud-spacer"></div>
+        <div class="hud-round">Round 1 · Day</div>
+        <div class="hud-divider"></div>
+        <div class="hud-menu">☰</div>
+        <div class="hud-undo">↺</div>
+      </div>
+      <div class="d3-map hex-map">
+        <div class="hex-grid">
+          <div class="hex-cell"          style="left:12px; top:6px;  width:68px;height:59px;">▲</div>
+          <div class="hex-cell revealed"  style="left:12px; top:65px; width:68px;height:59px;">~</div>
+          <div class="hex-cell face-down" style="left:12px; top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell revealed"  style="left:63px; top:36px; width:68px;height:59px;">◆</div>
+          <div class="hex-cell face-down" style="left:63px; top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell current"   style="left:114px;top:6px;  width:68px;height:59px;">⚑</div>
+          <div class="hex-cell revealed"  style="left:114px;top:65px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:114px;top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell revealed"  style="left:165px;top:36px; width:68px;height:59px;">♣</div>
+          <div class="hex-cell face-down" style="left:165px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:6px;  width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:65px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:216px;top:124px;width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:267px;top:36px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:267px;top:95px; width:68px;height:59px;"></div>
+          <div class="hex-cell face-down" style="left:318px;top:6px;  width:68px;height:59px;"></div>
+        </div>
+        <div style="position:absolute;left:136px;top:23px;width:24px;height:24px;border-radius:50%;background:var(--accent-gold);border:2px solid #F0E8D4;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;">⚔</div>
+        <div style="position:absolute;left:187px;top:53px;width:24px;height:24px;border-radius:50%;background:#8B1A1A;border:2px solid #C0392B;display:flex;align-items:center;justify-content:center;font-size:11px;z-index:2;">☠</div>
+      </div>
+      <div class="d3-bottom">
+        <div class="d3-hand-col">
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">↑</div></div><div class="card-name">March</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">🛡</div></div><div class="card-name">Block</div></div>
+          <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">✦</div></div><div class="card-name dim">Fireball</div></div>
+          <div class="card-compact unavailable"><div class="card-art"><div class="card-art-mock">☽</div></div><div class="card-name dim">Tranquility</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">⚡</div></div><div class="card-name">Swiftness</div></div>
+          <div class="card-compact wound"><div class="card-art"><div class="card-art-mock" style="color:#C0392B;">✕</div></div><div class="card-name" style="color:#C0392B;">Wound</div></div>
+          <div class="card-compact"><div class="card-art"><div class="card-art-mock">⚔</div></div><div class="card-name">Rage</div></div>
+        </div>
+        <div class="d3-info-col">
+          <!-- Staged -->
+          <div class="zone-label">Staged</div>
+          <div style="display:flex;gap:3px;align-items:flex-end;">
+            <div class="card-staged" style="width:36px;height:48px;">
+              <div class="card-art"><div class="card-art-mock" style="font-size:10px;">⚡</div></div>
+              <div class="staged-name" style="font-size:5px;">Swiftness</div>
+              <div class="staged-effect">Move +2</div>
+            </div>
+            <div class="staged-slot-empty" style="width:36px;height:48px;"><span style="font-size:9px;color:var(--text-disabled);">+</span></div>
+          </div>
+          <div style="height:1px;background:rgba(200,150,42,0.15);"></div>
+          <!-- Source · Mana · Crystals -->
+          <div class="zone-label">Source · Mana · Crystals</div>
+          <div style="display:flex;gap:3px;align-items:center;">
+            <div class="source-die" style="background:var(--mana-blue);width:17px;height:17px;font-size:7px;">B</div>
+            <div class="source-die" style="background:var(--mana-red);width:17px;height:17px;font-size:7px;">R</div>
+            <div class="source-die ex" style="background:var(--mana-black);width:17px;height:17px;font-size:7px;">☾</div>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:0 3px;"></div>
+            <div class="mana-orb blue" style="width:16px;height:16px;font-size:6px;">B</div>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:0 3px;"></div>
+            <div style="display:flex;align-items:center;gap:4px;background:rgba(42,34,26,0.8);border:1px solid var(--accent-gold-dim);border-radius:3px;padding:2px 6px;cursor:pointer;min-height:22px;">
+              <span style="font-size:8px;color:var(--accent-gold);">◆</span>
+              <span style="font-size:10px;font-weight:bold;color:var(--text-primary);font-family:'Arial Narrow',Arial,sans-serif;">5</span>
+              <span style="font-size:6px;color:var(--text-secondary);">▾</span>
+            </div>
+          </div>
+          <div style="height:1px;background:rgba(200,150,42,0.15);"></div>
+          <!-- Units -->
+          <div class="zone-label">Units 2/3</div>
+          <div style="display:flex;gap:3px;margin-top:1px;">
+            <div class="unit-card" style="width:32px;height:42px;"><div class="unit-cmd"></div><div style="font-size:11px;">🏹</div><div class="unit-lbl" style="font-size:4px;">Crossbow</div></div>
+            <div class="unit-card spent" style="width:32px;height:42px;"><div class="unit-cmd on-unit"></div><div style="font-size:11px;">🌾</div><div class="unit-lbl" style="font-size:4px;">Peasants</div></div>
+            <div class="unit-card wounded" style="width:32px;height:42px;"><div class="unit-cmd"></div><div style="font-size:11px;">🌿</div><div class="unit-lbl w" style="font-size:4px;">Herbalist</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pro-con">
+    <div class="pro-con-col">
+      <div class="pro-con-title pro">Strengths</div>
+      <div class="pro-con-item pro">Staged, source, mana, crystals, and units all have unambiguous dedicated space</div>
+      <div class="pro-con-item pro">Info column always visible — single glance covers all resources</div>
+      <div class="pro-con-item pro">Clearest separation: "what I'm playing" (left) vs "resources + effects" (right)</div>
+    </div>
+    <div class="pro-con-col">
+      <div class="pro-con-title con">Tradeoffs</div>
+      <div class="pro-con-item con">Tallest bottom strip — least map height</div>
+      <div class="pro-con-item con">Right column (200dp) gets crowded at level 7+ with 4 unit cards</div>
+      <div class="pro-con-item con">Most layout surface area — highest implementation complexity in early epics</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════════
+     OVERLAY STATE COMPARISON
+═══════════════════════════════════════════════════════════ -->
+<div class="direction-block">
+  <div class="direction-label">Shared Interaction States</div>
+  <div class="direction-title">Expanded Card + Undo Gate (all directions)</div>
+  <div class="direction-tagline">These overlay states are layout-independent — they apply identically to all three directions</div>
+
+  <div class="direction-states">
+
+    <div class="state-container">
+      <div class="state-label">Card Expanded (layer 3)</div>
+      <div class="phone-frame">
+        <div class="screen" style="width:380px;height:171px;">
+          <div class="overlay-dim"></div>
+          <div class="hud-panel" style="position:absolute;top:0;left:0;right:0;height:22px;z-index:2;">
+            <span style="color:var(--accent-gold);font-size:8px;">🥾 Movement</span>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:3px 4px;"></div>
+            <span style="font-size:10px;font-weight:bold;">2</span><span style="font-size:6px;color:var(--text-secondary);margin-left:2px;">Move</span>
+            <div style="flex:1;"></div>
+            <div style="width:22px;height:16px;border:1px solid var(--accent-gold);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--accent-gold);">↺</div>
+          </div>
+          <div style="position:absolute;top:22px;left:0;right:0;bottom:70px;background:var(--bg-base);z-index:1;"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:rgba(26,21,16,0.97);border-top:1px solid var(--accent-gold-dim);display:flex;align-items:flex-end;padding:8px 10px 6px;gap:4px;z-index:2;opacity:0.4;">
+            <div class="card-compact" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">↑</div></div><div class="card-name" style="font-size:5px;">March</div></div>
+            <div class="card-compact selected" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">⚡</div></div><div class="card-name" style="font-size:5px;">Swiftness</div></div>
+            <div class="card-compact" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">🛡</div></div><div class="card-name" style="font-size:5px;">Block</div></div>
+            <div class="card-compact unavailable" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">✦</div></div><div class="card-name dim" style="font-size:5px;">Fire</div></div>
+          </div>
+          <div class="card-expanded-overlay" style="left:50%;transform:translateX(-50%);top:18px;z-index:10;width:140px;">
+            <div class="expanded-card-art" style="height:60px;">⚡</div>
+            <div class="expanded-card-name">Swiftness</div>
+            <div class="expanded-card-type">Basic Action</div>
+            <div class="expanded-card-text">+2 Move<br>Sideways: +2 Move (any terrain)</div>
+            <div class="action-buttons">
+              <div class="action-btn btn-play">Play</div>
+              <div class="action-btn btn-side">Side</div>
+              <div class="action-btn btn-cancel">✕</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="state-container">
+      <div class="state-label">Undo Gate Closed (committed state)</div>
+      <div class="phone-frame">
+        <div class="screen" style="width:380px;height:171px;">
+          <div class="hud-panel" style="position:absolute;top:0;left:0;right:0;height:22px;z-index:5;">
+            <span style="color:var(--accent-gold);font-size:8px;">⚔ Attack</span>
+            <div style="width:1px;background:var(--accent-gold-dim);align-self:stretch;margin:3px 4px;"></div>
+            <span style="font-size:10px;font-weight:bold;">5</span><span style="font-size:6px;color:var(--text-secondary);margin-left:2px;">Atk</span>
+            <div style="flex:1;"></div>
+            <div style="width:22px;height:16px;border:1px dashed #5A4E3A;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#5A4E3A;opacity:0.55;transform:scale(0.9);">↺</div>
+          </div>
+          <div style="position:absolute;top:22px;left:0;right:0;bottom:70px;background:var(--bg-base);"></div>
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:rgba(26,21,16,0.97);border-top:1px solid var(--accent-gold-dim);display:flex;align-items:flex-end;padding:8px 6px 6px;gap:3px;">
+            <div class="card-compact" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">🛡</div></div><div class="card-name" style="font-size:5px;">Block</div></div>
+            <div class="card-compact unavailable" style="width:38px;height:54px;"><div class="card-art"><div class="card-art-mock" style="font-size:10px;">✦</div></div><div class="card-name dim" style="font-size:5px;">Fire</div></div>
+            <div style="flex:1;border-left:1px solid var(--accent-gold-dim);margin-left:4px;padding-left:6px;display:flex;gap:3px;align-items:center;">
+              <span style="font-size:6px;color:var(--text-secondary);">Staged:</span>
+              <div class="card-staged" style="width:30px;height:42px;"><div class="card-art"><div class="card-art-mock" style="font-size:9px;">⚡</div></div><div class="staged-name" style="font-size:4px;">Swift</div></div>
+              <div class="card-staged" style="width:30px;height:42px;"><div class="card-art"><div class="card-art-mock" style="font-size:9px;">⚔</div></div><div class="staged-name" style="font-size:4px;">Rage</div></div>
+              <div class="card-staged" style="width:30px;height:42px;"><div class="card-art"><div class="card-art-mock" style="font-size:9px;">⚔</div></div><div class="staged-name" style="font-size:4px;">Rage</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-secondary);margin-top:8px;max-width:380px;line-height:1.5;font-family:'Arial Narrow',Arial,sans-serif;">
+        Undo affordance: 55% opacity · dashed border · ~10% scale reduction.<br>
+        Still tappable — not hidden. Visually receded from full-weight state.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
