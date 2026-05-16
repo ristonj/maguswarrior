@@ -1,5 +1,6 @@
 ---
-stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+stepsCompleted: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+lastStep: 14
 inputDocuments: []
 project_name: maguswarrior
 user_name: John
@@ -1527,3 +1528,490 @@ flow exits mid-state.
 The undo affordance is present throughout all flows but visually recedes in committed
 states (3+ cards staged). The safety net remains visible without encouraging casual use of
 a gate-closing tool.
+
+---
+
+## Component Strategy
+
+### Design System Components
+
+Magus Warrior uses a token-first custom design system (DesignTokens.tres, day.theme/night.theme)
+rather than an off-the-shelf library. All components — carried-forward and new — are built
+on this foundation: design tokens for spacing, colour, typography, and animation curves.
+
+**10 Carried-Forward Components** (defined in Design System Foundation, Steps 1-10):
+
+| Component | Role |
+|-----------|------|
+| MapHex | Hex tile with terrain type, movement cost overlay, exploration state |
+| EnemyDisplay | Single enemy token renderer; exposes EnemyResistanceProfile to TargetingOverlay |
+| CardCompact | Card in hand (compact view); `wound_sideways_permitted: bool` injected via GamePhaseState |
+| CardExpanded | Full card detail; Power button enabled when `nightRulesActive` (Night round OR Dungeon/Tomb OR Amulet of Darkness) |
+| ManaOrb | Single mana token; shape + colour encoding (shape language locked as Phase 1 blocker) |
+| HandPanel | Scrollable card hand container |
+| PhaseBar | Current phase indicator (Movement / Influence / Combat / End Turn) |
+| UnitToken | Unit in play; `wound_count: 0/1/2` rendered as pip indicators (Poison can double-wound) |
+| TacticsCard | Tactics tile; `mana_steal_die_held` displays die, `mana_steal_die_used` removes it — die rerolled and returned to Source at end of the turn it was used |
+| ResourceBar | Gold / reputation / fame / crystals HUD |
+
+**Gap Analysis — what the design system does not cover:**
+
+- Group combat visualization (multi-enemy staging, turn-order display)
+- Phase-specific targeting overlay with dynamic resistance computation
+- Multi-step rest flows with sequential state gating
+- Mana die roller (Source management)
+- End-of-run screens with narrative framing
+- Contextual help and veteran toggle
+- Phase transition animations
+- Damage feedback animations
+
+---
+
+### Custom Components
+
+**14 Custom Components** built on design system tokens:
+
+---
+
+#### 1. HexMapContainer
+
+**Purpose:** Viewport manager for the procedural hex grid.
+**Usage:** Wraps MapHex instances; owns pan/zoom gesture handling and fog-of-war layer.
+**Anatomy:** Camera2D viewport, HexGrid node, fog mask, coordinate-to-pixel converter.
+**States:** `exploring` (normal navigation), `move_targeting` (valid hexes highlighted), `locked` (during combat or modal).
+**Variants:** None — single instance per game session.
+**Accessibility:** Large tap targets on hex selection (minimum 48dp); current hex announced on focus.
+**Interaction Behavior:** Pinch to zoom, drag to pan, single tap to select. Touch model conflicts with Godot defaults — allocate extra implementation time for gesture disambiguation on Android.
+
+---
+
+#### 2. CombatStack
+
+**Purpose:** Turn-order and running-total visualization for group fights and sieges.
+**Usage:** Active during Combat phase; shows all enemies simultaneously (battlefield assessment, not serial queue).
+**Anatomy:** Simultaneous enemy display with resistance badges; running attack/block totals; phase-segment tabs (Ranged → Block → Assign → Attack).
+**States:**
+
+- `ranged_siege` — all targetable enemies visible; total attack running
+- `block_phase` — enemy attacks visible; player block total running
+- `assign_damage` — damage-split controls active per enemy
+- `attack_phase` — final resolution staged, waiting for confirm
+- `knock_out_mid_assignment` — player Wounds exceed KO threshold during Assign Damage; non-Wound hand cleared but combat continues; distinct visual treatment signals the designed low point
+- `resume_orientation_banner` — app resumed mid-combat; ambient banner ("Phase 2 · Block — choose one enemy to block") fades in 300ms, holds 2.5s, fades out; rendered when `app_resumed_mid_combat: bool`
+
+**Variants:** Group fight (multiple enemies) vs. solo target.
+**Accessibility:** Running totals in persistent HUD strip; phase announced on transition.
+**Content Guidelines:** All enemies visible simultaneously; resolution order as secondary badge, not primary hierarchy — preserves physical "battlefield assessment" feel over serial queue feel.
+**Interaction Behavior:** Player declares attacks on the GROUP where possible; individual targeting only for Ranged/Siege phase exclusions (double-fortified targets).
+
+---
+
+#### 3. TargetingOverlay
+
+**Purpose:** Phase-specific overlay that appears over enemy display area during targeting; computes group resistance dynamically.
+**Usage:** Appears during Ranged and Siege targeting phases; removed after phase ends.
+**Anatomy:** Overlay layer above EnemyDisplay instances; reads `EnemyResistanceProfile` from each enemy; renders resistance badges and exclusion indicators.
+**States:**
+
+- `targetable` — enemy is a valid target; normal highlight
+- `resistant_mixed` — enemy is in a group with active resistance to the attack type; halved-attack indicator
+- `targeting_excluded` — enemy cannot be targeted this phase (e.g. double-fortified during Ranged/Siege); greyed with `wound_sideways_permitted`-style tooltip explaining exclusion
+
+**Variants:** Ranged phase vs. Siege phase (exclusion rules differ).
+**Accessibility:** Resistance badges use shape + colour; exclusion tooltip on tap for colour-blind players.
+**Content Guidelines:** Cold Fire resistance must be computed explicitly — a group containing one fire-resistant enemy AND one ice-resistant enemy resists Cold Fire attacks at the group level, even though no individual enemy has explicit Cold Fire resistance. TargetingOverlay owns this conjunction logic; it does NOT delegate it to EnemyDisplay.
+**Interaction Behavior:** Reads `EnemyResistanceProfile` structs (typed, not reaching into EnemyDisplay internals); recomputes dynamically as enemies are added/removed from group.
+
+---
+
+#### 4. DiceRoller
+
+**Purpose:** Mana die roll interface for Source management.
+**Usage:** Start-of-round Source roll; any re-roll triggered by card or skill effects.
+**Anatomy:** Die face display (colour + shape-coded per mana type); roll animation; result confirmation.
+**States:** `idle`, `rolling` (animation), `result_shown`, `confirmed`.
+**Variants:** Day palette vs. Night palette die faces.
+**Accessibility:** Die result announced as text after roll.
+**Interaction Behavior:** Source roll at start of round is a game RITUAL — animation and haptic feedback should carry weight, not feel like a menu refresh. This is a designed moment.
+
+---
+
+#### 5. ActionConfirmation
+
+**Purpose:** Two-tap confirm flow for irreversible actions.
+**Usage:** Blocking (card commitment), burning cards for resources, sacrificing units.
+**Anatomy:** Action summary label, Confirm button, Cancel button.
+**States:** `pending` (awaiting second tap), `confirmed`, `cancelled`.
+**Variants:** None — binary confirm flow only. For variable-option decisions, use ContextMenu.
+**Accessibility:** Confirm button minimum 48dp; destructive action framed in plain language ("Burn this card — cannot be undone").
+**Content Guidelines:** Forbidden from use for decisions that ContextMenu owns (mana colour choice, multi-option sacrifice).
+
+---
+
+#### 6. RestDeclarationPrompt
+
+**Purpose:** Owns the "declare rest vs. regular action" decision moment at turn start.
+**Usage:** Surfaces as a contextual prompt when hand composition suggests rest is available (majority Wounds, or at end of turn without having played all actions). Distinct from RestChoiceAffordance — this component owns the DECLARATION; RestChoiceAffordance owns the EXECUTION.
+**Anatomy:** Contextual prompt modal; "Rest" button, "Continue Turn" button; brief hand-state summary ("5 cards, 3 Wounds").
+**States:** `offered` (prompt visible), `rest_chosen` (hands off to RestChoiceAffordance), `dismissed` (player continues without resting).
+**Variants:** Standard Rest path vs. Slow Recovery path (determined by hand composition before handoff).
+**Accessibility:** Prompt appears during non-decision moment, not during an active phase action.
+**Interaction Behavior:** Physical Mage Knight has a distinct cognitive moment — pick up hand, assess wounds, decide whether to rest. This component owns that moment. RestChoiceAffordance handles what happens after the decision.
+
+---
+
+#### 7. RestChoiceAffordance
+
+**Purpose:** Manages the Standard Rest card discard flow after rest has been declared.
+**Usage:** Active after player selects Rest from RestDeclarationPrompt; handles sequential discard flow.
+**Anatomy:** Discard slot (non-Wound card required); Wound discard section (gated); End Turn button (gated by `rest_discard_fulfilled`).
+**States:**
+
+- `awaiting_non_wound_discard` — player must discard at least one non-Wound card; End Turn disabled; discard slot pulses with invitation
+- `non_wound_discarded` — `rest_discard_fulfilled: true`; Wound discards now available; End Turn enabled
+- `slow_recovery_beat` — player has only Wounds in hand; system auto-discards one Wound (animated); player retains control for skills/units before manually ending turn (see SlowRecoveryBeat animation state)
+- `complete` — ready to end turn
+
+**Variants:** Standard Rest (non-Wound discard required) vs. Slow Recovery (automatic wound discard).
+**Accessibility:** End Turn button label changes to "Discard a card first" when gated; discard slot pulse provides affordance without verbal instruction.
+**Content Guidelines:**
+- Playing healing or Special cards while resting does NOT fulfil the mandatory non-Wound discard — it is a separate, explicit action.
+- Non-Wound discard must complete before any Wound discards are offered — sequential, not simultaneous.
+- End Turn is gated until `rest_discard_fulfilled: true`.
+- In Slow Recovery path: all Wounds are identical; no picker UI; system discards automatically with animation notification. Player may still use skills or unit abilities before manually ending turn.
+
+**SlowRecoveryBeat (animation state within RestChoiceAffordance):**
+Not a standalone component — an animation track within RestModal. When `slow_recovery_beat` state activates: a specific Wound card fans slightly and animates off the discard slot (visually distinct from the player manually discarding); a low resonant audio cue plays; the system status message reads "Slow Recovery — Wound discarded." Player retains full control afterward.
+
+---
+
+#### 8. ContextMenu
+
+**Purpose:** Radial or list menu for multi-option decisions with runtime-dynamic option count.
+**Usage:** Mana colour selection, sacrifice choice, site interaction options.
+**Anatomy:** Anchored to trigger point; option list (2–6 items); dismiss on outside tap.
+**States:** `open`, `option_highlighted`, `confirmed`, `dismissed`.
+**Variants:** Radial (<=4 options) vs. list (5-6 options).
+**Accessibility:** Options announced on focus; minimum 48dp touch targets.
+**Content Guidelines:** For binary irreversible actions, use ActionConfirmation instead.
+
+---
+
+#### 9. HelpTooltip
+
+**Purpose:** Contextual rule explainer; respects veteran toggle.
+**Usage:** Any component that needs to surface rule explanation emits a `help_requested` signal with content string; HelpTooltipManager owns the anchor zone and renders it.
+**Anatomy:** Fixed anchor zone — bottom strip, above hand zone, z-layer 5. Components do NOT position tooltips independently; they emit signals.
+**States:** `visible`, `hidden` (when `showHelpText: false` via veteran toggle).
+**Variants:** Short rule note vs. extended explanation.
+**Accessibility:** Tooltip text reads as plain language; dismiss on tap.
+**Content Guidelines:** Veteran toggle surfaces at first tutorial trigger during a non-decision moment. Components emit `help_requested`; HelpTooltipManager renders. No component independently calculates tooltip position — this prevents z-order and position collisions.
+
+---
+
+#### 10. LossScreen
+
+**Purpose:** End-of-run loss state with narrative framing.
+**Usage:** Triggered on KO, round limit exceeded, or scenario failure condition.
+**Anatomy:** Narrative headline; accomplishments summary; stat row; retry/menu actions.
+**States:** Single state with variable data.
+**Data Inputs:** `tiles_revealed_count: int`, `total_tiles: int`, `capability_delta: RoundSnapshot[]`, `accomplishments: string[]` (enemies defeated, spells cast, level-ups achieved).
+**Variants:** None.
+**Accessibility:** Screen readable as narrative text.
+**Content Guidelines:**
+
+- Lead with FEELING, support with stat: headline is the story beat ("The Reconnaissance Failed"), not the number.
+- "Thomas retreated, having revealed [X] of [Y] territories." — NEVER "X hexes from the city" (city tile position in the deck is unknown until revealed; it is randomly among the last 3 tiles).
+- Accomplishments section always present — even a loss acknowledges what the player achieved.
+- capability_delta shows hand quality progression across rounds (emotional design: the player sees how they grew even in defeat).
+
+---
+
+#### 11. WinScreen
+
+**Purpose:** End-of-run victory state.
+**Usage:** Triggered on scenario completion (city reached and entered).
+**Anatomy:** Thomas portrait reveal (full art); fame/reputation final totals; scenario time; menu actions.
+**States:** Single state.
+**Variants:** None.
+**Accessibility:** Portrait described via alt text for screen readers.
+
+---
+
+#### 12. PhaseTransitionOverlay
+
+**Purpose:** Full-screen transition animation between major game phases and rule-state shifts.
+**Usage:** End of Movement phase, entering Combat, end of Round, Day→Night transition, Dungeon/Tomb entry.
+**Anatomy:** Full-screen tint layer; phase label; directional sweep animation.
+**States / Variants:**
+
+- `phase_transition` — standard movement-to-combat or end-of-round transition
+- `round_start` — new round begins; day/night banner visible
+- `night_rules_activation` — nightRulesActive flips mid-round (Dungeon/Tomb entry); distinct visual treatment signals world-shift; learning-critical beat for curious players
+
+**Accessibility:** Transition skippable by tap after 500ms.
+**Content Guidelines:** Night Rules activation must feel like a world-shift — physical players flip the night token; this overlay is the digital equivalent.
+
+---
+
+#### 13. RoundSummaryModal
+
+**Purpose:** End-of-round summary (fame gained, level-up prompt, wounds taken).
+**Usage:** Triggered at end of each round before the next round begins.
+**Anatomy:** Fame delta; wound tally; level-up prompt if threshold crossed; continue button.
+**States:** `summary_only`, `level_up_available` (Level-Up prompt inset).
+**Variants:** None.
+**Accessibility:** All values read as plain text.
+**Content Guidelines:**
+
+- Queue order: when Level-Up and Round Summary both trigger on the same turn, Round Summary resolves first, then Level-Up screen. This order is enforced in the Screen Contract.
+- Level-Up surfaces after combat closes; RoundSummaryModal surfaces at End of Round. If level occurs on final turn of a round, Summary appears first.
+
+---
+
+#### 14. DamageAnimator
+
+**Purpose:** Floating damage numbers and hit flash animation.
+**Usage:** Any component that emits a damage event; DamageAnimator is a pure presentation layer with no game-state reads.
+**Anatomy:** Floating label spawned at damage origin; hit flash on target component; brief scale pulse.
+**States:** `animating`, `complete` (auto-despawns).
+**Variants:** Positive (healing), negative (damage), neutral (blocked/resisted).
+**Accessibility:** Damage numbers supplement (not replace) the stat readouts in CombatStack.
+**Content Guidelines:** A stub version (200ms number flash, no float animation) should be built in Phase 1 as a debugging aid — verifying state update timing during combat requires some visual feedback. Full animation in Phase 4.
+
+---
+
+### Component Implementation Strategy
+
+**Foundation:** All components built on DesignTokens.tres; day.theme/night.theme swap at runtime via theme override.
+
+**mock_state export discipline:** Every component exposes a typed `MockState` inner class (C# typed resource). Both the real game state injector and the mock export implement the same `IComponentState` interface. If the real game state contract changes, the mock fails to compile — compiler-enforced sync prevents mock drift. This enables isolated development and testing of any component without running the full game loop.
+
+**GamePhaseState contract:** GamePhaseState is a *state-only* flat observable record — no behavioral logic. It computes nightRulesActive from injected booleans (isNightRound, isInDungeonOrTomb, isAmuletActive) via a bitmask — not hardcoded conditionals. Adding a new Night Rules condition is a new input wire, not surgery. Components read from GamePhaseState; they do not write to it.
+
+**EnemyResistanceProfile:** A typed struct that EnemyDisplay exposes and TargetingOverlay consumes. Data flows up to TargetingOverlay; display decisions flow down to EnemyDisplay. TargetingOverlay never reaches into EnemyDisplay internals.
+
+**ResourceState contract:** Defined in Phase 1 even though ResourceBar (the visual component) ships in Phase 2. CombatStack depends on the *data shape*, not the visual component. This prevents a forward dependency from Phase 1 work onto Phase 2 components.
+
+**HelpTooltipManager:** A global autoload that owns the tooltip anchor zone (bottom strip, above hand zone, z-layer 5). Components emit `help_requested(content: String)` signals; HelpTooltipManager renders. No component independently positions a tooltip.
+
+**Mana shape language:** Locked as a Phase 1 implementation blocker. Before any mana-rendering code is written (ManaOrb, DiceRoller), the six mana type shapes must be defined and recorded in the Screen Contract. Deferred shape language creates a retrofit risk across multiple Phase 1 components.
+
+---
+
+### Implementation Roadmap
+
+**Phase 0 — Vertical Slice (first playable):**
+Build this before any other component work to validate the core architecture.
+
+- CombatStack (prototype in isolation against 5 mock states: empty / card played / block phase / assign damage / attack resolution)
+- CardCompact (card staged into CombatStack)
+- PhaseBar (phase context visible)
+- ActionConfirmation (irreversible action confirm)
+
+If CombatStack renders correctly against all five mock states, the component architecture is proven. Everything else is execution. This is the riskiest component — if combat feels broken, nothing else matters.
+
+**Phase 1 — Core Combat Loop:**
+
+- MapHex, EnemyDisplay, TargetingOverlay, ManaOrb, DiceRoller
+- CardExpanded (full card detail)
+- ResourceState data contract (even though ResourceBar ships in Phase 2)
+- DamageAnimator stub (200ms flash only — debugging aid for state update timing)
+- HelpTooltip data contract (ActionConfirmation needs to know whether to display help text)
+- LossScreen placeholder ("Game Over" text only — needed to verify combat can end Thomas)
+- WinScreen placeholder ("Victory" text only)
+
+**Phase 2 — Rest and Recovery:**
+
+- RestDeclarationPrompt
+- RestChoiceAffordance (including SlowRecoveryBeat animation state)
+- HandPanel
+- UnitToken (wound_count pip indicators)
+- ResourceBar (visual component; data contract already defined in Phase 1)
+
+**Phase 3 — Map and Exploration:**
+
+- HexMapContainer (allocate extra time — Android touch gesture model in Godot will require careful tuning)
+- PhaseTransitionOverlay (including night_rules_activation variant)
+- RoundSummaryModal
+- TacticsCard (mana die held/used states)
+
+**Phase 4 — Context and Help:**
+
+- ContextMenu
+- HelpTooltip (full UI, anchor zone, veteran toggle)
+- DamageAnimator (full floating number animation)
+
+**Phase 5 — End States:**
+
+- LossScreen (full narrative + accomplishments)
+- WinScreen (Thomas portrait reveal)
+
+This roadmap prioritizes getting to a playable combat loop as fast as possible, then layering in rest/recovery, then map, then polish, then end states. Each phase is independently testable via mock_state exports before integration.
+
+---
+
+## UX Consistency Patterns
+
+### Action Hierarchy
+
+Every interactive element falls into one of four tiers governing visual weight, not position — layout is defined by the Screen Contract.
+
+| Tier | Examples | Visual treatment |
+| --- | --- | --- |
+| Primary (standard) | Play Card, Interact, Assault, Provoke, End Phase | Full weight — default button style, 44dp touch target |
+| Primary (heavy) | End Turn | Distinct accent color + 56dp touch target — the only player-chosen action that is always irreversible |
+| Secondary | Cancel, Play Sideways | Receded; positionally distinct — Cancel at top of expanded card action strip, never adjacent to primary actions |
+| Gate-closing | Explore (tile reveal), card draw, die roll | Primary treatment + persistent lock icon indicating the undo gate will close on execution |
+
+**Gate-closing first-time tooltip:** On the first gate-closing action a player encounters, a one-time tooltip fires: "This will lock in your previous moves." Gated behind `showHelpText`; dismissed forever after. The specific inventory of gate-closing actions is enumerated during story definition.
+
+**Play when native effect unavailable:** When a card has no phase-relevant native effect (e.g. a combat card in Movement phase), the Play button is greyed out — not hidden. Play Sideways becomes the de-facto primary action. Greyed Play signals "this exists but isn't available right now" without removing information.
+
+**Cancel is always secondary.** Never promoted to primary weight regardless of context.
+
+---
+
+### Feedback Patterns
+
+**Disabled card interaction:**
+
+- Tap: haptic feedback + subtle background color shift (grey → black) + brief subtitle explaining why (e.g. "Not available in Move phase"), auto-dismissing after 1.5s. Signals "heard you, not legal" with immediate explanation.
+- Tap also opens CardExpanded in view-only mode: action buttons greyed, "?" accessible for rule context. This is the proactive learning path — consistent with tap=expand, no new component needed.
+- Long press: removed. CardExpanded on tap handles full card text.
+- When haptics are disabled at system level, the color shift + subtitle alone is sufficient signal.
+
+**Mana selection:**
+
+- Source die: greys out on use; persists until end-of-turn reroll or undo.
+- Mana crystals: count indicator for the corresponding color decrements immediately on selection. Tap a selected crystal to deselect — count increments back up. Crystal selection is never a gate event; deselection is freely allowed until a gate event locks the current undo stack.
+- Running mana total updates synchronously on every selection.
+
+**Single-card multi-effect resolution:**
+
+- Independent additive effects (e.g. Move 2 + Influence 1): HUD updates simultaneously.
+- Conditional or branching effects (e.g. "Attack 2, or take a Wound, Attack 5"): sequential — player decision required mid-resolution. HUD freezes at the pre-card state until the player completes their decision and the full effect resolves. Sequencing is determined per card; a complete card audit for Thomas's starting deck and First Reconnaissance acquirable cards should be completed before the combat epic begins.
+
+---
+
+### Undo Stack Pattern
+
+Undo operates on rolling stacks, not a single monolithic history.
+
+- **Within a stack:** undo is freely available; affordance shows at full weight.
+- **Gate event:** current stack locks permanently (pre-gate actions frozen); new stack begins immediately; undo affordance recedes while the new stack is empty.
+- **New stack:** all post-gate actions accumulate and are freely undoable until the next gate event or end of turn.
+- **End of turn:** current stack clears.
+
+Undo never reaches across a gate boundary — it operates only on the current stack. The receded undo state (55% opacity, dashed border, ~10% scale reduction) applies when the current stack is empty (immediately post-gate, before new actions are taken).
+
+---
+
+### Modal and Overlay Patterns
+
+**Layer assignments:**
+
+| Situation | Layer | Treatment |
+| --- | --- | --- |
+| Site interactions (village, mage tower, city) | 4 | Full-screen — always |
+| Combat screens | 4 | Full-screen — always |
+| Level-Up | 4 | Full-screen |
+| Rest Declaration Prompt | 3 | Partial popup, dimmed background — hand visible behind |
+| ActionConfirmation (End Turn, post-gate actions) | 3 | Partial, anchored to trigger point |
+| Round Summary | 3 | Partial popup when content is small |
+| Veteran toggle / "Hide Tips" prompt | 5 | System prompt, always on top |
+
+**Rule:** Site interaction and combat screens are full-screen by definition — these demand full player attention. Confirmation and administrative screens use partial popup with dimmed background when content doesn't fill the screen. Dimmed background signals consequence without full occlusion.
+
+**Rest Declaration is Layer 3** specifically because the player needs their hand visible — the decision is about hand composition, not map state. The map being out-of-focus signals consequence.
+
+**Site→combat transition:** Site interaction always fully dismisses before combat loads. No suspended state, no "return to site" path — game rules eliminate the scenario where a player would need to return to a site mid-combat.
+
+**Rest Declaration and ActionConfirmation never appear simultaneously.**
+
+Layer assignment is a CanvasLayer value in Godot, not coupled to game logic. Low-cost to change during feel-testing.
+
+---
+
+### Phase Transition Patterns
+
+**Major transitions** (round start, Movement→action phase, Day/Night board flip, Night Rules activation) use the full PhaseTransitionOverlay — full-screen tint, phase label, directional sweep.
+
+**In-combat sub-phase transitions** (Ranged/Siege → Block → Assign Damage → Attack) use a lighter treatment — a banner or slide-in indicator without full-screen dimming. Combat flow stays visible behind the transition signal.
+
+**Content:** Phase label only across all variants. No contextual information (enemy count, remaining actions, etc.) — context is available immediately when the indicator clears.
+
+**Duration and skippability:** All variants short. Major transitions skippable by tap after 500ms. Night Rules Activation communicates world-shift through visual treatment, not duration.
+
+**Automatic phase skipping:** When a phase is skipped by game conditions (all enemies eliminated in Ranged → subsequent phases skipped; all damage blocked → Assign Damage skipped), the transition indicator for that phase is also skipped.
+
+---
+
+### Empty and Loading States
+
+**Loading:** Show "Loading..." if session resume exceeds 500ms. All other game state transitions are near-instantaneous — no loading state defined for them.
+
+**Empty offer areas** (Advanced Action offer, Spell offer, Unit offer): rendered as empty space by normal game state. Not a UX loading pattern.
+
+---
+
+### Contextual Help Patterns
+
+Governed by `showHelpText: bool`. All help behavior is on/off — no per-feature granularity.
+
+**Veteran toggle:** Surfaces at the "tap to begin" moment on the player's first run — before any help content fires. Prompt text: **"Hide Tips."** Binary: hide or keep. Veterans opt out immediately; curious players keep tips from the start.
+
+**Re-enabling:** Settings screen in the Pause menu, v1. `showHelpText` can be set back to `true` at any time during a run.
+
+**"?" in CardExpanded:** Appears only on cards with meaningful rule complexity — not on mechanically simple cards (e.g. Move 2). Always visible regardless of `showHelpText` when present. Fires a HelpTooltip with plain-language rule explanation. Veterans can ignore it; curious players tap it for rule context.
+
+**HelpTooltipManager:** Global autoload, bottom strip anchor zone, z-layer 5. Components emit `help_requested(content: String)` — no component positions its own tooltip.
+
+---
+
+### Day/Night Theme Transition Feel
+
+**Palette swap:** Crossfade on the lift of the triggering overlay — the entire screen (map, HUD, hand, all zones) transitions simultaneously. No ripple or stagger.
+
+**Triggers (exactly two):**
+
+1. `round_start` PhaseTransitionOverlay lift — when the Day/Night board flips at the start of a new round
+2. `night_rules_activation` PhaseTransitionOverlay lift — on Dungeon or Tomb entry only
+
+**Amulet of Darkness** affects mana availability only (black mana usable during Day round) — it does NOT trigger the theme crossfade or the `night_rules_activation` overlay. The `nightRulesActive` bitmask in the Component Strategy requires updating: `isAmuletActive` governs mana rules, not the theme state, and must not be bundled into `nightRulesActive`.
+
+**Duration:** 300–500ms, tuned during implementation. Applied via `day.theme` / `night.theme` swap on DesignTokens.tres; all components inherit the transition automatically. Future expansion effects may introduce additional trigger points — each must be explicitly added, not inferred.
+
+---
+
+## Responsive Design & Accessibility
+
+### Responsive Strategy
+
+Magus Warrior v1 targets a single platform, orientation, and input model: Android landscape, touch-only, Samsung Galaxy S21 baseline. No responsive breakpoint system is required — the Screen Contract defines a fixed layout for this context. Future platform expansion (tablet, larger phones) would revisit this.
+
+### Accessibility Strategy
+
+**Target:** No formal WCAG compliance level. Colorblind accessibility is in scope. Screen reader support and motion sensitivity accommodations are out of scope for v1.
+
+**Colorblind design rule — shape + color, never color alone:**
+
+All color-coded game elements use shape or iconography as the primary differentiator. Color is additive, not load-bearing:
+
+| Element | Colorblind-safe signal |
+| --- | --- |
+| Mana types (6) | Distinct shape per type — defined before ManaOrb/DiceRoller implementation (Phase 1 blocker) |
+| Mana dice | Shape face on die matches mana type shape |
+| Card unavailable | Greyed overlay + icon (not color alone) |
+| Phase-illegal vs resource-insufficient | Silhouette-distinct icons (clock shape vs resource-pip shape) |
+| Wound cards | Teardrop icon — red background is supplementary |
+| Enemy tokens | Image-identified on token face — color is supplementary once placed |
+| Day/Night theme | Visual flavor only — gameplay-relevant distinctions (mana availability, phase state) communicated through labels and icons, not palette alone |
+
+**Mana shape language** must be defined and recorded in the Screen Contract before any mana-rendering code is written. This is a hard Phase 1 implementation blocker — shape decisions made after ManaOrb/DiceRoller are built create retrofit risk across multiple components.
+
+### Testing Strategy
+
+- Colorblind simulation testing using Android developer options (deuteranopia, protanopia, tritanopia modes) against the mana shape language and all color-coded elements
+- Baseline device testing on Samsung Galaxy S21
+- Touch target verification: 44dp minimum across all interactive elements, 56dp for End Turn
