@@ -1,0 +1,76 @@
+# Mage Knight Digital — Hero Definitions
+#
+# FORMAT REFERENCE
+# ----------------
+# base_deck:                  # 16-card starting deck shared by all heroes before substitutions
+#   - card: <id>
+#     count: N
+#
+# heroes:
+#   - id: <hero_id>
+#     name: "<display_name>"
+#     replacements:            # Hero-specific card swaps applied on top of base_deck
+#       - replaces: <card_id>
+#         with: <card_id>
+#
+# The hero's actual starting deck = base_deck with each replacement applied one-for-one.
+
+base_deck:
+  - card: stamina
+    count: 2
+  - card: march
+    count: 2
+  - card: rage
+    count: 2
+  - card: swiftness
+    count: 2
+  - card: determination
+    count: 1
+  - card: threaten
+    count: 1
+  - card: improvisation
+    count: 1
+  - card: crystallize
+    count: 1
+  - card: concentration
+    count: 1
+  - card: mana_draw
+    count: 1
+  - card: tranquility
+    count: 1
+  - card: promise
+    count: 1
+
+heroes:
+
+  - id: torak
+    name: Thomas
+    replacements:
+      - replaces: improvisation
+        with: instinct
+      - replaces: determination
+        with: cold_toughness
+
+  - id: arythea
+    name: Aretha
+    replacements:
+      - replaces: rage
+        with: battle_versatility
+      - replaces: mana_draw
+        with: mana_pull
+
+  - id: goldyx
+    name: George
+    replacements:
+      - replaces: concentration
+        with: will_focus
+      - replaces: crystallize
+        with: crystal_joy
+
+  - id: norowas
+    name: Nick
+    replacements:
+      - replaces: tranquility
+        with: rejuvenate
+      - replaces: promise
+        with: noble_manners

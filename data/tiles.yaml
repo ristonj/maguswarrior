@@ -1,0 +1,552 @@
+# Mage Knight Digital — Tile Definitions
+#
+# FORMAT REFERENCE
+# ----------------
+# Each tile entry:
+#
+#   - id: "tile_country_01"        # Must match TileId used in GameStateFactory / scenario setup
+#     type: Countryside            # Countryside | Core | CityWhite | CityBlue | CityGreen | CityRed
+#     name: "Countryside Tile 1"  # Human-readable label (used in logs/debug only)
+#     hexes:
+#       - position: C              # Named position on tile (see HEX POSITIONS below)
+#         terrain: Plains          # Plains | Forest | Hills | Desert | Water | Swamp | Wasteland | Mountain
+#         site: Village            # Optional. Omit if no site on this hex.
+#         portal: true             # Optional. Only on the starting tile portal hex.
+#         rampaging: OrcMarauder   # Optional. OrcMarauder | Draconum. Rampaging enemy pre-placed here.
+#
+# HEX POSITIONS
+# -------------
+# Each tile has 7 hexes: one center and six neighbors.
+# Use these named positions — no axial coordinates needed.
+#
+#         NW   NE
+#        W   C   E
+#         SW   SE
+#
+#   C  — Center
+#   NE — North-East
+#   E  — East
+#   SE — South-East
+#   SW — South-West
+#   W  — West
+#   NW — North-West
+#
+# TERRAIN VALUES
+# --------------
+#   Plains     — open land, Move cost 2 day/night
+#   Forest     — dense woods, Move cost 3 day / 5 night
+#   Hills      — rolling hills, Move cost 3 day/night
+#   Desert     — arid waste, Move cost 3 day / 2 night (easier at night, harder by day)
+#   Water      — impassable (lake, sea edge)
+#   Swamp      — difficult terrain, Move cost 3 day/night
+#   Wasteland  — ruined land, Move cost 2 day/night
+#   Mountain   — impassable
+#   City       — city center hex, Move cost 2 day/night
+#
+# SITE VALUES
+# -----------
+#   Village           — recruit units + healing (2 Healing points for 3 Influence)
+#   Monastery         — buy Advanced Actions (6 Influence), healing (2 Influence)
+#   MageTower         — buy Spells (7 Influence + 1 mana of same color)
+#   Keep              — conquer to recruit + Hand limit +1 per keep owned
+#   MagicalGlade      — throw away 1 Wound at end of turn; gain gold mana token at start of turn
+#   CrystalMine       — gain 1 crystal of matching color at end of turn
+#   MonsterDen        — adventure site, 2 random brown enemies
+#   Dungeon           — adventure site, 1 random brown enemy (night rules apply and no units)
+#   Tomb              — adventure site, 1 random brown enemy + reward
+#   Ruins             — adventure site (Ancient Altar or Enemies with Treasure)
+#   SpawningGrounds   — adventure site, 1 random brown enemy
+#   RampagingOrc      — 1 random green enemy 
+#   RampagingDraconum — 1 random red enemy
+
+tiles:
+
+  # ============================================================
+  # STARTING TILE
+  # ============================================================
+
+  - id: "tile_start_a"
+    type: Countryside
+    name: "Starting Tile A"
+    hexes:
+      - position: C
+        terrain: Plains
+        portal: true          # Hero starting position (Magical Portal)
+      - position: NE
+        terrain: Forest
+      - position: E
+        terrain: Plains
+      - position: SE
+        terrain: Water
+      - position: SW
+        terrain: Water
+      - position: W
+        terrain: Water
+      - position: NW
+        terrain: Plains
+
+  - id: "tile_start_b"
+    type: Countryside
+    name: "Starting Tile B"
+    hexes:
+      - position: C
+        terrain: Plains
+        portal: true
+      - position: NE
+        terrain: Forest
+      - position: E
+        terrain: Plains
+      - position: SE
+        terrain: Plains
+      - position: SW
+        terrain: Mountain
+      - position: W
+        terrain: Water
+      - position: NW
+        terrain: Plains
+
+  # ============================================================
+  # COUNTRYSIDE TILES (green back) — 11 total
+  # ============================================================
+
+  - id: "tile_country_01"
+    type: Countryside
+    name: "Countryside Tile 1"
+    hexes:
+      - position: C
+        terrain: Forest
+        site: MagicalGlade
+      - position: NE
+        terrain: Water
+      - position: E
+        terrain: Plains
+        site: Village
+      - position: SE
+        terrain: Plains
+      - position: SW
+        terrain: Plains
+      - position: W
+        terrain: Forest
+      - position: NW
+        terrain: Forest
+        site: RampagingOrc
+
+  - id: "tile_country_02"
+    type: Countryside
+    name: "Countryside Tile 2"
+    hexes:
+      - position: C
+        terrain: Hills
+      - position: NE
+        terrain: Forest
+        site: MagicalGlade
+      - position: E
+        terrain: Plains
+        site: Village
+      - position: SE
+        terrain: Plains
+      - position: SW
+        terrain: Hills
+        site: Mine
+        color: Green
+      - position: W
+        terrain: Plains
+      - position: NW
+        terrain: Hills
+        site: RampagingOrc
+
+  - id: "tile_country_03"
+    type: Countryside
+    name: "Countryside Tile 3"
+    hexes:
+      - position: C
+        terrain: Forest
+      - position: NE
+        terrain: Hills
+        site: Keep
+      - position: E
+        terrain: Hills
+      - position: SE
+        terrain: Hills
+        site: Mine
+        color: White
+      - position: SW
+        terrain: Plains
+        site: Village
+      - position: W
+        terrain: Plains
+      - position: NW
+        terrain: Plains
+
+  - id: "tile_country_04"
+    type: Countryside
+    name: "Countryside Tile 4"
+    hexes:
+      - position: C
+        terrain: Desert
+        site: MageTower
+      - position: NE
+        terrain: Desert
+      - position: E
+        terrain: Mountain
+      - position: SE
+        terrain: Plains
+        site: Village
+      - position: SW
+        terrain: Plains
+      - position: W
+        terrain: Hills
+        site: RampagingOrc
+      - position: NW
+        terrain: Desert
+
+  - id: "tile_country_05"
+    type: Countryside
+    name: "Countryside Tile 5"
+    hexes:
+      - position: C
+        terrain: Water
+      - position: NE
+        terrain: Plains
+        site: Monastery
+      - position: E
+        terrain: Plains
+        site: RampagingOrc
+      - position: SE
+        terrain: Hills
+        site: Mine
+        color: Blue
+      - position: SW
+        terrain: Forest
+      - position: W
+        terrain: Forest
+        site: MagicalGlade
+      - position: NW
+        terrain: Forest
+
+  - id: "tile_country_06"
+    type: Countryside
+    name: "Countryside Tile 6"
+    hexes:
+      - position: C
+        terrain: Hills
+        site: Mine
+        color: Red
+      - position: NE
+        terrain: Forest
+      - position: E
+        terrain: Plains
+      - position: SE
+        terrain: Forest
+        site: RampagingOrc
+      - position: SW
+        terrain: Hills
+      - position: W
+        terrain: Forest
+        site: MonsterDen
+      - position: NW
+        terrain: Mountain
+
+  - id: "tile_country_07"
+    type: Countryside
+    name: "Countryside Tile 7"
+    hexes:
+      - position: C
+        terrain: Swamp
+      - position: NE
+        terrain: Forest
+        site: RampagingOrc
+      - position: E
+        terrain: Forest
+        site: MagicalGlade
+      - position: SE
+        terrain: Plains
+        site: Dungeon
+      - position: SW
+        terrain: Plains
+      - position: W
+        terrain: Plains
+        site: Monastery
+      - position: NW
+        terrain: Water
+
+  - id: "tile_country_08"
+    type: Countryside
+    name: "Countryside Tile 8"
+    hexes:
+      - position: C
+        terrain: Swamp
+        site: RampagingOrc
+      - position: NE
+        terrain: Forest
+        site: Ruins
+      - position: E
+        terrain: Plains
+      - position: SE
+        terrain: Swamp
+        site: Village
+      - position: SW
+        terrain: Swamp
+      - position: W
+        terrain: Forest
+      - position: NW
+        terrain: Forest
+        site: MagicalGlade
+
+  - id: "tile_country_09"
+    type: Countryside
+    name: "Countryside Tile 9"
+    hexes:
+      - position: C
+        terrain: Mountain
+      - position: NE
+        terrain: Mountain
+      - position: E
+        terrain: Wasteland
+        site: Keep
+      - position: SE
+        terrain: Plains
+      - position: SW
+        terrain: Wasteland
+        site: MageTower
+      - position: W
+        terrain: Plains
+      - position: NW
+        terrain: Plains
+        site: Dungeon
+
+  - id: "tile_country_10"
+    type: Countryside
+    name: "Countryside Tile 10"
+    hexes:
+      - position: C
+        terrain: Mountain
+      - position: NE
+        terrain: Forest
+      - position: E
+        terrain: Plains
+      - position: SE
+        terrain: Hills
+        site: Ruins
+      - position: SW
+        terrain: Hills
+        site: Keep
+      - position: W
+        terrain: Hills
+      - position: NW
+        terrain: Hills
+        site: MonsterDen
+
+  - id: "tile_country_11"
+    type: Countryside
+    name: "Countryside Tile 11"
+    hexes:
+      - position: C
+        terrain: Plains
+        site: MageTower
+      - position: NE
+        terrain: Water
+      - position: E
+        terrain: Water
+      - position: SE
+        terrain: Hills
+        site: RampagingOrc
+      - position: SW
+        terrain: Water
+      - position: W
+        terrain: Plains
+        site: Ruins
+      - position: NW
+        terrain: Hills
+
+  # ============================================================
+  # CORE TILES — CITY (brown back, city center)
+  # ============================================================
+
+  - id: "tile_core_city_white"
+    type: CityWhite
+    name: "White City Tile"
+    hexes:
+      - position: C
+        terrain: City       # City space
+      - position: NE
+        terrain: Plains
+      - position: E
+        terrain: Forest
+      - position: SE
+        terrain: Water
+        site: RampagingDraconum
+      - position: SW
+        terrain: Water
+      - position: W
+        terrain: Wasteland
+        site: Keep
+      - position: NW
+        terrain: Wasteland
+        site: SpawningGrounds       # White City is by a lake per rulebook
+
+  - id: "tile_core_city_blue"
+    type: CityBlue
+    name: "Blue City Tile"
+    hexes:
+      - position: C
+        terrain: City       # City space
+      - position: NE
+        terrain: Plains
+        site: Monastery
+      - position: E
+        terrain: Water
+      - position: SE
+        terrain: Water
+      - position: SW
+        terrain: Hills
+      - position: W
+        terrain: Mountain
+        site: RampagingDraconum
+      - position: NW
+        terrain: Forest
+
+  - id: "tile_core_city_green"
+    type: CityGreen
+    name: "Green City Tile"
+    hexes:
+      - position: C
+        terrain: City       # City space
+      - position: NE
+        terrain: Swamp
+        site: Village
+      - position: E
+        terrain: Plains
+        site: RampagingOrc
+      - position: SE
+        terrain: Swamp
+      - position: SW
+        terrain: Forest
+        site: RampagingOrc
+      - position: W
+        terrain: Water
+      - position: NW
+        terrain: Forest
+        site: MagicalGlade
+
+  - id: "tile_core_city_red"
+    type: CityRed
+    name: "Red City Tile"
+    hexes:
+      - position: C
+        terrain: City       # Red City is in the desert
+      - position: NE
+        terrain: Hills
+        site: Mine
+        color: Red
+      - position: E
+        terrain: Desert
+      - position: SE
+        terrain: Desert
+        site: RampagingDraconum
+      - position: SW
+        terrain: Wasteland
+      - position: W
+        terrain: Wasteland
+        site: RampagingDraconum
+      - position: NW
+        terrain: Desert
+        site: Ruins
+
+  # ============================================================
+  # CORE TILES — NON-CITY (brown back, no city)
+  # ============================================================
+
+  - id: "tile_core_noncity_01"
+    type: Core
+    name: "Core Non-City Tile 1"
+    hexes:
+      - position: C
+        terrain: Desert
+        site: Monastery
+      - position: NE
+        terrain: Desert
+        site: Tomb
+      - position: E
+        terrain: Desert
+      - position: SE
+        terrain: Desert
+      - position: SW
+        terrain: Hills
+      - position: W
+        terrain: Hills
+        site: SpawningGrounds
+      - position: NW
+        terrain: Mountain
+
+  - id: "tile_core_noncity_02"
+    type: Core
+    name: "Core Non-City Tile 2"
+    hexes:
+      - position: C
+        terrain: Water
+      - position: NE
+        terrain: Swamp
+        site: Ruins
+      - position: E
+        terrain: Hills
+        site: Mine
+        color: Green
+      - position: SE
+        terrain: Swamp
+        site: RampagingDraconum
+      - position: SW
+        terrain: Swamp
+        site: MageTower
+      - position: W
+        terrain: Forest
+      - position: NW
+        terrain: Water
+
+  - id: "tile_core_noncity_03"
+    type: Core
+    name: "Core Non-City Tile 3"
+    hexes:
+      - position: C
+        terrain: Wasteland
+      - position: NE
+        terrain: Wasteland
+        site: Ruins
+      - position: E
+        terrain: Hills
+        site: MageTower
+      - position: SE
+        terrain: Wasteland
+      - position: SW
+        terrain: Hills
+        site: Mine
+        color: White
+      - position: W
+        terrain: Wasteland
+        site: Tomb
+      - position: NW
+        terrain: Mountain
+
+  - id: "tile_core_noncity_04"
+    type: Core
+    name: "Core Non-City Tile 4"
+    hexes:
+      - position: C
+        terrain: Mountain
+        site: RampagingDraconum
+      - position: NE
+        terrain: Hills
+      - position: E
+        terrain: Wasteland
+        site: Keep
+      - position: SE
+        terrain: Wasteland
+      - position: SW
+        terrain: Wasteland
+        site: Ruins
+      - position: W
+        terrain: Wasteland
+      - position: NW
+        terrain: Hills
+        site: Mine
+        color: Blue

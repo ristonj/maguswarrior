@@ -1,0 +1,19 @@
+# Debug hand preload — added to your hand at the start of every turn.
+# One card ID per line. Blank lines and lines starting with # are ignored.
+# Delete this file or clear all entries to disable.
+# Full card ID list: see data/cards.yaml
+#
+# Directives (one per line):
+#   day              — force day round each turn
+#   night            — force night round each turn
+#   dice: <colors>   — replace source dice each turn (colors: white blue red green gold black)
+#   Example: dice: white blue red green gold gold gold
+
+# Advanced action example
+decompose
+
+# Spell example
+fireball
+
+# Artifact example (long-press → "Play" = basic, "Play (break)" = powered/destroy)
+endless_bag_of_gold

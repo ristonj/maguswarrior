@@ -1,0 +1,105 @@
+# Mage Knight Digital — Tactic Card Definitions
+#
+# number: determines round order — lower number plays first
+# is_day: true = Day tactic, false = Night tactic
+# effect_text: exact text from physical card (shown to player in UI)
+#
+# EFFECT TYPES (under 'effects:')
+#   draw_now: N        — immediately draw N cards when tactic is taken
+#   bonus_hand_size: N — draw N extra cards on each hand draw this round
+#   (empty)            — effect_text is displayed to the player; resolved manually
+
+tactics:
+
+  # ─── Day Tactics ────────────────────────────────────────────────────────────
+
+  - id: early_bird
+    name: "Early Bird"
+    number: 1
+    is_day: true
+    effect_text: ""
+    effects: []
+
+  - id: rethink
+    name: "Rethink"
+    number: 2
+    is_day: true
+    effect_text: "When you take this Tactic, discard up to 3 cards (including Wounds) from your hand, then draw that many cards. Shuffle your discard pile back into your Deed deck."
+    effects:
+      - rethink: 3
+
+  - id: mana_steal
+    name: "Mana Steal"
+    number: 3
+    is_day: true
+    effect_text: "When you take this Tactic, take one mana die of a basic color from the Source and put it on this card. You can use that mana on any of your turns this Day. If you do, reroll it at the end of that turn and return it to the Source."
+    effects: []
+
+  - id: planning
+    name: "Planning"
+    number: 4
+    is_day: true
+    effect_text: "At the end of each turn, if you have at least two cards in your hand before you draw, draw up to your hand size and then draw an additional card."
+    effects:
+      - bonus_hand_size: 1
+
+  - id: great_start
+    name: "Great Start"
+    number: 5
+    is_day: true
+    effect_text: "When you take this Tactic, immediately draw 2 cards."
+    effects:
+      - draw_now: 2
+
+  - id: the_right_moment
+    name: "The Right Moment"
+    number: 6
+    is_day: true
+    effect_text: "One time this Day during your turn, you can announce that you will take another turn immediately after this. If you do, flip this card face down."
+    effects: []
+
+  # ─── Night Tactics ───────────────────────────────────────────────────────────
+
+  - id: from_the_dusk
+    name: "From the Dusk"
+    number: 1
+    is_day: false
+    effect_text: ""
+    effects: []
+
+  - id: long_night
+    name: "Long Night"
+    number: 2
+    is_day: false
+    effect_text: "One time this Night, if your Deed deck is empty, you may shuffle your discard pile and put 3 cards at random back into your Deed deck. Then flip this card face down."
+    effects: []
+
+  - id: mana_search
+    name: "Mana Search"
+    number: 3
+    is_day: false
+    effect_text: "Once per turn, before you use mana from the Source, you may reroll up to two mana dice in the Source. When choosing dice to reroll, you must pick gold (depleted) dice first, if there are any."
+    effects: []
+
+  - id: midnight_meditation
+    name: "Midnight Meditation"
+    number: 4
+    is_day: false
+    effect_text: "One time this Night, before any of your turns, you may shuffle up to 5 cards (including Wounds) from your hand back into your Deed deck and then draw that many cards. Then, flip this card face down."
+    effects:
+      - midnight_meditation: 5
+
+  - id: preparation
+    name: "Preparation"
+    number: 5
+    is_day: false
+    effect_text: "When you take this Tactic, search your deck for any one card and put it in your hand, then shuffle your deck."
+    effects:
+      - preparation: true
+
+  - id: sparing_power
+    name: "Sparing Power"
+    number: 6
+    is_day: false
+    effect_text: "Once before the start of each of your turns, choose one: Put the top card of your Deed deck face down under this card, or flip this card face down and put all Deed cards under it into your hand."
+    effects: []

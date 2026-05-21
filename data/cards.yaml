@@ -1,0 +1,1486 @@
+# Mage Knight Digital — Card Definitions
+#
+# FORMAT REFERENCE
+# ----------------
+# Each card entry:
+#
+#   - id: march                    # Must match CardId used in deck composition and game state
+#     type: BasicAction            # BasicAction | AdvancedAction | Spell | Artifact | Wound
+#     name: "March"                # Display name shown in hand UI and logs
+#     mana_cost: white             # Optional. Color required to play powered effect.
+#     unpowered:              # Effect when played without paying mana cost (or no mana cost)
+#       text: "..."                # Display text shown on card in UI
+#       <effect fields>
+#     powered:                # Effect when played with mana cost paid. Omit if card has no mana cost.
+#       text: "..."
+#       <effect fields>
+#
+# NOTE: Sideways play (Move 1 / Attack 1 / Block 1 / Influence 1) is a universal system
+# rule applied at the point of play depending on the current phase. It is NOT stored
+# per-card in this file.
+#
+# EFFECT FIELDS
+# -------------
+#   move: N                        — grant N movement points
+#   attack: N                      — grant N attack (physical melee by default)
+#   distance: ranged | siege       — attack distance (omit for melee)
+#   element: fire | ice | cold_fire — attack element (omit for physical)
+#   block: N                       — grant N block
+#   influence: N                   — grant N influence
+#   reputation: N                  — modify reputation track by N (negative = penalty)
+#   fame_if_interaction: N         — grant N fame, only if card played during an interaction
+#   reputation_if_interaction: N   — modify reputation by N, only if played during an interaction
+#   mana_token:                    — gain mana tokens
+#     colors: [blue, white, red]   — player picks one of the listed colors
+#     count: N                     — number of tokens gained
+#   extra_source_die: N            — may use N additional source dice this turn
+#   gain_crystal: paid_color       — gain a crystal matching the mana just paid
+#                  any_color       — gain a crystal; free choice of color
+#                  green           — gain a green crystal specifically
+#   discard_for:                   — discard another card from hand to get one of:
+#     choices: [move, influence, attack, block]
+#     amount: N
+#   choose_one: [...]              — player picks exactly one effect from the list
+#   heal: N                        — remove N wounds from hero or a unit
+#   draw: N                        — draw N cards from deck
+#   ready_unit:                    — un-wound a unit
+#     max_level: N                 — unit must be level N or below
+#   take_source_die:               — take a die from the Source
+#     set_to_any_except: gold      — set it to any color except the named one
+#     gain_tokens: N               — gain N mana tokens of the chosen color
+#     no_reroll: true              — do not reroll this die when returning it to Source
+#   play_with_card:                — play another Action card alongside this one
+#     bonus: N                     — if that card gives Move/Influence/Attack/Block, add N
+#     applies_to: [...]            — effect types the bonus applies to
+#   (block element defaults to physical; use element: fire | ice | cold_fire for elemental blocks)
+#   take_wound: true               — player takes a Wound as a cost
+#   end_of_turn_reputation: N      — modify reputation at end of turn (negative = penalty)
+#   end_of_turn_place: deck_bottom | deck_top  — where to return this card instead of discard
+#   terrain_cost_reduction:        — reduce move cost of terrain types
+#     terrains: [plains, desert, wasteland, forest, hill, swamp, lake, all]
+#     amount: N
+#     minimum: N
+#   terrain_cost_override:         — set move cost of specific terrains to exact value
+#     <terrain>: N
+#   terrain_cost_override_all: N   — set move cost of ALL terrains to this value
+#   unlock_terrain: [lake, ...]    — allow movement through normally impassable terrain
+#   pay_mana_choose:               — pay mana, effect depends on color paid
+#     <color>:
+#       <effect fields>
+#   unit_attack_bonus: N           — bonus added to the assigned unit's attack value
+#   unit_block_bonus: N            — bonus added to the assigned unit's block value
+#   unit_armor_bonus: N            — bonus added to the assigned unit's armor value
+#   unit_grant_resistance: [fire, ice, physical]  — assigned unit gains resistance
+#   all_units_attack_bonus: N      — bonus added to all friendly unit attack values
+#   all_units_block_bonus: N       — bonus added to all friendly unit block values
+#   all_units_armor_bonus: N       — bonus added to all friendly unit armor values
+#   influence_per_wound: N         — gain N influence for each Wound in hand or on a unit
+#   reduce_blocked_enemy_armor: N  — reduce armor of one blocked enemy by N (min 1)
+#   reroll_all_source_dice: true   — reroll every die in the Source
+#   gain_crystal_from_source_die: true  — pick a basic-color die, gain that crystal
+#   first_attack_bonus: N          — bonus to the first attack card played this turn
+#   first_block_bonus: N           — bonus to the first block card played this turn
+#   condition: play_first          — effect only applies when you act before opponents
+#
+# ARTIFACT NOTES
+# --------------
+# Artifacts have no mana_cost. Both unpowered and powered effects are available when played
+# from Inventory — unpowered is the standard effect, powered is the enhanced effect.
+# To use the powered effect, the artifact is broken (thrown away) instead of discarded after use.
+# No mana cost is required; destruction of the card is the cost.
+# Banner-type artifacts use unpowered for the persistent assign-to-unit effect, and powered
+# for the one-time break effect.
+#
+# SPELL NOTES
+# -----------
+# Spells use mana_cost to indicate the basic casting color. To cast unpowered, pay that
+# color. To cast powered, pay that color PLUS black mana. Some spells offer an alternate
+# effect by paying an additional mana of any color. mana_cost: any means any basic color.
+#
+# NOTES
+# -----
+# - Card counts per deck are defined in hero config, not here. This file is a catalog
+#   of what each card type does.
+# - Wound cards have no effect fields — they are defined in code only (WoundCard).
+# - SOURCE DICE RULE: Mana dice taken from the Source (extra_source_die, take_source_die)
+#   must be used immediately to power a card, unit, or skill. They do not generate tokens
+#   and cannot be saved. Exception: cards that explicitly say "gain a mana token" from the
+#   die (e.g. Mana Pull powered, Mana Draw powered) convert the die to a token on the spot.
+
+cards:
+
+  # ── Move Actions ─────────────────────────────────────────────────────────────
+
+  - id: march
+    type: BasicAction
+    name: March
+    mana_cost: green
+    unpowered:
+      effect_type: Move
+      text: "Move 2"
+      move: 2
+    powered:
+      effect_type: Move
+      text: "Move 4"
+      move: 4
+
+  - id: stamina
+    type: BasicAction
+    name: Stamina
+    mana_cost: blue
+    unpowered:
+      effect_type: Move
+      text: "Move 2"
+      move: 2
+    powered:
+      effect_type: Move
+      text: "Move 4"
+      move: 4
+
+  # ── Influence Actions ─────────────────────────────────────────────────────────
+
+  - id: threaten
+    type: BasicAction
+    name: Threaten
+    mana_cost: red
+    unpowered:
+      effect_type: Influence
+      text: "Influence 2"
+      influence: 2
+    powered:
+      effect_type: Influence
+      text: "Influence 5, Reputation -1"
+      influence: 5
+      reputation: -1
+
+  - id: promise
+    type: BasicAction
+    name: Promise
+    mana_cost: white
+    unpowered:
+      effect_type: Influence
+      text: "Influence 2"
+      influence: 2
+    powered:
+      effect_type: Influence
+      text: "Influence 4"
+      influence: 4
+
+  # ── Combat Actions ────────────────────────────────────────────────────────────
+
+  - id: rage
+    type: BasicAction
+    name: Rage
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      choose_one:
+        - attack: 2
+        - block: 2
+      text: "Attack or Block 2"
+    powered:
+      effect_type: Combat
+      text: "Attack 4"
+      attack: 4
+
+  - id: determination
+    type: BasicAction
+    name: Determination
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat
+      choose_one:
+        - attack: 2
+        - block: 2
+      text: "Attack or Block 2"
+    powered:
+      effect_type: Combat
+      text: "Block 5"
+      block: 5
+
+  # ── Mixed Actions ─────────────────────────────────────────────────────────────
+
+  - id: swiftness
+    type: BasicAction
+    name: Swiftness
+    mana_cost: white
+    unpowered:
+      effect_type: Move
+      text: "Move 2"
+      move: 2
+    powered:
+      effect_type: Combat
+      text: "Ranged Attack 3"
+      attack: 3
+      distance: ranged
+
+  - id: improvisation
+    type: BasicAction
+    name: Improvisation
+    mana_cost: red
+    unpowered:
+      effect_type: [Move, Influence, Combat]  # depends on player's choice
+      text: "Discard another card from your hand to get Move 3, Influence 3, Attack 3, or Block 3."
+      discard_for:
+        choices: [move, influence, attack, block]
+        amount: 3
+    powered:
+      effect_type: [Move, Influence, Combat]  # depends on player's choice
+      text: "Discard another card from your hand to get Move 5, Influence 5, Attack 5, or Block 5."
+      discard_for:
+        choices: [move, influence, attack, block]
+        amount: 5
+
+  # ── Special Actions ───────────────────────────────────────────────────────────
+
+  - id: crystallize
+    type: BasicAction
+    name: Crystallize
+    mana_cost: blue
+    unpowered:
+      effect_type: Special
+      text: "When you play this card, also pay one mana of a basic color. Gain a crystal of that color."
+      gain_crystal: paid_color
+    powered:
+      effect_type: Special
+      text: "Gain a crystal of any color."
+      gain_crystal: any_color
+
+  - id: concentration
+    type: BasicAction
+    name: Concentration
+    mana_cost: green
+    unpowered:
+      effect_type: Special
+      text: "Gain a blue, white, or red mana token."
+      mana_token:
+        colors: [blue, white, red]
+        count: 1
+    powered:
+      effect_type: Special
+      text: "Play another Action card alongside this one. Get the stronger effect of that card for free. If that effect gives Move, Influence, Block, or any type of Attack, get that amount plus 2."
+      play_with_card:
+        bonus: 2
+        applies_to: [move, influence, attack, block]
+
+  - id: mana_draw
+    type: BasicAction
+    name: Mana Draw
+    mana_cost: white
+    unpowered:
+      effect_type: Special
+      text: "Use one additional mana die from the Source this turn."
+      extra_source_die: 1
+    powered:
+      effect_type: Special
+      text: "Take a mana die from the Source and set it to any color except gold. Gain two mana tokens of that color. Do not reroll this die when returning it to the Source."
+      take_source_die:
+        set_to_any_except: gold
+        gain_tokens: 2
+        no_reroll: true
+
+  - id: tranquility
+    type: BasicAction
+    name: Tranquility
+    mana_cost: green
+    unpowered:
+      effect_type: Healing
+      text: "Heal 1 or draw a card."
+      choose_one:
+        - heal: 1
+        - draw: 1
+    powered:
+      effect_type: Healing
+      text: "Heal 2 or draw two cards."
+      choose_one:
+        - heal: 2
+        - draw: 2
+
+  # ── Nick (Norowas) Hero-Specific Starting Cards ───────────────────────────────
+
+  - id: noble_manners
+    type: BasicAction
+    hero: nick
+    name: Noble Manners
+    mana_cost: white
+    unpowered:
+      effect_type: Influence
+      text: "Influence 2. +1 Fame if used during an interaction."
+      influence: 2
+      fame_if_interaction: 1
+    powered:
+      effect_type: Influence
+      text: "Influence 4. +1 Fame and +1 Reputation if used during an interaction."
+      influence: 4
+      fame_if_interaction: 1
+      reputation_if_interaction: 1
+
+  - id: rejuvenate
+    type: BasicAction
+    hero: nick
+    name: Rejuvenate
+    mana_cost: green
+    unpowered:
+      effect_type: Healing  # heal/draw/ready_unit=Healing; mana_token=Special
+      text: "Choose one: Heal 1, draw a card, gain a green mana token, or ready a level I or II unit."
+      choose_one:
+        - heal: 1
+        - draw: 1
+        - mana_token:
+            colors: [green]
+            count: 1
+        - ready_unit:
+            max_level: 2
+    powered:
+      effect_type: Healing  # heal/draw/ready_unit=Healing; gain_crystal=Special
+      text: "Choose one: Heal 2, draw two cards, gain a green crystal, or ready a level I, II, or III unit."
+      choose_one:
+        - heal: 2
+        - draw: 2
+        - gain_crystal: green
+        - ready_unit:
+            max_level: 3
+
+  # ── Thomas (Torak) Hero-Specific Starting Cards ──────────────────────────────
+
+  - id: instinct
+    type: BasicAction
+    hero: thomas
+    name: Instinct
+    mana_cost: red
+    unpowered:
+      effect_type: [Move, Influence, Combat]
+      text: "Move 2, Influence 2, Attack 2, or Block 2."
+      choose_one:
+        - move: 2
+        - influence: 2
+        - attack: 2
+        - block: 2
+    powered:
+      effect_type: [Move, Influence, Combat]
+      text: "Move 4, Influence 4, Attack 4, or Block 4."
+      choose_one:
+        - move: 4
+        - influence: 4
+        - attack: 4
+        - block: 4
+
+  - id: cold_toughness
+    type: BasicAction
+    hero: thomas
+    name: Cold Toughness
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat
+      text: "Attack 2 or Ice Block 3."
+      choose_one:
+        - attack: 2
+        - block: 3
+          element: ice
+    powered:
+      effect_type: Combat
+      text: "Ice Block 5. Get +1 Ice Block for each ability or color of attack depicted on the enemy token you block (unless it has arcane immunity), or for each mana spent by an opponent during an attack."
+      block: 5
+      element: ice
+      ice_block_scaling:
+        except: arcane_immunity
+        # only abilities on the token itself count; site-based fortification does not
+        per_ability:
+          physical: 0
+          fire: 1
+          ice: 1
+          cold_fire: 2
+          swift: 1
+          brutal: 1
+          poison: 1
+          paralyze: 1
+          fortified: 1
+          physical_resistance: 1
+          fire_resistance: 1
+          ice_resistance: 1
+
+  # ── Aretha (Arythea) Hero-Specific Starting Cards ─────────────────────────────
+
+  - id: battle_versatility
+    type: BasicAction
+    hero: aretha
+    name: Battle Versatility
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Attack 2, Block 2, or Ranged Attack 1."
+      choose_one:
+        - attack: 2
+        - block: 2
+        - attack: 1
+          distance: ranged
+    powered:
+      effect_type: Combat
+      text: "Attack 4, Block 4, Fire Attack 3, Fire Block 3, Ranged Attack 3, or Siege Attack 2."
+      choose_one:
+        - attack: 4
+        - block: 4
+        - attack: 3
+          element: fire
+        - block: 3
+          element: fire
+        - attack: 3
+          distance: ranged
+        - attack: 2
+          distance: siege
+
+  - id: mana_pull
+    type: BasicAction
+    hero: aretha
+    name: Mana Pull
+    mana_cost: white
+    unpowered:
+      effect_type: Special
+      text: "You can use one additional mana die from the Source this turn. If that die is black, use it to produce mana of any color."
+      extra_source_die: 1
+      black_source_die_as_any_color: true
+      # UX: when player takes this extra die, immediately prompt them to select
+      # a card, unit, or skill to power with it — Source dice cannot be saved
+    powered:
+      effect_type: Special
+      text: "Take two dice from the Source and set them to any color except gold. Gain a mana token of each of these colors. Do not reroll these dice when you return them to the Source."
+      # Exception to the immediate-use rule: this card explicitly generates tokens
+      # which may be used later this turn
+      take_source_die:
+        count: 2
+        set_to_any_except: gold
+        gain_tokens_per_die: 1
+        no_reroll: true
+
+  # ── George (Goldyx) Hero-Specific Starting Cards ──────────────────────────────
+
+  - id: will_focus
+    type: BasicAction
+    hero: george
+    name: Will Focus
+    mana_cost: green
+    unpowered:
+      effect_type: Special
+      text: "Gain a blue, white, or red mana token, or add a green crystal to your inventory."
+      choose_one:
+        - mana_token:
+            colors: [blue, white, red]
+            count: 1
+        - gain_crystal: green
+    powered:
+      effect_type: Special
+      text: "Play another Action card alongside this one. Get the stronger effect of that card for free. If that effect gives Move, Influence, Block, or any type of Attack, get that amount plus 3."
+      play_with_card:
+        bonus: 3
+        applies_to: [move, influence, attack, block]
+
+  - id: crystal_joy
+    type: BasicAction
+    hero: george
+    name: Crystal Joy
+    mana_cost: blue
+    unpowered:
+      effect_type: Special
+      text: "When you play this card, also pay one mana of a basic color. Gain a crystal of that color. At the end of your turn, you may discard another non-wound card to take this card back to your hand."
+      gain_crystal: paid_color
+      end_of_turn_return:
+        cost: discard_non_wound
+        return_to: hand
+    powered:
+      effect_type: Special
+      text: "Gain a crystal of any color. At the end of your turn, you may discard a card including a Wound to take this card back to your hand."
+      gain_crystal: any_color
+      end_of_turn_return:
+        cost: discard_any
+        return_to: hand
+
+  # ── Advanced Actions ──────────────────────────────────────────────────────────
+
+  - id: fire_bolt
+    type: AdvancedAction
+    name: Fire Bolt
+    mana_cost: red
+    unpowered:
+      effect_type: Special
+      text: "Gain a red crystal to your Inventory."
+      gain_crystal: red
+    powered:
+      effect_type: Combat
+      text: "Ranged Fire Attack 3."
+      attack: 3
+      distance: ranged
+      element: fire
+
+  - id: ice_bolt
+    type: AdvancedAction
+    name: Ice Bolt
+    mana_cost: blue
+    unpowered:
+      effect_type: Special
+      text: "Gain a blue crystal to your Inventory."
+      gain_crystal: blue
+    powered:
+      effect_type: Combat
+      text: "Ranged Ice Attack 3."
+      attack: 3
+      distance: ranged
+      element: ice
+
+  - id: swift_bolt
+    type: AdvancedAction
+    name: Swift Bolt
+    mana_cost: white
+    unpowered:
+      effect_type: Special
+      text: "Gain a white crystal to your Inventory."
+      gain_crystal: white
+    powered:
+      effect_type: Combat
+      text: "Ranged Attack 4."
+      attack: 4
+      distance: ranged
+
+  - id: crushing_bolt
+    type: AdvancedAction
+    name: Crushing Bolt
+    mana_cost: green
+    unpowered:
+      effect_type: Special
+      text: "Gain a green crystal to your Inventory."
+      gain_crystal: green
+    powered:
+      effect_type: Combat
+      text: "Siege Attack 3."
+      attack: 3
+      distance: siege
+
+  - id: blood_rage
+    type: AdvancedAction
+    name: Blood Rage
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Attack 2. You may take a Wound to increase this to Attack 5."
+      attack: 2
+      optional_wound_bonus:
+        take_wound: true
+        attack: 5
+    powered:
+      effect_type: Combat
+      text: "Attack 4. You may take a Wound to increase this to Attack 9."
+      attack: 4
+      optional_wound_bonus:
+        take_wound: true
+        attack: 9
+
+  - id: ice_shield
+    type: AdvancedAction
+    name: Ice Shield
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat
+      text: "Ice Block 3."
+      block: 3
+      element: ice
+    powered:
+      effect_type: Combat
+      text: "Ice Block 3. Reduce the Armor of one enemy blocked this way by 3 (minimum 1)."
+      block: 3
+      element: ice
+      reduce_blocked_enemy_armor: 3
+
+  - id: agility
+    type: AdvancedAction
+    name: Agility
+    mana_cost: white
+    unpowered:
+      effect_type: Move
+      text: "Move 2. During combat this turn, you may spend remaining Move points as Attack 1 each."
+      move: 2
+      special: move_as_attack
+    powered:
+      effect_type: Move
+      text: "Move 4. During combat this turn, you may spend remaining Move points as Attack 1 each, or 2 Move points for Ranged Attack 1."
+      move: 4
+      special: move_as_attack_or_ranged
+
+  - id: refreshing_walk
+    type: AdvancedAction
+    name: Refreshing Walk
+    mana_cost: green
+    unpowered:
+      effect_type: Move
+      text: "Move 2 and Heal 1."
+      move: 2
+      heal: 1
+    powered:
+      effect_type: Move
+      text: "Move 4 and Heal 2."
+      move: 4
+      heal: 2
+
+  - id: intimidate
+    type: AdvancedAction
+    name: Intimidate
+    mana_cost: red
+    unpowered:
+      effect_type: [Influence, Combat]  # depends on player's choice
+      text: "Influence 4 or Attack 3. Reputation -1 at the end of your turn."
+      choose_one:
+        - effect_type: Influence
+          influence: 4
+        - effect_type: Combat
+          attack: 3
+      end_of_turn_reputation: -1
+    powered:
+      effect_type: [Influence, Combat]
+      text: "Influence 8 or Attack 7. Reputation -2 at the end of your turn."
+      choose_one:
+        - effect_type: Influence
+          influence: 8
+        - effect_type: Combat
+          attack: 7
+      end_of_turn_reputation: -2
+
+  - id: frost_bridge
+    type: AdvancedAction
+    name: Frost Bridge
+    mana_cost: blue
+    unpowered:
+      effect_type: Move
+      text: "Move 2. The Move cost of swamps is reduced to 1 this turn."
+      move: 2
+      terrain_cost_override:
+        swamp: 1
+    powered:
+      effect_type: Move
+      text: "Move 4. You may travel through lakes this turn. The Move cost of lakes and swamps is reduced to 1."
+      move: 4
+      terrain_cost_override:
+        swamp: 1
+        lake: 1
+      unlock_terrain: [lake]
+
+  - id: song_of_wind
+    type: AdvancedAction
+    name: Song of Wind
+    mana_cost: white
+    unpowered:
+      effect_type: Move
+      text: "Move 2. The Move cost of plains, deserts and wastelands is reduced by 1 (minimum 0) this turn."
+      move: 2
+      terrain_cost_reduction:
+        terrains: [plains, desert, wasteland]
+        amount: 1
+        minimum: 0
+    powered:
+      effect_type: Move
+      text: "Move 2. The Move cost of plains, deserts and wastelands is reduced by 2 (minimum 0). You may pay blue mana to travel through lakes at Move cost 1."
+      move: 2
+      terrain_cost_reduction:
+        terrains: [plains, desert, wasteland]
+        amount: 2
+        minimum: 0
+      special: optional_blue_mana_lake_access
+
+  - id: path_finding
+    type: AdvancedAction
+    name: Path Finding
+    mana_cost: green
+    unpowered:
+      effect_type: Move
+      text: "Move 2. The Move cost of all terrains is reduced by 1 (minimum 2) this turn."
+      move: 2
+      terrain_cost_reduction:
+        terrains: [all]
+        amount: 1
+        minimum: 2
+    powered:
+      effect_type: Move
+      text: "Move 4. The Move cost of all terrains is reduced to 2 this turn."
+      move: 4
+      terrain_cost_override_all: 2
+
+  - id: blood_ritual
+    type: AdvancedAction
+    name: Blood Ritual
+    mana_cost: red
+    unpowered:
+      effect_type: Special
+      text: "Take a Wound. Gain a red mana token and a mana token of any color (including non-basic)."
+      take_wound: true
+      mana_token:
+        colors: [red]
+        count: 1
+      special: gain_any_mana_token_including_black
+    powered:
+      effect_type: Special
+      text: "Take a Wound. Gain three mana tokens of any colors (including non-basic)."
+      take_wound: true
+      special: gain_three_any_mana_tokens_including_black
+
+  - id: pure_magic
+    type: AdvancedAction
+    name: Pure Magic
+    mana_cost: blue
+    unpowered:
+      effect_type: [Move, Influence, Combat]  # depends on mana color paid
+      text: "Pay a mana. If green, Move 4. If white, Influence 4. If blue, Block 4. If red, Attack 4."
+      pay_mana_choose:
+        green:
+          effect_type: Move
+          move: 4
+        white:
+          effect_type: Influence
+          influence: 4
+        blue:
+          effect_type: Combat
+          block: 4
+        red:
+          effect_type: Combat
+          attack: 4
+    powered:
+      effect_type: [Move, Influence, Combat]
+      text: "Pay a mana. If green, Move 7. If white, Influence 7. If blue, Block 7. If red, Attack 7."
+      pay_mana_choose:
+        green:
+          effect_type: Move
+          move: 7
+        white:
+          effect_type: Influence
+          influence: 7
+        blue:
+          effect_type: Combat
+          block: 7
+        red:
+          effect_type: Combat
+          attack: 7
+
+  - id: heroic_tale
+    type: AdvancedAction
+    name: Heroic Tale
+    mana_cost: white
+    unpowered:
+      effect_type: Influence
+      text: "Influence 3. For each Unit you recruited this turn, Reputation +1 at the end of your turn."
+      influence: 3
+      special: reputation_plus_one_per_recruited_unit
+    powered:
+      effect_type: Influence
+      text: "Influence 6. For each Unit you recruited this turn, Fame +1 and Reputation +1 at the end of your turn."
+      influence: 6
+      special: fame_and_reputation_plus_one_per_recruited_unit
+
+  - id: regeneration
+    type: AdvancedAction
+    name: Regeneration
+    mana_cost: green
+    unpowered:
+      effect_type: Healing
+      text: "Heal 1. Ready a Level I or II Unit you control."
+      heal: 1
+      ready_unit:
+        max_level: 2
+    powered:
+      effect_type: Healing
+      text: "Heal 2. Ready a Level I, II or III Unit you control."
+      heal: 2
+      ready_unit:
+        max_level: 3
+
+  - id: into_the_heat
+    type: AdvancedAction
+    name: Into the Heat
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Play at start of combat. All your Units get Attack and Block +2 this combat. You may not assign damage to units this turn."
+      all_units_attack_bonus: 2
+      all_units_block_bonus: 2
+      assign_damage_units: false
+    powered:
+      effect_type: Combat
+      text: "Play at start of combat. All your Units get Attack and Block +3 this combat. You may not assign damage to units this turn."
+      all_units_attack_bonus: 3
+      all_units_block_bonus: 3
+      assign_damage_units: false
+
+  - id: steady_tempo
+    type: AdvancedAction
+    name: Steady Tempo
+    mana_cost: blue
+    unpowered:
+      effect_type: Move
+      text: "Move 2. At end of turn, instead of discarding, place this card on the bottom of your Deed deck as long as it is not empty."
+      move: 2
+      end_of_turn_place: deck_bottom
+    powered:
+      effect_type: Move
+      text: "Move 4. At end of turn, instead of discarding, place this card on top of your Deed deck."
+      move: 4
+      end_of_turn_place: deck_top
+
+  - id: diplomacy
+    type: AdvancedAction
+    name: Diplomacy
+    mana_cost: white
+    unpowered:
+      effect_type: [Influence, Combat]  # influence now; special allows spending it as block during combat
+      text: "Influence 2. You may use Influence as Block this turn."
+      influence: 2
+      special: influence_as_block
+    powered:
+      effect_type: [Influence, Combat]
+      text: "Influence 4. Choose Ice or Fire. You may use Influence as Block for the chosen element this turn."
+      influence: 4
+      special: influence_as_elemental_block_choose_ice_or_fire
+
+  - id: in_need
+    type: AdvancedAction
+    name: In Need
+    mana_cost: green
+    unpowered:
+      effect_type: Influence
+      text: "Influence 2. Get Influence 1 for each Wound card in your hand or on a Unit you control."
+      influence_per_wound: 1
+      influence: 2
+    powered:
+      effect_type: Influence
+      text: "Influence 4. Get Influence 2 for each Wound card in your hand or on a Unit you control."
+      influence_per_wound: 2
+      influence: 4
+
+  - id: decompose
+    type: AdvancedAction
+    name: Decompose
+    mana_cost: red
+    unpowered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand. Gain two crystals to your Inventory of the same color as the thrown card."
+      special: throw_away_action_gain_two_crystals_matching_color
+    powered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand. Gain a crystal of each basic color that does not match the thrown card's color."
+      special: throw_away_action_gain_crystals_other_colors
+
+  - id: crystal_mastery
+    type: AdvancedAction
+    name: Crystal Mastery
+    mana_cost: blue
+    unpowered:
+      effect_type: Special
+      text: "Gain a crystal to your Inventory of the same color as a crystal you already own."
+      gain_crystal: matching_owned
+    powered:
+      effect_type: Special
+      text: "At the end of this turn, any crystals you spent this turn are returned to your Inventory."
+      special: crystals_spent_returned_end_of_turn
+
+  - id: mana_storm
+    type: AdvancedAction
+    name: Mana Storm
+    mana_cost: white
+    unpowered:
+      effect_type: Special
+      text: "Choose a basic-color mana die in the Source. Gain a crystal of that color, then immediately reroll that die."
+      gain_crystal_from_source_die: true
+    powered:
+      effect_type: Special
+      text: "Reroll all dice in the Source. You may use three extra dice, and you can use any dice showing black or gold as any basic color, regardless of round."
+      reroll_all_source_dice: true
+      extra_source_die: 3
+      black_and_gold_source_as_any_color: true
+
+  - id: ambush
+    type: AdvancedAction
+    name: Ambush
+    mana_cost: green
+    unpowered:
+      effect_type: Move  # move now; bonuses apply when combat cards are played
+      text: "Move 2. +1 to your first Attack of any type, or +2 to your first Block of any type, whichever you play first."
+      first_attack_bonus: 1
+      first_block_bonus: 2
+      move: 2
+    powered:
+      effect_type: Move
+      text: "Move 4. +2 to your first Attack of any type, or +4 to your first Block card of any type, whichever you play first."
+      first_attack_bonus: 2
+      first_block_bonus: 4
+      move: 4
+
+  - id: maximal_effect
+    type: AdvancedAction
+    name: Maximal Effect
+    mana_cost: red
+    unpowered:
+      effect_type: Special  # type of generated effect depends on the discarded card
+      text: "Throw away another Action card from your hand. Use the basic effect of that card three times."
+      special: throw_away_action_use_basic_effect_three_times
+    powered:
+      effect_type: Special
+      text: "Throw away another Action card from your hand. Use the stronger effect of that card two times, for free."
+      special: throw_away_action_use_powered_effect_twice_free
+
+  - id: magic_talent
+    type: AdvancedAction
+    name: Magic Talent
+    mana_cost: blue
+    unpowered:
+      effect_type: Special
+      text: "Discard a card from your hand. You may use a Spell in the Spells offer as if it were in your hand. That card remains in the Spells offer."
+      special: hand_card_as_spell_from_offer
+    powered:
+      effect_type: Special
+      text: "Pay a mana of any color. Gain a Spell card of that color from the Spells Offer into your discard pile."
+      special: pay_any_mana_gain_spell_matching_color_to_discard
+
+  - id: learning
+    type: AdvancedAction
+    name: Learning
+    mana_cost: white
+    unpowered:
+      effect_type: [Influence, Special]  # influence now; special allows spending it to buy advanced action
+      text: "Influence 2. Once this turn, pay 6 Influence to gain an Advanced Action card from the offer into your discard pile."
+      special: buy_advanced_action_to_discard_cost_6_influence
+      influence: 2
+    powered:
+      effect_type: [Influence, Special]
+      text: "Influence 4. Once this turn, pay Influence 9 to gain an Advanced Action card from the offer into your hand."
+      special: buy_advanced_action_to_hand_cost_9_influence
+      influence: 4
+
+  - id: training
+    type: AdvancedAction
+    name: Training
+    mana_cost: green
+    unpowered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand, then take an Advanced Action of the same color from the offer into your discard pile."
+      special: exchange_action_for_advanced_action_to_discard
+    powered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand, then take an Advanced Action of the same color from the offer into your hand."
+      special: exchange_action_for_advanced_action_to_hand
+
+  # ── Artifacts ─────────────────────────────────────────────────────────────────
+
+  - id: banner_of_glory
+    type: Artifact
+    name: Banner of Glory
+    unpowered:
+      effect_type: Banner
+      text: "Assigned Unit gets Armor +1 and +1 to attacks/blocks. Fame +1 whenever it attacks or blocks."
+      unit_armor_bonus: 1
+      unit_attack_bonus: 1
+      unit_block_bonus: 1
+      special: fame_plus_one_on_unit_attack_or_block
+    powered:
+      effect_type: Combat
+      text: "All Units you control get Armor +1 and +1 to attacks/blocks this turn. Fame +1 for each Unit that attacks or blocks."
+      all_units_armor_bonus: 1
+      all_units_attack_bonus: 1
+      all_units_block_bonus: 1
+      special: fame_plus_one_per_unit_attacking_or_blocking
+
+  - id: banner_of_fear
+    type: Artifact
+    name: Banner of Fear
+    unpowered:
+      effect_type: Banner
+      text: "During the Block phase, you may spend this Unit to cancel one attack. If you do, Fame +1."
+      special: cancel_attack_fame_plus_one
+      fame: 1
+    powered:
+      effect_type: Combat
+      text: "Skip the Block and Damage phases of this combat."
+      special: skip_block_and_damage_phases
+
+  - id: banner_of_protection
+    type: Artifact
+    name: Banner of Protection
+    unpowered:
+      effect_type: Banner
+      text: "Assigned Unit gets Armor +1, fire resistance and ice resistance."
+      unit_armor_bonus: 1
+      unit_grant_resistance: [fire, ice]
+    powered:
+      effect_type: Healing  # discarding wounds is a healing-type effect
+      text: "At the end of your turn, throw away all Wounds you received this turn."
+      special: discard_all_wounds_received_this_turn
+
+  - id: banner_of_courage
+    type: Artifact
+    name: Banner of Courage
+    unpowered:
+      effect_type: Banner
+      text: "Once per Round (except during combat), flip this card face down to Ready the assigned Unit. Flip it face up at the beginning of each Round."
+      special: once_per_round_ready_assigned_unit
+    powered:
+      effect_type: Healing
+      text: "Play any time other than combat. Ready all Units you control."
+      special: ready_all_units
+
+  - id: ruby_ring
+    type: Artifact
+    name: Ruby Ring
+    unpowered:
+      effect_type: Special
+      text: "Gain a red mana token and a red crystal. Fame +1."
+      mana_token:
+        colors: [red]
+        count: 1
+      gain_crystal: red
+      fame: 1
+    powered:
+      effect_type: Special
+      text: "Endless supply of red and black mana this turn. Fame +1 for each red Spell you cast this turn."
+      special: endless_red_and_black_mana_this_turn
+      special_fame: fame_plus_one_per_red_spell_cast
+
+  - id: sapphire_ring
+    type: Artifact
+    name: Sapphire Ring
+    unpowered:
+      effect_type: Special
+      text: "Gain a blue mana token and a blue crystal. Fame +1."
+      mana_token:
+        colors: [blue]
+        count: 1
+      gain_crystal: blue
+      fame: 1
+    powered:
+      effect_type: Special
+      text: "Endless supply of blue and black mana this turn. Fame +1 for each blue Spell you cast this turn."
+      special: endless_blue_and_black_mana_this_turn
+      special_fame: fame_plus_one_per_blue_spell_cast
+
+  - id: diamond_ring
+    type: Artifact
+    name: Diamond Ring
+    unpowered:
+      effect_type: Special
+      text: "Gain a white mana token and a white crystal. Fame +1."
+      mana_token:
+        colors: [white]
+        count: 1
+      gain_crystal: white
+      fame: 1
+    powered:
+      effect_type: Special
+      text: "Endless supply of white and black mana this turn. Fame +1 for each white Spell you cast this turn."
+      special: endless_white_and_black_mana_this_turn
+      special_fame: fame_plus_one_per_white_spell_cast
+
+  - id: emerald_ring
+    type: Artifact
+    name: Emerald Ring
+    unpowered:
+      effect_type: Special
+      text: "Gain a green mana token and a green crystal. Fame +1."
+      mana_token:
+        colors: [green]
+        count: 1
+      gain_crystal: green
+      fame: 1
+    powered:
+      effect_type: Special
+      text: "Endless supply of green and black mana this turn. Fame +1 for each green Spell you cast this turn."
+      special: endless_green_and_black_mana_this_turn
+      special_fame: fame_plus_one_per_green_spell_cast
+
+  - id: sword_of_justice
+    type: Artifact
+    name: Sword of Justice
+    unpowered:
+      effect_type: Combat
+      text: "Discard any number of cards from your hand. Attack 3 for each card discarded. Fame +1 for each enemy you defeat this turn."
+      special: attack_three_per_card_discarded
+      special_fame: fame_plus_one_per_enemy_defeated
+    powered:
+      effect_type: Combat
+      text: "Double all physical attacks this turn. Enemies lose physical resistance this turn. Fame +1 for each enemy you defeat this combat."
+      special: double_physical_attacks_enemies_lose_physical_resistance
+      special_fame: fame_plus_one_per_enemy_defeated_this_combat
+
+  - id: horn_of_wrath
+    type: Artifact
+    name: Horn of Wrath
+    unpowered:
+      effect_type: Combat
+      text: "Siege Attack 6. Roll a mana die; if black or red you get a Wound."
+      attack: 6
+      distance: siege
+      special: roll_mana_die_black_or_red_take_wound
+    powered:
+      effect_type: Combat
+      text: "Siege Attack 6. You may add up to +6; for each +1 added roll a mana die and take a Wound for each black or red result."
+      attack: 6
+      distance: siege
+      special: siege_attack_up_to_plus_six_wounds_for_black_or_red
+
+  - id: endless_bag_of_gold
+    type: Artifact
+    name: Endless Bag of Gold
+    unpowered:
+      effect_type: Influence
+      text: "Influence 4, Fame +2."
+      influence: 4
+      fame: 2
+    powered:
+      effect_type: Influence
+      text: "Influence 9, Fame +3."
+      influence: 9
+      fame: 3
+
+  - id: endless_gem_pouch
+    type: Artifact
+    name: Endless Gem Pouch
+    unpowered:
+      effect_type: Special
+      text: "Roll a mana die twice. Gain a crystal for each color rolled (gold = your choice). Black = Fame +1 instead."
+      special: roll_mana_die_twice_gain_crystals_or_fame
+    powered:
+      effect_type: Special
+      text: "Gain a mana token of each basic color. Also gain a gold (day) or black (night) mana token."
+      mana_token:
+        colors: [red, blue, white, green]
+        count: 1
+        one_of_each: true
+      special: plus_gold_day_or_black_night_mana_token
+
+  - id: golden_grail
+    type: Artifact
+    name: Golden Grail
+    unpowered:
+      effect_type: Healing
+      text: "Heal 2. Fame +1 for each point of Healing spent this turn."
+      heal: 2
+      special: fame_plus_one_per_healing_point_spent
+    powered:
+      effect_type: Healing
+      text: "Heal 6. Every time you Heal a Wound from hand this turn, draw a card."
+      heal: 6
+      special: draw_card_each_time_wound_healed_from_hand
+
+  - id: book_of_wisdom
+    type: Artifact
+    name: Book of Wisdom
+    unpowered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand. Gain an Advanced Action from the offer matching the color of the card you threw away."
+      special: discard_action_gain_advanced_action_matching_color
+    powered:
+      effect_type: Special
+      text: "Throw away an Action card from your hand. Gain a Spell matching the color of the card you threw away, plus a crystal of that color."
+      special: discard_action_gain_spell_matching_color_and_one_crystal
+
+  - id: amulet_of_sun
+    type: Artifact
+    name: Amulet of Sun
+    unpowered:
+      effect_type: Special
+      text: "Gain a gold mana token. During night, forests cost 3 to enter and gold mana counts as any basic color. Fortified sites and Ruins are treated as Day."
+      mana_token:
+        colors: [gold]
+        count: 1
+      special: [fortified_sites_and_ruins_as_day, forests_cost_3_gold_as_any_basic_night]
+    powered:
+      effect_type: Special
+      text: "Same as the basic effect, except you gain three gold mana tokens instead of one."
+      mana_token:
+        colors: [gold]
+        count: 3
+      special: [fortified_sites_and_ruins_as_day, forests_cost_3_gold_as_any_basic_night]
+
+  - id: amulet_of_darkness
+    type: Artifact
+    name: Amulet of Darkness
+    unpowered:
+      effect_type: Special
+      text: "Gain a mana token of any color. If played during the Day, deserts cost 3 to enter and black mana counts as Night mana."
+      mana_token:
+        colors: [red, blue, white, green, black]
+        count: 1
+      special: day_deserts_cost_3_black_as_night_mana
+    powered:
+      effect_type: Special
+      text: "Gain three mana tokens of any colors (may be different colors). Same terrain effect."
+      mana_token:
+        colors: [red, blue, white, green, black]
+        count: 3
+      special: day_deserts_cost_3_black_as_night_mana
+
+  # ── Spells ────────────────────────────────────────────────────────────────────
+
+  - id: fireball
+    type: Spell
+    name: Fireball
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Ranged Fire Attack 5."
+      attack: 5
+      distance: ranged
+      element: fire
+    powered:
+      effect_type: Combat
+      text: "Firestorm: Take a Wound. Siege Fire Attack 8."
+      take_wound: true
+      attack: 8
+      distance: siege
+      element: fire
+
+  - id: snowstorm
+    type: Spell
+    name: Snowstorm
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat
+      text: "Ranged Ice Attack 5."
+      attack: 5
+      distance: ranged
+      element: ice
+    powered:
+      effect_type: Combat
+      text: "Blizzard: Take a Wound. Siege Ice Attack 8."
+      take_wound: true
+      attack: 8
+      distance: siege
+      element: ice
+
+  - id: expose
+    type: Spell
+    name: Expose
+    mana_cost: white
+    unpowered:
+      effect_type: Combat
+      text: "Target enemy loses all fortifications and resistances this combat. Ranged Attack 2."
+      attack: 2
+      distance: ranged
+      special: target_enemy_loses_fortifications_and_resistances
+    powered:
+      effect_type: Combat
+      text: "Mass Expose: Enemies lose all fortifications this combat, or all enemies lose all resistances this combat. Ranged Attack 3."
+      attack: 3
+      distance: ranged
+      special: all_enemies_lose_fortifications_or_all_lose_resistances
+
+  - id: tremor
+    type: Spell
+    name: Tremor
+    mana_cost: green
+    unpowered:
+      effect_type: Combat
+      text: "Target enemy gets Armor -3, or all enemies get Armor -2. Armor cannot be reduced below 1."
+      special: target_armor_minus_3_or_all_armor_minus_2_min_1
+    powered:
+      effect_type: Combat
+      text: "Earthquake: Target enemy gets Armor -3 (-6 if fortified), or all enemies get Armor -2 (-4 if fortified). Armor cannot be reduced below 1."
+      special: target_armor_minus_6_fortified_or_all_armor_minus_4_fortified_min_1
+
+  - id: flame_wall
+    type: Spell
+    name: Flame Wall
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Fire Attack 5, or Fire Block 7."
+      choose_one:
+        - attack: 5
+          element: fire
+        - block: 7
+          element: fire
+    powered:
+      effect_type: Combat
+      text: "Flame Wave: Fire Attack 5, or Fire Block 7. This attack or block gets +2 for each enemy token you are facing."
+      choose_one:
+        - attack: 5
+          element: fire
+        - block: 7
+          element: fire
+      special: plus_two_per_enemy_token_facing
+
+  - id: mana_bolt
+    type: Spell
+    name: Mana Bolt
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat  # all pay_mana_choose options are attacks
+      text: "Pay a mana. Blue: Ice Attack 8. Red: Cold Fire Attack 7. White: Ranged Ice Attack 6. Green: Siege Ice Attack 5."
+      pay_mana_choose:
+        blue:
+          effect_type: Combat
+          attack: 8
+          element: ice
+        red:
+          effect_type: Combat
+          attack: 7
+          element: cold_fire
+        white:
+          effect_type: Combat
+          attack: 6
+          distance: ranged
+          element: ice
+        green:
+          effect_type: Combat
+          attack: 5
+          distance: siege
+          element: ice
+    powered:
+      effect_type: Combat
+      text: "Mana Thunderbolt: Pay a mana. Blue: Ice Attack 11. Red: Cold Fire Attack 9. White: Ranged Ice Attack 8. Green: Siege Ice Attack 8."
+      pay_mana_choose:
+        blue:
+          effect_type: Combat
+          attack: 11
+          element: ice
+        red:
+          effect_type: Combat
+          attack: 9
+          element: cold_fire
+        white:
+          effect_type: Combat
+          attack: 8
+          distance: ranged
+          element: ice
+        green:
+          effect_type: Combat
+          attack: 8
+          distance: siege
+          element: ice
+
+  - id: whirlwind
+    type: Spell
+    name: Whirlwind
+    mana_cost: white
+    unpowered:
+      effect_type: Combat
+      text: "Target enemy does not attack this combat."
+      special: target_enemy_does_not_attack
+    powered:
+      effect_type: Combat
+      text: "Tornado: Play only during the Attack phase. Destroy target enemy."
+      special: destroy_target_enemy_attack_phase_only
+
+  - id: underground_travel
+    type: Spell
+    name: Underground Travel
+    mana_cost: green
+    unpowered:
+      effect_type: Move
+      text: "Move up to 3 revealed spaces on the map. Cannot move through swamps or lakes. Must end in a safe space. Does not provoke rampaging enemies."
+      special: move_up_to_3_revealed_spaces_safe_no_swamp_lake_no_provoke
+    powered:
+      effect_type: Move  # still movement-based, though it can initiate combat at destination
+      text: "Underground Attack: Same as basic, but must end on a fortified site or space occupied by another player. Counts as an assault or attack. Return to original position if withdrawing."
+      special: underground_travel_as_assault_on_fortified_site
+
+  - id: burning_shield
+    type: Spell
+    name: Burning Shield
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Fire Block 4. If used as part of a successful Block, may use it as Fire Attack 4 during your Attack phase."
+      block: 4
+      element: fire
+      special: successful_block_also_use_as_fire_attack_4
+    powered:
+      effect_type: Combat
+      text: "Exploding Shield: Fire Block 4. If used as part of a successful Block, destroy the blocked enemy."
+      block: 4
+      element: fire
+      special: successful_block_destroy_blocked_enemy
+
+  - id: chill
+    type: Spell
+    name: Chill
+    mana_cost: blue
+    unpowered:
+      effect_type: Combat
+      text: "Target enemy does not attack this combat. If it has Fire Resistance, it loses it for the rest of the turn."
+      special: target_enemy_does_not_attack_loses_fire_resistance
+    powered:
+      effect_type: Combat
+      text: "Lethal Chill: Target enemy does not attack this combat and gets Armor -4 (minimum 1) for the rest of the turn."
+      special: target_enemy_does_not_attack_armor_minus_4
+
+  - id: wings_of_wind
+    type: Spell
+    name: Wings of Wind
+    mana_cost: white
+    unpowered:
+      effect_type: Move
+      text: "Spend 1–5 Move points and move one revealed safe space per point. Does not provoke rampaging enemies."
+      special: spend_move_points_teleport_revealed_safe_spaces
+    powered:
+      effect_type: Combat  # played during combat to skip phases
+      text: "Wings of Night: Play during combat. If you entered combat with at least as many unspent Move points as enemy count, skip Block and Assign Damage phases."
+      special: skip_block_and_damage_if_move_points_gte_enemy_count
+
+  - id: restoration
+    type: Spell
+    name: Restoration
+    mana_cost: green
+    unpowered:
+      effect_type: Healing
+      text: "Heal 3. Heal 5 instead if you are in a forest."
+      heal: 3
+      special: heal_5_instead_in_forest
+    powered:
+      effect_type: Healing
+      text: "Rebirth: Heal 3 (or 5 in forest). Ready up to 3 levels worth of Units (5 levels in forest)."
+      heal: 3
+      special: heal_5_in_forest_ready_units_up_to_3_levels_or_5_in_forest
+
+  - id: demolish
+    type: Spell
+    name: Demolish
+    mana_cost: red
+    unpowered:
+      effect_type: Combat
+      text: "Ignore site fortifications this turn. Enemies get Armor -1 (minimum 1)."
+      special: ignore_fortifications_all_enemies_armor_minus_1
+    powered:
+      effect_type: Combat
+      text: "Disintegrate: Play only during the Attack phase. Destroy target enemy. Enemies get Armor -1 (minimum 1)."
+      special: destroy_target_enemy_all_enemies_armor_minus_1_attack_phase_only
+
+  - id: space_bending
+    type: Spell
+    name: Space Bending
+    mana_cost: blue
+    unpowered:
+      effect_type: Move
+      text: "This turn, spaces 2 away are treated as adjacent. Leap over intervening spaces. Movement does not provoke rampaging enemies."
+      special: two_away_spaces_treated_as_adjacent_no_provoke
+    powered:
+      effect_type: Special  # grants an extra turn — doesn't fit any single phase
+      text: "Time Bending: At end of turn, set this card aside for the Round. Put all other hand cards into your draw step. Skip the draw step. Immediately take another turn."
+      special: set_aside_for_round_take_extra_turn
+
+  - id: call_to_arms
+    type: Spell
+    name: Call to Arms
+    mana_cost: white
+    unpowered:
+      effect_type: Special  # can be used during interaction or combat depending on unit ability chosen
+      text: "You may use an ability of one Unit in the Units offer this turn as one of your recruits. You cannot assign damage to that Unit."
+      special: use_units_offer_ability_as_recruit_no_damage
+    powered:
+      effect_type: Influence  # recruiting a unit is an influence-phase action
+      text: "Call to Glory: Recruit any one Unit from the Units offer for free. (If at Command limit, disband one of your Units first.)"
+      special: recruit_any_unit_free_from_offer
+
+  - id: meditation
+    type: Spell
+    name: Meditation
+    mana_cost: green
+    unpowered:
+      effect_type: Special
+      text: "Randomly pick two cards from your discard pile and place them on top or bottom of your Deeds deck. Draw two cards over your hand limit at end of turn."
+      special: random_two_from_discard_to_deck_top_or_bottom_draw_2_over_hand_limit
+    powered:
+      effect_type: Special
+      text: "Trance: Same as basic, but you choose the cards instead of picking randomly."
+      special: choose_two_from_discard_to_deck_top_or_bottom_draw_2_over_hand_limit

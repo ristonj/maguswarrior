@@ -1,0 +1,295 @@
+# Mage Knight Digital — Skill Definitions
+#
+# FORMAT REFERENCE
+# ----------------
+#   - id: norowas_skill_1        # Must match SkillId in hero's SkillPile
+#     name: "Skill Name"
+#     type: OncePerRound         # OncePerRound | Persistent | OncePerTurn
+#     effect: "Effect text shown in level-up UI"
+#
+# Skill types per rulebook:
+#   OncePerRound  — flip face-down when used; resets at round start
+#   Persistent    — flip face-down when used; resets at start of your next turn
+#   OncePerTurn   — no flip; resolves immediately, once per turn
+
+skills:
+
+  # ─── Goldyx — The Wild Mage ──────────────────────────────────────────────────
+
+  - id: goldyx_skill_1
+    name: "Freezing Power"
+    type: OncePerTurn
+    effect: "Siege Attack 1, or Ice Siege Attack 1."
+    effect_type: "Combat"
+
+  - id: goldyx_skill_2
+    name: "Potion Making"
+    type: OncePerRound
+    effect: "Gain Heal 2."
+    effect_type: "Healing"
+
+  - id: goldyx_skill_3
+    name: "White Crystal Craft"
+    type: OncePerRound
+    effect: "Gain a blue crystal to your Inventory and one white mana token."
+    effect_type: "Special"
+
+  - id: goldyx_skill_4
+    name: "Green Crystal Craft"
+    type: OncePerRound
+    effect: "Gain a blue crystal to your Inventory and one green mana token."
+    effect_type: "Special"
+
+  - id: goldyx_skill_5
+    name: "Red Crystal Craft"
+    type: OncePerRound
+    effect: "Gain a blue crystal to your Inventory and one red mana token."
+    effect_type: "Special"
+
+  - id: goldyx_skill_6
+    name: "Glittering Fortune"
+    type: OncePerTurn
+    effect: "Get Influence 1 for each different color crystal in your inventory. Cannot be used outside of interaction."
+    effect_type: "Interaction"
+
+  - id: goldyx_skill_7
+    name: "Flight"
+    type: OncePerRound
+    effect: "Move to any adjacent space for free, or move two spaces for 2 Move points. You must end this Move on a safe space. This Move does not provoke rampaging enemies."
+    effect_type: "Movement"
+
+  - id: goldyx_skill_8
+    name: "Universal Power"
+    type: OncePerTurn
+    effect: "You may add one mana to a card turned sideways. If you do, that card gives +3 instead of +1, or +4 if it is an Action or Spell card of the same color as that mana."
+    effect_type: "Special"
+
+  - id: goldyx_skill_9
+    name: "Motivation"
+    type: OncePerRound
+    effect: "Once per round, on any player's turn: Flip this to draw two cards. If you have the least fame (not tied) also gain a green mana token. You cannot use another motivation skill until the end of your next turn."
+    effect_type: "Special"
+
+  - id: goldyx_skill_10
+    name: "Source Freeze"
+    type: OncePerRound
+    effect: "Place this skill token in the source. While it is there, players cannot use their usual one die from the source. On yur next turn, gain one crystal of any basic color represented in the source to your inventory (do not reroll that die), then take this token and flip it."
+    competitive: true
+    effect_type: "Special"
+
+  - id: goldyx_skill_11
+    name: "Source Opening"
+    type: OncePerRound
+    effect: "Put this Skill token in the center. You may reroll a Mana die in the source. Any player may choose to return the token to you, face down, to use an extra die of a basic color from the Source and to give you a crystal of that color. That player may decide whether to reroll that die or not at the end of their turn."
+    cooperative: true
+    effect_type: "Special"
+
+  # ─── Norowas — The Noble Elf ─────────────────────────────────────────────────
+
+  - id: norowas_skill_1
+    name: "Forward March!"
+    type: OncePerTurn
+    effect: "Get Move 1 for each Ready and Unwounded Unit you control, to a maximum of Move 3."
+    effect_type: "Movement"
+
+  - id: norowas_skill_2
+    name: "Day Sharpshooting"
+    type: OncePerTurn
+    effect: "Ranged Attack 2 (during the day) or Ranged Attack 1 (at night)."
+    effect_type: "Combat"
+
+  - id: norowas_skill_3
+    name: "Inspiration"
+    type: OncePerRound
+    effect: "Flip this to Ready or Heal a Unit."
+    effect_type: "Healing"
+
+  - id: norowas_skill_4
+    name: "Bright Negotiation"
+    type: OncePerTurn
+    effect: "Influence 3 (during the day), or Influence 2 (at night)."
+    effect_type: "Interaction"
+
+  - id: norowas_skill_5
+    name: "Leaves in the Wind"
+    type: OncePerRound
+    effect: "Flip this to gain one green crystal to your Inventory and one white mana token."
+    effect_type: "Special"
+
+  - id: norowas_skill_6
+    name: "Whisper in the Treetops"
+    type: OncePerRound
+    effect: "Flip this to gain one white crystal to your Inventory and one green mana token."
+    effect_type: "Special"
+
+  - id: norowas_skill_7
+    name: "Leadership"
+    type: OncePerTurn
+    effect: "When activating a unit, add +3 to its Block, +2 to its Attack, or +1 to its Ranged Attack, regardless of its elements."
+    effect_type: "Combat"
+
+  - id: norowas_skill_8
+    name: "Bonds of Loyalty"
+    type: Persistent
+    effect: "When you gain this Skill, add two Regular Units to the Units offer. Put this Skill in your Unit area as a Command token. It costs 5 less Influence (minimum 0) to recruit a Unit under this Command token. This Unit can be used even when the use of Units would normally not be allowed. You cannot disband this Unit."
+
+  - id: norowas_skill_9
+    name: "Motivation"
+    type: OncePerRound
+    effect: "Once per round, on any player's turn: Flip this to draw two cards. If you have the least fame (not tied) also gain a white mana token. You cannot use another motivation skill until the end of your next turn."
+    effect_type: "Special"
+
+  - id: norowas_skill_10
+    name: "Prayer of Weather"
+    type: OncePerRound
+    effect: "Put this Skill token in the center. Until the start of your next turn, the Move cost of all terrain is reduced by 2 for you (to a minimum of 1), and is increased by 1 for all other players (to a maximum of 5). Then take this token back and flip it."
+    effect_type: "Movement"
+    competitive: true
+
+  - id: norowas_skill_11
+    name: "Calming the Weather"
+    type: OncePerRound
+    effect: "The Move costs of all terrains is reduced by 2 (to a minimum of 1) for you this turn. Put this in the center. Any player may return it to you, face down, to reduce Move cost of all terrains by 1 (to a minimum of 1) for him on his turn."
+    effect_type: "Movement"
+    cooperative: true
+
+  # ─── Tovak — The Barbarian ────────────────────────────────────────────────────
+
+  - id: tovak_skill_1
+    name: "Double Time"
+    type: OncePerTurn
+    effect: "Move 2 (during the Day) or Move 1 (at Night)."
+    effect_type: "Movement"
+
+  - id: tovak_skill_2
+    name: "Night Sharpshooting"
+    type: OncePerRound
+    effect: "Ranged Attack 1 (during the Day) or Ranged Attack 2 (at Night)."
+    effect_type: "Combat"
+
+  - id: tovak_skill_3
+    name: "Cold Swordsmanship"
+    type: OncePerTurn
+    effect: "Attack 2, or Ice Attack 2."
+    effect_type: "Combat"
+
+  - id: tovak_skill_4
+    name: "Shield Mastery"
+    type: OncePerTurn
+    effect: "Block 3, or Ice Block 2, or Fire Block 2."
+    effect_type: "Combat"
+
+  - id: tovak_skill_5
+    name: "Resistance Break"
+    type: OncePerTurn
+    effect: "Once per turn: Choose an emeny token. It gets Armor -1 for each resistance it has (to a minimum of 1)."
+    effect_type: "Combat"
+
+  - id: tovak_skill_6
+    name: "I Feel No Pain"
+    type: OncePerTurn
+    effect: "Once per turn, except in combat: Discard one Wound from hand. If you do, draw a card."
+    effect_type: "Special"
+
+  - id: tovak_skill_7
+    name: "I Don't Give a Damn!"
+    type: OncePerTurn
+    effect: "One card played sideways this turn gives +2 instead of +1, or +3 if it is an Advanced Action, Spell, or Artifact."
+    effect_type: "Special"
+
+  - id: tovak_skill_8
+    name: "Who Needs Magic?"
+    type: OncePerTurn
+    effect: "One card played sideways this turn gives +2 instead of +1. If you use no die from the Source this turn, it gives +3 instead."
+    effect_type: "Special"
+
+  - id: tovak_skill_9
+    name: "Motivation"
+    type: OncePerRound
+    effect: "Once per round, on any player's turn: Flip this to draw two cards. If you have the least fame (not tied) also gain a blue mana token. You cannot use another motivation skill until the end of your next turn."
+    effect_type: "Special"
+
+  - id: tovak_skill_10
+    name: "Mana Exploit"
+    type: OncePerRound
+    effect: "Choose a color other than gold and gain a mana token of that color. Put this Skill token in the center and mark it with a second token of that color. Until the start of your next turn, other players get a Wound when they use mana of any other color on their turn, limit 1 Wound per color per player. (If they use gold, count it as the color it is used for.) Then take this token back and flip it."
+    effect_type: "Special"
+    competitive: true
+
+  - id: tovak_skill_11
+    name: "Mana Overload"
+    type: OncePerRound
+    effect: "Choose a color other than gold and gain a mana token of that color. Put this Skill token in the center and mark it with another token of the same color. The first player who uses mana of that color to power a card that gives Move, Influence, or any type of Attack or Block, gets +4 from that card and returns the Skill to you, face down."
+    effect_type: "Special"
+    cooperative: true
+
+  # ─── Arythea — The Black Witch ───────────────────────────────────────────────
+
+  - id: arythea_skill_1
+    name: "Dark Paths"
+    type: OncePerTurn
+    effect: "Move 1 (during the Day), or Move 2 (at Night)."
+    effect_type: "Movement"
+
+  - id: arythea_skill_2
+    name: "Burning Power"
+    type: OncePerTurn
+    effect: "Siege Attack 1, or Fire Siege Attack 1."
+    effect_type: "Combat"
+
+  - id: arythea_skill_3
+    name: "Hot Swordsmanship"
+    type: OncePerTurn
+    effect: "Attack 2, or Fire Attack 2."
+    effect_type: "Combat"
+
+  - id: arythea_skill_4
+    name: "Dark Negotiation"
+    type: OncePerTurn
+    effect: "Influence 2 (during the Day), or Influence 3 (at Night)."
+    effect_type: "Interaction"
+
+  - id: arythea_skill_5
+    name: "Dark Fire Magic"
+    type: OncePerRound
+    effect: "Flip this to gain one red crystal to your Inventory, and one red or black mana token."
+    effect_type: "Special"
+
+  - id: arythea_skill_6
+    name: "Power of Pain"
+    type: OncePerTurn
+    effect: "You may play one wound sideways, as if it were a non-Wound card. It gives +2 instead of +1. At the end of your turn, put that Wound in your discard pile."
+    effect_type: "Special"
+
+  - id: arythea_skill_7
+    name: "Invokation"
+    type: OncePerTurn
+    effect: "Discard a Wound card to gain a red or black mana token, or discard a non-Wound card to gain a white or green mana token. You must spend a mana token gained this way immediately or you cannot use the ability."
+    effect_type: "Special"
+
+  - id: arythea_skill_8
+    name: "Polarization"
+    type: OncePerTurn
+    effect: "You can use one mana as mana of the opposite color (Green <-> White, Red <-> Blue, Black <-> Gold). During the Day, you could use a back mana as any color other than black (not to power stronger effect of Spells). At Night, you could use a gold mana as black to power the stronger effect of a Spell, but not as any other color."
+    effect_type: "Special"
+
+  - id: arythea_skill_9
+    name: "Motivation"
+    type: OncePerRound
+    effect: "Once per round, on any player's turn: Flip this to draw two cards. If you have the least fame (not tied) also gain a red mana token. You cannot use another motivation skill until the end of your next turn."
+    effect_type: "Special"
+
+  - id: arythea_skill_10
+    name: "Healing Ritual"
+    type: OncePerRound
+    effect: "Flip this to throw away up to two Wounds from your hand. One of them goes to the hand of the closest hero (if tied, you choose) instead of the Wound pile."
+    effect_type: "Healing"
+    competitive: true
+
+  - id: arythea_skill_11
+    name: "Ritual of Pain"
+    type: OncePerTurn
+    effect: "Throw away up to two Wound cards from your hand. Put this Skill token in the center. Any player may return it to you, face down, to play a Wound card sideways as if it is a non-Wound card, and get +3 instead of +1."
+    effect_type: "Healing"
+    cooperative: true
+

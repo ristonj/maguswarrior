@@ -1,0 +1,96 @@
+# Ruins tokens — each token represents the contents of one ruins hex.
+# When a hero enters a ruins, the token is revealed and determines what they face.
+#
+# type: enemies — draw the listed enemy tokens (by color) and fight them all.
+#                 On victory: claim the listed rewards.
+#                 On defeat: undefeated tokens remain on the space.
+#
+# type: altar   — hero may pay the listed mana cost to claim the Fame reward.
+#                 If unable or unwilling to pay, nothing happens.
+#
+# Reward types:
+#   artifact          — gain N artifacts (draw 2, keep 1, per artifact)
+#   advanced_action   — gain N advanced actions from the offer
+#   spell             — gain N spells from the offer
+#   unit              — recruit 1 unit for free from the offer
+#   crystals_one_each — gain 1 crystal of each basic color (Red, Green, Blue, White)
+
+ruins_tokens:
+
+  # ─── Enemies ────────────────────────────────────────────────────────────────
+
+  - type: enemies
+    enemies: [brown, red]
+    rewards:
+      - artifact: 2
+
+  - type: enemies
+    enemies: [green, red]
+    rewards:
+      - artifact: 1
+      - advanced_action: 1
+
+  - type: enemies
+    enemies: [gray, white]
+    rewards:
+      - artifact: 1
+      - spell: 1
+
+  - type: enemies
+    enemies: [gray, brown]
+    rewards:
+      - artifact: 1
+
+  - type: enemies
+    enemies: [gray, purple]
+    rewards:
+      - unit: 1
+
+  - type: enemies
+    enemies: [green, brown]
+    rewards:
+      - artifact: 1
+
+  - type: enemies
+    enemies: [green, green]
+    rewards:
+      - crystals_one_each: true
+
+  - type: enemies
+    enemies: [brown, purple]
+    rewards:
+      - spell: 1
+      - crystals_one_each: true
+
+  - type: enemies
+    enemies: [green, green, green]
+    rewards:
+      - unit: 1
+
+  - type: enemies
+    enemies: [purple, purple]
+    rewards:
+      - spell: 1
+      - advanced_action: 1
+
+  # ─── Altars ─────────────────────────────────────────────────────────────────
+
+  - type: altar
+    cost: {red: 3}
+    fame: 7
+
+  - type: altar
+    cost: {green: 3}
+    fame: 7
+
+  - type: altar
+    cost: {blue: 3}
+    fame: 7
+
+  - type: altar
+    cost: {white: 3}
+    fame: 7
+
+  - type: altar
+    cost: {red: 1, green: 1, blue: 1, white: 1}
+    fame: 10

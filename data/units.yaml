@@ -1,0 +1,537 @@
+# Mage Knight Digital — Unit Definitions
+#
+# FORMAT REFERENCE
+# ----------------
+# Each unit entry:
+#
+#   - id: peasants                 # Must match UnitId used in game state
+#     name: "Peasants"             # Display name
+#     tier: silver | gold          # Determines which Unit offer deck the card belongs to
+#     level: 1 | 2 | 3 | 4         # Unit level (I–IV); affects Command limit and ready costs
+#     cost: N                      # Influence required to recruit this unit
+#     armor: N                     # Base armor value (damage dealt to unit in excess of this wounds it)
+#     count: N                     # Number of copies in the Unit deck
+#     abilities:                   # List of abilities the unit provides; each has a text field
+#                                  # and optional structured effect fields (same as cards.yaml)
+#
+# ABILITY EFFECT FIELDS (same as cards.yaml plus unit-specific):
+#   attack: N                      — attack value (physical melee by default)
+#   distance: ranged | siege       — attack distance modifier (omit for melee)
+#   element: fire | ice | cold_fire — attack or block element (omit for physical)
+#   block: N                       — block value (physical by default; combine with element for elemental)
+#   heal: N                        — heal hero or a unit
+#   influence: N                   — generate influence
+#   move: N                        — generate move
+#   mana_token: {colors, count}    — gain mana tokens
+#   gain_crystal: <color>          — gain a crystal
+#   ready_unit: {max_level}        — un-wound a unit
+#   choose_one: [...]              — player picks exactly one effect
+#
+# UNIT-SPECIFIC EFFECT FIELDS:
+#   loses_swiftness_when_blocked: true   — enemy blocked this way loses the Swiftness ability
+#   this_unit_becomes_wounded: true      — this unit becomes Wounded after using this ability
+#   terrain_cost_reduction:              — reduce move cost of terrain types (see cards.yaml)
+#   target_enemy_does_not_attack: true   — target enemy skips its attack this combat
+#   target_enemy_armor_reduction: N      — reduce target enemy armor by N (minimum 1)
+#   all_units_gain_resistance: [...]     — all friendly units gain listed resistances this turn
+#
+# NOTES
+# -----
+# - Silver units (levels I–II) are in the Silver Unit deck; Gold units (levels III–IV) in Gold Unit deck.
+# - Unit count refers to copies in the full Unit deck across all players.
+
+units:
+
+  # ── Silver Units ──────────────────────────────────────────────────────────────
+
+  - id: peasants
+    name: Peasants
+    tier: silver
+    level: 1
+    cost: 4
+    armor: 3
+    count: 3
+    recruit_sites:
+      - village
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 2."
+        choose_one:
+          - attack: 2
+          - block: 2
+      - effect_type: Influence
+        text: "Influence 2."
+        influence: 2
+      - effect_type: Move
+        text: "Move 2."
+        move: 2
+
+  - id: herbalists
+    name: Herbalists
+    tier: silver
+    level: 1
+    cost: 3
+    armor: 2
+    count: 2
+    recruit_sites:
+      - village
+      - monastery
+    abilities:
+      - effect_type: Healing
+        text: "Heal 2."
+        mana_cost: green
+        heal: 2
+      - effect_type: Healing
+        text: "Ready a level I or II Unit."
+        ready_unit:
+          max_level: 2
+      - effect_type: Special
+        text: "Gain a green mana token."
+        mana_token:
+          colors: [green]
+          count: 1
+
+  - id: foresters
+    name: Foresters
+    tier: silver
+    level: 1
+    cost: 5
+    armor: 4
+    count: 2
+    recruit_sites:
+      - village
+    abilities:
+      - effect_type: Move
+        text: "Move 2. The move cost of forests, hills and swamps is reduced by 1 (minimum 0) this turn."
+        move: 2
+        terrain_cost_reduction:
+          terrains: [forest, hill, swamp]
+          amount: 1
+          minimum: 0
+      - effect_type: Combat
+        text: "Block 3."
+        block: 3
+
+  - id: utem_crossbowmen
+    name: Utem Crossbowmen
+    tier: silver
+    level: 2
+    cost: 6
+    armor: 4
+    count: 2
+    recruit_sites:
+      - village
+      - keep
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Ranged Attack 2."
+        attack: 2
+        distance: ranged
+
+  - id: utem_guardsmen
+    name: Utem Guardsmen
+    tier: silver
+    level: 2
+    cost: 5
+    armor: 5
+    count: 2
+    recruit_sites:
+      - village
+      - keep
+    abilities:
+      - effect_type: Combat
+        text: "Attack 2."
+        attack: 2
+      - effect_type: Combat
+        text: "Block 4. An enemy blocked this way loses Swiftness."
+        block: 4
+        loses_swiftness_when_blocked: true
+
+  - id: utem_swordsmen
+    name: Utem Swordsmen
+    tier: silver
+    level: 2
+    cost: 6
+    armor: 4
+    count: 2
+    recruit_sites:
+      - keep
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Attack or Block 6. This Unit becomes Wounded."
+        choose_one:
+          - attack: 6
+          - block: 6
+        this_unit_becomes_wounded: true
+
+  - id: guardian_golems
+    name: Guardian Golems
+    tier: silver
+    level: 2
+    cost: 7
+    armor: 3
+    count: 2
+    resistances: [physical]
+    recruit_sites:
+      - keep
+      - mage_tower  
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 2."
+        choose_one:
+          - attack: 2
+          - block: 2
+      - effect_type: Combat
+        text: "Fire Block 4."
+        mana_cost: red
+        block: 4
+        element: fire
+      - effect_type: Combat
+        text: "Ice Block 4."
+        mana_cost: blue
+        block: 4
+        element: ice
+
+  - id: illusionists
+    name: Illusionists
+    tier: silver
+    level: 2
+    cost: 7
+    armor: 2
+    count: 2
+    resistances: [physical]
+    recruit_sites:
+      - mage_tower
+      - monastery
+    abilities:
+      - effect_type: Influence
+        text: "Influence 4."
+        influence: 4
+      - effect_type: Combat
+        text: "Target unfortified enemy does not attack this combat."
+        mana_cost: white
+        target_enemy_does_not_attack: true
+        condition: target_unfortified_only
+      - effect_type: Special
+        text: "Gain a white crystal to your Inventory."
+        gain_crystal: white
+
+  - id: red_cape_monks
+    name: Red Cape Monks
+    tier: silver
+    level: 2
+    cost: 7
+    armor: 4
+    count: 1
+    recruit_sites:
+      - monastery
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Fire Attack or Fire Block 4."
+        mana_cost: red
+        choose_one:
+          - attack: 4
+            element: fire
+          - block: 4
+            element: fire
+
+  - id: northern_monks
+    name: Northern Monks
+    tier: silver
+    level: 2
+    cost: 7
+    armor: 4
+    count: 1
+    recruit_sites:
+      - monastery
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Ice Attack or Ice Block 4."
+        mana_cost: blue
+        choose_one:
+          - attack: 4
+            element: ice
+          - block: 4
+            element: ice
+
+  - id: savage_monks
+    name: Savage Monks
+    tier: silver
+    level: 2
+    cost: 7
+    armor: 4
+    count: 1
+    recruit_sites:
+      - monastery
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Siege Attack 4."
+        mana_cost: green
+        attack: 4
+        distance: siege
+
+  # ── Gold Units ─────────────────────────────────────────────────────────────────
+
+  - id: fire_golems
+    name: Fire Golems
+    tier: gold
+    level: 3
+    cost: 8
+    armor: 4
+    count: 2
+    resistances: [physical, fire]
+    recruit_sites:
+      - keep
+      - mage_tower
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Ranged Fire Attack 4."
+        mana_cost: red
+        attack: 4
+        distance: ranged
+        element: fire
+
+  - id: ice_golems
+    name: Ice Golems
+    tier: gold
+    level: 3
+    cost: 8
+    armor: 4
+    count: 2
+    resistances: [physical, ice]
+    recruit_sites:
+      - keep
+      - mage_tower
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 3."
+        choose_one:
+          - attack: 3
+          - block: 3
+      - effect_type: Combat
+        text: "Ice Attack 6."
+        mana_cost: blue
+        attack: 6
+        element: ice
+
+  - id: fire_mages
+    name: Fire Mages
+    tier: gold
+    level: 3
+    cost: 9
+    armor: 4
+    count: 2
+    resistances: [fire]
+    recruit_sites:
+      - mage_tower
+      - monastery
+    abilities:
+      - effect_type: Combat
+        text: "Ranged Fire Attack 3."
+        attack: 3
+        distance: ranged
+        element: fire
+      - effect_type: Combat
+        text: "Fire Attack or Fire Block 6."
+        mana_cost: red
+        choose_one:
+          - attack: 6
+            element: fire
+          - block: 6
+            element: fire
+      - effect_type: Special
+        text: "Gain a red mana token and a red crystal to your Inventory."
+        mana_token:
+          colors: [red]
+          count: 1
+        gain_crystal: red
+
+  - id: ice_mages
+    name: Ice Mages
+    tier: gold
+    level: 3
+    cost: 9
+    armor: 4
+    count: 2
+    resistances: [ice]
+    recruit_sites:
+      - mage_tower
+      - monastery
+    abilities:
+      - effect_type: Combat
+        text: "Ice Attack or Ice Block 4."
+        choose_one:
+          - attack: 4
+            element: ice
+          - block: 4
+            element: ice
+      - effect_type: Combat
+        text: "Siege Ice Attack 4."
+        mana_cost: blue
+        attack: 4
+        distance: siege
+        element: ice
+      - effect_type: Special
+        text: "Gain a blue mana token and a blue crystal to your Inventory."
+        mana_token:
+          colors: [blue]
+          count: 1
+        gain_crystal: blue
+
+  - id: amotep_gunners
+    name: Amotep Gunners
+    tier: gold
+    level: 3
+    cost: 8
+    armor: 6
+    count: 2
+    recruit_sites:
+      - keep
+      - city
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 5."
+        choose_one:
+          - attack: 5
+          - block: 5
+      - effect_type: Combat
+        text: "Ranged Fire Attack 6."
+        mana_cost: red
+        attack: 6
+        distance: ranged
+        element: fire
+
+  - id: amotep_freezers
+    name: Amotep Freezers
+    tier: gold
+    level: 3
+    cost: 8
+    armor: 6
+    count: 2
+    recruit_sites:
+      - keep
+      - city
+    abilities:
+      - effect_type: Combat
+        text: "Attack or Block 5."
+        choose_one:
+          - attack: 5
+          - block: 5
+      - effect_type: Combat
+        text: "Target enemy does not attack this combat and gets Armor -3 (minimum 1)."
+        mana_cost: blue
+        target_enemy_does_not_attack: true
+        target_enemy_armor_reduction: 3
+
+  - id: catapults
+    name: Catapults
+    tier: gold
+    level: 3
+    cost: 9
+    armor: 4
+    count: 3
+    recruit_sites:
+      - keep
+      - city
+    abilities:
+      - effect_type: Combat
+        text: "Siege Attack 3."
+        attack: 3
+        distance: siege
+      - effect_type: Combat
+        text: "Siege Fire Attack 5."
+        mana_cost: red
+        attack: 5
+        distance: siege
+        element: fire
+      - effect_type: Combat
+        text: "Siege Ice Attack 5."
+        mana_cost: blue
+        attack: 5
+        distance: siege
+        element: ice
+
+  - id: altem_mages
+    name: Altem Mages
+    tier: gold
+    level: 4
+    cost: 12
+    armor: 5
+    count: 2
+    resistances: [fire, ice]
+    recruit_sites:
+      - city
+    abilities:
+      - effect_type: Special
+        text: "Gain two mana tokens of any colors."
+        mana_token:
+          colors: [red, blue, white, green]
+          count: 2
+      - effect_type: Combat
+        text: "Cold Fire Attack or Cold Fire Block 5. Optionally pay red mana and/or blue mana; each adds 2 (7 with one, 9 with both)."
+        choose_one:
+          - attack: 5
+            element: cold_fire
+          - block: 5
+            element: cold_fire
+        optional_mana_bonus:
+          red: 2
+          blue: 2
+      - effect_type: Combat
+        text: "Choose one: all attacks you play this turn are Cold Fire Attacks, or all your attacks become Siege Attacks (in addition to any other bonuses)."
+        mana_cost: black
+        choose_one:
+          - special: all_attacks_become_cold_fire
+          - special: all_attacks_become_siege
+
+  - id: altem_guardians
+    name: Altem Guardians
+    tier: gold
+    level: 4
+    cost: 11
+    armor: 7
+    count: 3
+    recruit_sites:
+      - city
+    abilities:
+      - effect_type: Combat
+        text: "Attack 5."
+        attack: 5
+      - effect_type: Combat
+        text: "Block 6. An enemy blocked this way loses Swiftness."
+        block: 6
+        loses_swiftness_when_blocked: true
+      - effect_type: Combat
+        text: "All Units you control gain all resistances this turn."
+        mana_cost: green
+        all_units_gain_resistance: [fire, ice, physical]

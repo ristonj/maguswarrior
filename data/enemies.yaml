@@ -1,0 +1,363 @@
+enemies:
+  # ─── Green ──────────────────────────────────────────────────────────────────
+  - id: prowlers
+    name: Prowlers
+    color: green
+    count: 2
+    armor: 3
+    fame: 2
+    attacks:
+      - value: 4
+        attack_type: physical
+        modifiers: []
+
+  - id: diggers
+    name: Diggers
+    color: green
+    count: 2
+    armor: 3
+    fame: 2
+    fortified: true
+    attacks:
+      - value: 3
+        attack_type: physical
+        modifiers: []
+
+  - id: cursed_hags
+    name: Cursed Hags
+    color: green
+    count: 2
+    armor: 5
+    fame: 3
+    attacks:
+      - value: 3
+        attack_type: physical
+        modifiers: [poison]
+
+  - id: wolf_riders
+    name: Wolf Riders
+    color: green
+    count: 2
+    armor: 4
+    fame: 3
+    attacks:
+      - value: 3
+        attack_type: physical
+        modifiers: [swiftness]
+
+  - id: ironclads
+    name: Ironclads
+    color: green
+    count: 2
+    armor: 3
+    fame: 4
+    resistances: [physical]
+    attacks:
+      - value: 4
+        attack_type: physical
+        modifiers: [brutal]
+
+  - id: orc_summoners
+    name: Orc Summoners
+    color: green
+    count: 2
+    armor: 4
+    fame: 4
+    attacks:
+      - value: 0
+        attack_type: summon
+        modifiers: []
+
+  # ─── Gray ───────────────────────────────────────────────────────────────────
+  - id: crossbowmen
+    name: Crossbowmen
+    color: gray
+    count: 3
+    armor: 4
+    fame: 3
+    attacks:
+      - value: 4
+        attack_type: physical
+        modifiers: [swiftness]
+
+  - id: guardsmen
+    name: Guardsmen
+    color: gray
+    count: 3
+    armor: 7
+    fame: 3
+    fortified: true
+    attacks:
+      - value: 3
+        attack_type: physical
+        modifiers: []
+
+  - id: swordsmen
+    name: Swordsmen
+    color: gray
+    count: 2
+    armor: 5
+    fame: 4
+    attacks:
+      - value: 6
+        attack_type: physical
+        modifiers: []
+
+  - id: golems
+    name: Golems
+    color: gray
+    count: 2
+    armor: 5
+    fame: 4
+    resistances: [physical]
+    attacks:
+      - value: 2
+        attack_type: physical
+        modifiers: []
+
+  # ─── Purple ─────────────────────────────────────────────────────────────────
+  - id: monks
+    name: Monks
+    color: purple
+    count: 2
+    armor: 5
+    fame: 4
+    attacks:
+      - value: 4
+        attack_type: physical
+        modifiers: [poison]
+
+  - id: illusionists
+    name: Illusionists
+    color: purple
+    count: 2
+    armor: 3
+    fame: 4
+    resistances: [physical]
+    attacks:
+      - value: 0
+        attack_type: summon
+        modifiers: []
+
+  - id: ice_mages
+    name: Ice Mages
+    color: purple
+    count: 2
+    armor: 6
+    fame: 5
+    resistances: [ice]
+    attacks:
+      - value: 5
+        attack_type: ice
+        modifiers: []
+
+  - id: ice_golems
+    name: Ice Golems
+    color: purple
+    count: 1
+    armor: 4
+    fame: 5
+    fortified: true
+    resistances: [physical, ice]
+    attacks:
+      - value: 2
+        attack_type: ice
+        modifiers: [paralyze]
+
+  - id: fire_mages
+    name: Fire Mages
+    color: purple
+    count: 2
+    armor: 5
+    fame: 5
+    attacks:
+      - value: 6
+        attack_type: fire
+        modifiers: []
+
+  - id: fire_golems
+    name: Fire Golems
+    color: purple
+    count: 1
+    armor: 5
+    fame: 4
+    fortified: true
+    resistances: [physical, fire]
+    attacks:
+      - value: 3
+        attack_type: fire
+        modifiers: [brutal]
+
+  # ─── Brown ──────────────────────────────────────────────────────────────────
+  - id: minotaur
+    name: Minotaur
+    color: brown
+    count: 2
+    armor: 5
+    fame: 4
+    attacks:
+      - value: 5
+        attack_type: physical
+        modifiers: [brutal]
+
+  - id: gargoyle
+    name: Gargoyle
+    color: brown
+    count: 2
+    armor: 4
+    fame: 4
+    resistances: [physical]
+    attacks:
+      - value: 5
+        attack_type: physical
+        modifiers: []
+
+  - id: medusa
+    name: Medusa
+    color: brown
+    count: 2
+    armor: 4
+    fame: 5
+    attacks:
+      - value: 6
+        attack_type: physical
+        modifiers: [paralyze]
+
+  - id: crypt_worm
+    name: Crypt Worm
+    color: brown
+    count: 2
+    armor: 6
+    fame: 5
+    fortified: true
+    attacks:
+      - value: 6
+        attack_type: physical
+        modifiers: []
+
+  - id: werewolf
+    name: Werewolf
+    color: brown
+    count: 2
+    armor: 5
+    fame: 5
+    attacks:
+      - value: 7
+        attack_type: physical
+        modifiers: [swiftness]
+
+  # ─── White ──────────────────────────────────────────────────────────────────
+  - id: freezers
+    name: Freezers
+    color: white
+    count: 2
+    armor: 7
+    fame: 7
+    resistances: [fire]
+    attacks:
+      - value: 3
+        attack_type: ice
+        modifiers: [swiftness, paralyze]
+
+  - id: gunners
+    name: Gunners
+    color: white
+    count: 2
+    armor: 6
+    fame: 7
+    resistances: [ice]
+    attacks:
+      - value: 6
+        attack_type: fire
+        modifiers: [brutal]
+
+  - id: altem_guardsmen
+    name: Altem Guardsmen
+    color: white
+    count: 2
+    armor: 7
+    fame: 8
+    resistances: [fire, ice, physical]
+    attacks:
+      - value: 5
+        attack_type: physical
+        modifiers: []
+
+  - id: altem_mages
+    name: Altem Mages
+    color: white
+    count: 2
+    armor: 8
+    fame: 8
+    resistances: [physical]
+    attacks:
+      - value: 4
+        attack_type: cold_fire
+        modifiers: []
+
+  # ─── Red (Dragons) ──────────────────────────────────────────────────────────
+  - id: swamp_dragon
+    name: Swamp Dragon
+    color: red
+    count: 2
+    armor: 9
+    fame: 7
+    attacks:
+      - value: 5
+        attack_type: physical
+        modifiers: [poison, swiftness]
+
+  - id: fire_dragon
+    name: Fire Dragon
+    color: red
+    count: 2
+    armor: 7
+    fame: 8
+    resistances: [fire, physical]
+    attacks:
+      - value: 9
+        attack_type: fire
+        modifiers: []
+
+  - id: ice_dragon
+    name: Ice Dragon
+    color: red
+    count: 2
+    armor: 7
+    fame: 8
+    resistances: [ice, physical]
+    attacks:
+      - value: 6
+        attack_type: ice
+        modifiers: [paralyze]
+
+  - id: high_dragon
+    name: High Dragon
+    color: red
+    count: 2
+    armor: 9
+    fame: 9
+    resistances: [fire, ice]
+    attacks:
+      - value: 6
+        attack_type: cold_fire
+        modifiers: [brutal]
+
+# Template — copy and fill in for each enemy:
+#
+#  - id: snake_case_id
+#    name: Display Name
+#    color: green                         # green / brown / gray / red / purple / white
+#    count: 2                             # number of tokens of this type in the game
+#    armor: 3
+#    fame: 2
+#    fortified: true                      # omit line entirely if false
+#    resistances: [physical, fire, ice]   # omit line entirely if none
+#    attacks:
+#      - value: 3
+#        attack_type: physical   # physical / fire / ice / cold_fire / summon
+#        modifiers: []           # any of: poison, brutal, swiftness, paralyze
+#                                # omit the modifiers line entirely if none
+#
+# Note: resistances are physical, fire, and/or ice only.
+# An enemy resistant to both fire and ice is automatically resistant to cold_fire attacks.
