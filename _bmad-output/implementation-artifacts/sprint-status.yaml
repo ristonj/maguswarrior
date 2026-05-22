@@ -1,0 +1,148 @@
+# generated: 2026-05-21
+# last_updated: 2026-05-21
+# project: maguswarrior
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: "2026-05-21"
+last_updated: "2026-05-21"
+project: maguswarrior
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ─── Epic 0: Foundation ───────────────────────────────────────────────────
+  epic-0: backlog
+  0-1-build-and-deploy-to-galaxy-s21: backlog
+  0-2-write-game-state-to-local-save: backlog
+  0-3-add-ui-string-via-string-table: backlog
+  epic-0-retrospective: optional
+
+  # ─── Epic 1a: Effect System Architecture ─────────────────────────────────
+  epic-1a: backlog
+  1a-1-define-and-fire-effect: backlog
+  1a-2-undo-last-event: backlog
+  1a-3-full-effect-event-log-in-inspector: backlog
+  epic-1a-retrospective: optional
+
+  # ─── Epic 1b: Hand Mechanics + Wound Treatment ───────────────────────────
+  epic-1b: backlog
+  1b-1-tap-card-to-see-options: backlog
+  1b-2-play-card-sideways-for-basic-resource: backlog
+  1b-3-stage-multiple-cards-and-see-running-totals: backlog
+  1b-4-undo-staged-cards-before-new-information-revealed: backlog
+  1b-5-cannot-tap-wound-card: backlog
+  1b-6-declare-rest-turn-and-discard-per-rest-rules: backlog
+  1b-7-improvisation-card-gives-resource-determined-by-current-game-phase: backlog
+  epic-1b-retrospective: optional
+
+  # ─── Epic 2: Hex Map + Movement ──────────────────────────────────────────
+  epic-2: backlog
+  2-1-see-hex-map-and-hero-position: backlog
+  2-2-tap-hex-to-preview-move-cost: backlog
+  2-3-spend-move-points-to-cross-hexes: backlog
+  2-4-reveal-new-tile-by-moving-to-map-edge: backlog
+  2-5-see-remaining-tile-counts: backlog
+  epic-2-retrospective: optional
+
+  # ─── Epic 3: Combat System ───────────────────────────────────────────────
+  epic-3: backlog
+  3-1-see-current-combat-phase: backlog
+  3-2-use-ranged-siege-attack-in-phase-1: backlog
+  3-3-block-incoming-damage: backlog
+  3-4-assign-damage-to-unit: backlog
+  3-5-enter-knockdown-when-hand-is-all-wounds: backlog
+  3-6-force-quit-mid-combat-and-restore-to-exact-decision-point: backlog
+  epic-3-retrospective: optional
+
+  # ─── Epic 4: Site Interactions ───────────────────────────────────────────
+  epic-4: backlog
+  4-1-visit-village-and-spend-influence: backlog
+  4-2-assault-keep-to-conquer-it: backlog
+  4-3-explore-dungeon-at-night-for-spell-reward: backlog
+  4-4-draw-2-artifacts-and-keep-1: backlog
+  4-5-trigger-rampaging-orc-by-moving-between-adjacent-hexes: backlog
+  epic-4-retrospective: optional
+
+  # ─── Epic 5: Deck Building + Progression ─────────────────────────────────
+  epic-5: backlog
+  5-1-level-up-when-i-reach-fame-threshold: backlog
+  5-2-choose-advanced-action-from-offer-row-at-even-levels: backlog
+  5-3-navigate-skill-selection: backlog
+  5-4-see-units-with-ready-exhausted-wounded-states: backlog
+  5-5-activate-unit-out-of-combat-for-resource-effect: backlog
+  epic-5-retrospective: optional
+
+  # ─── Epic 6: Resource Systems ────────────────────────────────────────────
+  epic-6: backlog
+  6-1-see-three-source-dice-and-current-colors: backlog
+  6-2-take-one-die-per-turn-to-generate-mana-token: backlog
+  6-3-cannot-select-black-die-during-day-or-gold-die-during-night: backlog
+  6-4-convert-crystals-to-mana-tokens: backlog
+  6-5-see-exhausted-dice-visually-distinguished: backlog
+  epic-6-retrospective: optional
+
+  # ─── Epic 7: Full Scenario Loop ──────────────────────────────────────────
+  epic-7: backlog
+  7-1-select-tactics-card-at-round-start: backlog
+  7-2-lower-numbered-tactics-goes-first: backlog
+  7-3-round-ends-when-dummy-deck-empties: backlog
+  7-4-discover-city-tile-and-see-objective-achieved: backlog
+  7-5-see-end-summary-when-run-ends: backlog
+  7-6-all-12-tactics-cards-resolve-correctly: backlog
+  epic-7-retrospective: optional
+
+  # ─── Epic 8: UI/UX ───────────────────────────────────────────────────────
+  epic-8: backlog
+  8-1-always-know-current-phase-from-hud: backlog
+  8-2-see-tooltip-first-time-i-encounter-each-rule: backlog
+  8-3-permanently-disable-tooltips-after-first-run: backlog
+  8-4-feel-round-limit-tightening-through-escalating-cues: backlog
+  epic-8-retrospective: optional
+
+  # ─── Epic 9: Art + Audio ─────────────────────────────────────────────────
+  epic-9: backlog
+  9-1-hear-audio-feedback-for-every-state-changing-input: backlog
+  9-2-distinguish-all-14-site-types-by-silhouette: backlog
+  9-3-read-card-names-and-mana-icons-at-hand-scale: backlog
+  9-4-ambient-music-responds-to-game-state: backlog
+  9-5-discovering-city-tile-triggers-objective-achieved-fanfare: backlog
+  epic-9-retrospective: optional
+
+  # ─── Epic 10: Google Play + Release ──────────────────────────────────────
+  epic-10: backlog
+  10-1-save-syncs-to-cloud-when-reconnect: backlog
+  10-2-earn-achievements-for-meaningful-milestones: backlog
+  10-3-see-high-scores: backlog
+  epic-10-retrospective: optional

@@ -282,4 +282,4 @@ These design documents must exist before implementing the systems they cover:
 | Enemy Token LLD | **Complete** (`docs/enemy-token-lld.md`) | Epic 3+ combat stories |
 | Combat Flow LLD | **Complete** (`docs/combat-flow-lld.md`) | All combat stories |
 | Site Interaction LLD | Not started | Epic 4+ site stories |
-| Turn Structure LLD | Not started | Turn loop implementation |
+| Turn Structure LLD | **Complete** (`docs/turn-structure-lld.md`) | Turn loop implementation |

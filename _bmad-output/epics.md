@@ -6,15 +6,15 @@
 |---|---|---|---|
 | 0 | Foundation | None | 3 |
 | 1a | Effect System Architecture | 0 | 3 |
-| 1b | Hand Mechanics + Wound Treatment | 1a | 5 |
-| 2 | Hex Map + Movement | 1a | 5 |
-| 3 | Combat System | 1b, 2 | 5 |
-| 4 | Site Interactions | 1b, 3 | 5 |
+| 1b | Hand Mechanics + Wound Treatment | 1a | 7 |
+| 2 | Hex Map + Movement | 1a, 1b | 5 |
+| 3 | Combat System | 1b, 2 | 6 |
+| 4 | Site Interactions | 1b, 2, 3 | 5 |
 | 5 | Deck Building + Progression | 1b, 4 | 5 |
 | 6 | Resource Systems | 1b, 2 | 5 |
-| 7 | Full Scenario Loop | 3, 4, 5, 6 | 5 |
+| 7 | Full Scenario Loop | 3, 4, 5, 6 | 6 |
 | 8 | UI/UX | 1a–7 | 4 |
-| 9 | Art + Audio | 8 | — |
+| 9 | Art + Audio | 8 | 5 |
 | 10 | Google Play + Release | 7 | 4 |
 
 ---
@@ -121,13 +121,15 @@ Tap Rage → see Play / Play Sideways / Power / Cancel → play it → staging a
 
 ### Stories
 - As a player, I can tap a card to see my options so I know what I can do with it
-- As a player, I can play a card sideways for a basic resource so I always have a fallback
+- As a player, I can play a card sideways for a basic resource so I always have a fallback — sideways Block is always physical (never elemental); sideways cannot produce Ranged or Siege Attack
 - As a player, I can stage multiple cards and see running totals so I can plan before committing
 - As a player, I can undo staged cards before new information is revealed
 - As a player, I cannot tap a Wound card so I know it is unplayable
+- As a player, I can declare a Rest turn and discard per rest rules (Standard Rest: discard 1 non-Wound + any Wounds; Exhaustion: only when all Wounds, discard exactly 1 Wound) so hand recovery is correctly governed — no movement, combat, or Influence during rest; Special and Healing effects still allowed
+- As a player, the Improvisation card gives me the resource determined by the current game phase (Move during movement, Block during block, Attack during melee, Influence during interaction, Healing during special) — not my free choice — so Improvisation resolves differently from sideways play
 
 ### UI Verification
-Effect inspector (from 1a) shows card as effect source. Running totals update real-time. Wound renders red. Phase indicator updates correctly.
+Effect inspector (from 1a) shows card as effect source. Running totals update real-time. Wound renders red. Phase indicator updates correctly. Rest turn: movement and combat action buttons disabled; special/healing still available. Improvisation: verify resource type matches current phase in all five phase contexts.
 
 ---
 
@@ -156,7 +158,7 @@ A navigable hex map with tile revelation, terrain movement costs including Day/N
 - Combat
 
 ### Dependencies
-Epic 1a (undo event log extended here for tile revelation).
+Epic 1a (undo event log extended here for tile revelation), Epic 1b (player stories require card play from hand to generate Move points — hand UI must exist for stories to be player-testable).
 
 ### Deliverable
 A V-shaped hex map renders. Player moves by spending Move points. New tiles reveal at the map edge. Day/Night tween fires when the round changes. Tile count updates on reveal.
@@ -210,9 +212,10 @@ Move into an enemy hex → combat triggers → all four phases resolve → enemy
 - As a player, I can block incoming damage to reduce wounds taken
 - As a player, I can assign damage to a unit instead of my hero to protect my hand
 - As a player, I enter knockdown when my hand is all wounds, and my units fight on without me
+- As a dev, I can force-quit mid-combat and restore to the exact decision point so that mid-combat save state serialization is verified before Epic 7
 
 ### UI Verification
-Combat state inspector: current phase, enemy stats (attack/armor/resistances/fortification status), damage assignment breakdown, unit state (available/wounded). Phase-legality enforcement visible (illegal cards red in hand during combat). Save/load test: mid-combat state restores to exact decision point.
+Combat state inspector: current phase, enemy stats (attack/armor/resistances/fortification status), damage assignment breakdown, unit state (available/wounded). Phase-legality enforcement visible (illegal cards red in hand during combat). Save/load test: force-quit at each of the four combat phase boundaries and verify restore to exact decision point.
 
 ---
 
@@ -238,20 +241,20 @@ All 14 site types fully implemented with correct interaction sequences, rewards,
 - Specific per-enemy abilities beyond basic attack/resistance (Enemy Effect LLD gate)
 
 ### Dependencies
-Epic 1b (Effect System), Epic 3 (most sites require combat as prerequisite).
+Epic 1b (Effect System), Epic 2 (rampaging enemy provocation requires hex movement system), Epic 3 (most sites require combat as prerequisite).
 
 ### Deliverable
 Every site type triggers its correct interaction sequence. Rewards are accurate. Reputation changes apply. Artifact draw-2-keep-1 is consistent across all sources. Pattern is documented before the final 10 sites are built.
 
 ### Stories
-- As a player, I can visit a Village and spend Influence to recruit a unit or buy healing
+- As a player, I can visit a Village and spend Influence to recruit a unit or buy healing, so that healing points permanently remove Wound cards from my deed deck (returned to shared supply, not discard pile — distinct from rest cycling)
 - As a player, I can assault a Keep to conquer it, accepting the reputation cost
 - As a player, I can explore a Dungeon at Night for a chance at a spell reward
 - As a player, I draw 2 artifacts and keep 1 whenever I gain an artifact through any means
 - As a player, I trigger a Rampaging Orc by moving between its adjacent hexes
 
 ### UI Verification
-Site interaction log (dev tool): each step, effects fired, reputation delta, rewards received. Ruins token type (fight vs. pay mana) distinguishable in log. Repeatable site state persists correctly across visits. Pattern checkpoint: first 4 sites reviewed before remaining 10 begin.
+Site interaction log (dev tool): each step, effects fired, reputation delta, rewards received. Ruins token type (fight vs. pay mana) distinguishable in log. Repeatable site state persists correctly across visits. Pattern checkpoint: first 4 sites reviewed before remaining 10 begin. Healing verification: Wound removed via Healing does not reappear in deck after next shuffle (verify against rest-discarded Wound which does reappear).
 
 ---
 
@@ -340,15 +343,17 @@ A complete, rules-accurate First Reconnaissance run from setup to win or loss �
 
 **Includes:**
 - Scenario start conditions: Thomas 16-card deck, V-shape map setup, dummy player setup
+- **Run-start tile animation:** the three starting tiles (starting tile + tiles 1 and 2) animate in face-up sequentially, followed by a ~4-second pause with a "tap to begin" prompt before first input
 - Round structure: Tactics selection → player turns → dummy player turn → round end when dummy deck empties
 - Day/Night alternation: rounds 1+3 Day, rounds 2+4 Night
 - Tactics decks: Day (1–6) and Night (1–6); player picks one, dummy gets random remainder; both discarded; lower number goes first
 - Tactics effect resolution: resource effects via Effect System; structural effects (reserve die, reshuffle, draw specific card) via their own resolution path
 - **Dummy player AI — explicit acceptance criterion:** dummy makes legal moves. Verify via dummy-only run log showing each action and its legality. "Dummy player works" is not sufficient.
 - Round end sequence: offer row advancement, dummy deck reshuffle
+- **`RoundSnapshot` tracking:** at the end of each round, snapshot the player's capability ceiling (max Move, Attack, Block, Influence, mana colors accessible) for display on the end screen
 - Win condition: city tile discovered → "Objective Achieved!" screen with full fanfare → victory declared next turn
 - Loss condition: round 4 ends without city found → end summary screen
-- End summary screen: Fame, sites conquered, enemies defeated, distance to city if unfound
+- **End summary screen (win and loss):** Fame, sites conquered, enemies defeated, round-1 vs. final capability comparison; loss screen also shows distance to city if unfound
 
 **Excludes:**
 - Art/audio polish (Epic 9)
@@ -366,9 +371,10 @@ A complete, playable First Reconnaissance run from setup to win or loss. Every r
 - As a player, the round ends when the dummy deck empties so time pressure is tangible
 - As a player, I discover the city tile and see "Objective Achieved!" with full fanfare so the win moment lands
 - As a player, I see an end summary when the run ends so every decision feels meaningful in retrospect
+- As a player, all 12 Tactics cards resolve correctly including structural effects (reserve-a-die, reshuffle-deck, draw-specific-card types) via their implementation path, so every Tactics card works end-to-end
 
 ### UI Verification
-Round/turn tracker. Tactics selection screen showing both cards. Dummy player turn log (what it drew, what action it took, legality flag). Force-state dev tools: force city reveal, force round 4 end, force knockdown — verify all end states without a full playthrough.
+Round/turn tracker. Tactics selection screen showing both cards. Dummy player turn log (what it drew, what action it took, legality flag). Force-state dev tools: force city reveal, force round 4 end, force knockdown — verify all end states without a full playthrough. Tactics verification: one test per structural-effect Tactics card (Planning, Sparing Power, Midnight Meditation, Long Night, Preparation, Mana Steal) exercised via a forced-tactic dev tool.
 
 ---
 
@@ -433,8 +439,15 @@ Epic 8 (UI complete — all asset slots defined).
 ### Deliverable
 A build with no placeholder assets. All 14 site icons pass the 48px readability test. All SFX set events have sound.
 
+### Stories
+- As a player, I hear audio feedback for every state-changing input (card play, movement, combat hit, block, damage taken, level-up, tile reveal, wound, phase change) so the game feels responsive before visual polish exists
+- As a player, I can distinguish all 14 site types by silhouette at 48dp so I never misidentify a site at map scale
+- As a player, I can read card names and mana icons at hand scale so card frames and mana iconography are legible at their smallest display size
+- As a player, the ambient music responds to game state (exploration, combat, deep core / round pressure) so the audio tracks the emotional arc of the run
+- As a player, discovering the city tile triggers the full "Objective Achieved!" fanfare so the win moment has ceremony proportional to the achievement
+
 ### UI Verification
-48px silhouette readability test for all 14 site icons. Day/Night WorldEnvironment tween visual check. Sound event coverage — every entry in the SFX set triggers correctly during a full run.
+48px silhouette readability test for all 14 site icons. Day/Night WorldEnvironment tween visual check. Sound event coverage — every entry in the SFX set triggers correctly during a full run. Card frame legibility test at compact hand size (72×100dp). Fanfare verified against city discovery force-trigger dev tool.
 
 ---
 
