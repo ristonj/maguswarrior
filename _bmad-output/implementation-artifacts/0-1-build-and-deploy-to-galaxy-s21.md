@@ -55,7 +55,7 @@ so that the Android build pipeline and project infrastructure are verified on ta
   - [x] Project → Export → Add → Android
   - [x] Set: Min SDK = 31, Target SDK = 34, package name = `com.maguswarrior`
   - [x] Renderer = Vulkan Mobile (already set in project.godot)
-  - [x] Orientation = Landscape (already set via `window/handheld/orientation=1` in project.godot)
+  - [x] Orientation = Landscape (`window/handheld/orientation=0` in project.godot — 0=Landscape, 1=Portrait)
   - [x] Verify Android SDK and NDK paths in Editor Settings → Export → Android
 
 - [x] Task 6: Build and deploy (AC: 6, 7) — requires Godot editor + Galaxy S21
