@@ -3,9 +3,10 @@ namespace MagusWarrior.Core.Types;
 public enum GamePhase {
     Movement,
     Interaction,
+    CombatStart,
     CombatRanged,
     CombatBlock,
-    CombatDamage,
+    CombatAssignDamage,
     CombatMelee,
     Rest,
     EndOfTurn,

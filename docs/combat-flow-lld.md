@@ -633,7 +633,7 @@ void TearDownCombatState(CombatState combat) {
     combat.ActiveMoveConversion      = null;
     foreach (var e in combat.Group.Enemies)
         e.ClearCombatModifiers(); // resets ArmorModifier, AttackModifier, AttackCancelled, StrippedAbilities
-    _state.CurrentPhase = GamePhase.ActionPhase;
+    _state.CurrentPhase = GamePhase.EndOfTurn;
 }
 ```
 

@@ -8,7 +8,7 @@ that agents most commonly get wrong. Non-compliance breaks integration.
 ## What This Project Is
 
 **Magus Warrior** — solo Android adaptation of Mage Knight Ultimate Edition.
-Engine: Godot 4.6.2 + C#. Target: Android 12+ (Galaxy S21), landscape only.
+Engine: Godot 4.6.3 + C#. Target: Android 12+ (Galaxy S21), landscape only.
 Single developer. No multiplayer.
 
 Architecture document: `_bmad-output/game-architecture.md`
