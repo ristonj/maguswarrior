@@ -15,6 +15,7 @@ config/description="Solo Android adaptation of Mage Knight Ultimate Edition"
 config/version="0.1.0"
 config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
+run/main_scene="res://scenes/screens/PlaceholderMainMenu.tscn"
 
 [display]
 
