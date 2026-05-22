@@ -1,7 +1,7 @@
 <Project Sdk="Godot.NET.Sdk/4.6.3">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <TargetFrameworks Condition=" '$(GodotTargetPlatform)' == 'android' ">net8.0</TargetFrameworks>
+    <TargetFramework>net9.0</TargetFramework>
+    <TargetFrameworks Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFrameworks>
     <RootNamespace>MagusWarrior</RootNamespace>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
