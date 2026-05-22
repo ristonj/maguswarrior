@@ -1,6 +1,6 @@
 # Story 0.1: Build and Deploy to Galaxy S21
 
-Status: in-progress
+Status: done
 
 ## Story
 
