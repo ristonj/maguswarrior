@@ -43,8 +43,8 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # ─── Epic 0: Foundation ───────────────────────────────────────────────────
-  epic-0: backlog
-  0-1-build-and-deploy-to-galaxy-s21: backlog
+  epic-0: in-progress
+  0-1-build-and-deploy-to-galaxy-s21: ready-for-dev
   0-2-write-game-state-to-local-save: backlog
   0-3-add-ui-string-via-string-table: backlog
   epic-0-retrospective: optional

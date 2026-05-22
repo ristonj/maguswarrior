@@ -1,3 +1,30 @@
 # BMAD personal config — installer-managed per-user, never commit
 _bmad/config.user.toml
 _bmad/custom/config.user.toml
+
+# Godot engine
+.godot/
+*.translation
+
+# C# / Mono build artifacts
+.mono/
+data_*/
+bin/
+obj/
+
+# Godot Android export
+android/build/
+android/.gradle/
+export/
+
+# Build output
+*.apk
+*.aab
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.suo
+
+# macOS
+.DS_Store
