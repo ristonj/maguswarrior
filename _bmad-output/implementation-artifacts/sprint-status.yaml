@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-05-21"  # updated by code review
+last_updated: "2026-05-22"  # updated by dev-story
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -45,7 +45,7 @@ development_status:
   # ─── Epic 0: Foundation ───────────────────────────────────────────────────
   epic-0: in-progress
   0-1-build-and-deploy-to-galaxy-s21: done
-  0-2-write-game-state-to-local-save: backlog
+  0-2-write-game-state-to-local-save: review
   0-3-add-ui-string-via-string-table: backlog
   epic-0-retrospective: optional
 

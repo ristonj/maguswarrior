@@ -24,5 +24,7 @@
     <Compile Include="../scripts/core/types/ManaColor.cs" />
     <Compile Include="../scripts/core/types/SiteType.cs" />
     <Compile Include="../scripts/core/types/EffectType.cs" />
+    <Compile Include="../scripts/save/SaveData.cs" />
+    <Compile Include="../scripts/core/SaveMigrator.cs" />
   </ItemGroup>
 </Project>
