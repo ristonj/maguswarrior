@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>disable</ImplicitUsings>
-    <GodotProjectDir>$(MSBuildProjectDirectory)</GodotProjectDir>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**" />

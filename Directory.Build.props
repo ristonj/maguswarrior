@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <!-- Provides the trailing-separator path the ScriptPathAttributeGenerator requires.
+         MSBuildThisFileDirectory always resolves to this file's directory with a separator,
+         regardless of working directory — needed for Godot Android export. -->
+    <GodotProjectDir Condition="'$(GodotProjectDir)' == ''">$(MSBuildThisFileDirectory)</GodotProjectDir>
+  </PropertyGroup>
+</Project>
