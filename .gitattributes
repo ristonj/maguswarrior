@@ -1,0 +1,12 @@
+# Enforce LF line endings for all text files
+* text=auto eol=lf
+
+# Binary files — no line ending conversion
+*.translation binary
+*.png binary
+*.jpg binary
+*.svg binary
+*.ico binary
+*.apk binary
+*.aab binary
+*.pdf binary
