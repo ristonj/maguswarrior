@@ -25,6 +25,7 @@ window/size/mode=2
 window/size/resizable=false
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=0
 
 [dotnet]
 
@@ -33,6 +34,7 @@ project/assembly_name="maguswarrior"
 [internationalization]
 
 locale/translations=PackedStringArray("res://data/strings/ui_strings.en.translation")
+locale/fallback="en"
 
 [rendering]
 
