@@ -13,6 +13,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
             Log.Debug("[Save]", $"Existing save found: phase={result.Value!.current_phase}");
         else
             Log.Debug("[Save]", $"No save: {result.Error}");
+        Log.Debug("[UI]", $"Locale: {TranslationServer.Singleton.GetLocale()}");
     }
 
     public override void _Notification(int what) {

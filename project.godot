@@ -31,6 +31,10 @@ window/handheld/orientation=0
 
 project/assembly_name="maguswarrior"
 
+[internationalization]
+
+locale/fallback="en"
+
 [rendering]
 
 renderer/rendering_method="mobile"

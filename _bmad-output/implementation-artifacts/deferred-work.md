@@ -4,6 +4,16 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 0-3-add-ui-string-via-string-table (2026-05-29)
+
+- **Test path hardcoded depth** — `I18nTest.cs` resolves CSV via `AppContext.BaseDirectory + "../../../../"`. Breaks if test output structure differs (e.g., CI publish subdirectory). Consider a walk-up search or `Directory.GetParent()` loop as a more robust alternative. [tests/unit/I18nTest.cs:10-11]
+- **Weak CSV value assertion** — `CsvContainsPlaceholderTitleKey` only checks that the value is non-empty. A stricter assertion against the exact canonical string would catch accidental truncation or corruption. [tests/unit/I18nTest.cs:26]
+- **CSV encoding undeclared** — `ui_strings.csv` uses an em dash (`—`, U+2014) with no BOM or `.editorconfig` charset rule. A non-UTF-8 tool re-save corrupts the character silently. Add `charset = utf-8` to `.editorconfig` for `*.csv`. [data/strings/ui_strings.csv]
+- **`data/strings/` naming convention undocumented** — Intended naming pattern (`ui_strings.<locale>.csv`), subdirectory policy, and how to add new locales should be noted in a comment or doc before the string table grows. [data/strings/]
+- **CRLF brittleness in header test** — `Assert.Equal("keys,en", firstLine)` fails on Windows CI due to trailing `\r`. Guard with `.TrimEnd('\r', '\n')` if the project ever runs tests on Windows. [tests/unit/I18nTest.cs:16]
+- **`First()` throws on empty CSV** — `File.ReadLines(CsvPath).First()` throws `InvalidOperationException` (not a test failure message) if the file is empty. Pre-read to a list and assert non-empty first for a clearer failure. [tests/unit/I18nTest.cs:16]
+- **Key prefix collision risk** — `StartsWith("ui.placeholder_menu.title,")` matches any key beginning with that string. The comma delimiter is sufficient now, but if a key like `ui.placeholder_menu.title_extended` is added without the comma guard being updated, the wrong row is matched. [tests/unit/I18nTest.cs:24]
+
 ## Deferred from: code review of 0-1-build-and-deploy-to-galaxy-s21 (2026-05-21)
 
 - **GameState.CurrentPhase private set** — CombatResolver (Epic 3) must be able to advance CurrentPhase; `private set` will cause a compile error. Fix: expose `internal set` or a dedicated `SetPhase` method when CombatResolver is implemented. [scripts/core/GameState.cs]
