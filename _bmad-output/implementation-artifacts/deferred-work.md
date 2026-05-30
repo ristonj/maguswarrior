@@ -4,6 +4,29 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 1a-2-undo-last-event (2026-05-29)
+
+- **Snapshot captures scalars only** — `GameStateSnapshot` holds `CurrentPhase` + `MovePointsThisTurn`. Undo silently fails to restore any other mutable state. By documented design (incremental contract), but the snapshot AND `RestoreSnapshot` MUST be grown in lockstep every time `GameState` gains a mutable field (reputation, fame, hand, board position). A missed field = a silent half-rollback. [scripts/core/GameState.cs, scripts/core/GameEventLog.cs]
+- **Undo grouping semantics for triggered-effect chains undecided** — Sequential LIFO undo composes correctly today (event_B.before = event_A.after, so popping B then A walks back cleanly). But one `UndoLastEvent` reverses one effect, not a whole user-action causal chain as a unit. A transaction/grouping decision is needed before any effect returns triggered effects. Not exercised today — `MoveEffect` returns empty `Triggered`. [scripts/cards/effects/EffectScheduler.cs]
+- **Event appended regardless of `EffectResult.Success`** — A no-op or failed effect still produces a log entry (with `StateBefore == StateAfter`) and still re-enqueues triggered effects. `EffectFiredEvent` records no success flag and no after-state. Revisit when effects can actually fail (today `MoveEffect` always returns `Ok()`). [scripts/cards/effects/EffectScheduler.cs]
+- **Triggered-effect context not phase/type-validated** — Triggered effects are re-enqueued with their `TriggeredEffect.Ctx` as-is; a stale or illegal `Phase`/`EffectType` is logged without validation. Ties to the same future triggered-effect work. [scripts/cards/effects/EffectScheduler.cs]
+- **EffectScheduler exception handling** (also tracked from 1a-1) — a thrown `Execute` kills the queue with no rollback of the snapshot just taken. [scripts/cards/effects/EffectScheduler.cs]
+
+## Deferred from: code review of 1a-1-define-and-fire-effect (2026-05-29)
+
+- **Relative `data/cards.yaml` path will fail on Android device** — process CWD differs from project root on the export; needs `ProjectSettings.GlobalizePath` or `FileAccess` rework. Ties to story-0.2 device blocker. [scripts/core/GameState.cs:9, scripts/cards/CardLoader.cs]
+- **`AlternateEffectTypes` and `LegalPhases` never populated from YAML** — `PhaseValidator`'s alternate-effect and per-card override paths are dead code today. Needed for Epic 1b multi-type cards (e.g. `improvisation`). [scripts/cards/CardLoader.cs]
+- **`EffectScheduler` lacks exception handling, cancellation, cycle detection** — a thrown effect kills the queue; a self-triggering effect loops forever; no `CancellationToken`. Intentionally minimal per spec; revisit as real effect chains land. [scripts/cards/effects/EffectScheduler.cs]
+- **`PriorityQueue<T,int>` is not stable** — equal-priority effects dequeue in undefined order; will cause flaky behavior once priorities matter. Add insertion-counter secondary key. No conflicts today (all priorities 0). [scripts/cards/effects/EffectScheduler.cs]
+- **`EffectHookRegistry` sorts on every call and is not thread-safe** — stub today, no hooks registered. Address before first real `IEffectHook` lands. [scripts/cards/effects/EffectHookRegistry.cs]
+- **`GameState.MovePointsThisTurn` has no reset path** — name says "this turn" but value accumulates forever. End-of-turn structure out of scope for 1a-1. [scripts/core/GameState.cs:11]
+- **`CardDefinition` exposes public mutable setters** — `{ get; set; }` is required by YamlDotNet's default constructor binding; the "definitions" are not actually immutable. Revisit with `init` accessors + custom YamlDotNet deserializer. [scripts/cards/CardDefinition.cs]
+- **`PhaseGate.GamePhase.Any` semantics ambiguous when passed as `currentPhase`** — `Mana`/`Crystal`/`Special` are `Any` in the table; if a caller ever passes `Any` as the current phase the result is asymmetric and undocumented. Not exercised today. [scripts/cards/effects/PhaseGate.cs:27-29]
+- **Test coverage gaps** — no tests exercise `PhaseValidator`, `EffectHookRegistry`, the `Powered` spec branch, multi-type cards, `StringOrListConverter`'s sequence form, scheduler priority/triggered/exception paths. Spec asked for the 5 tests delivered; expand as system grows. [tests/unit/EffectSystemTest.cs]
+- **CardLoader test path uses fragile `../../../../data/cards.yaml`** — four `..` segments assume current TFM/output depth. Walk-up search or `Directory.GetParent()` loop would be more robust. [tests/unit/EffectSystemTest.cs]
+- **YamlDotNet `16.3.0` version duplicated** across `maguswarrior.csproj` and `tests/maguswarrior.Tests.csproj`. Centralize via `Directory.Packages.props`. [maguswarrior.csproj, tests/maguswarrior.Tests.csproj]
+- **Tests csproj uses per-file `<Compile Include="../scripts/...">`** — every new effect needs a manual entry here or tests silently skip it. Switch to a glob (`Include="../scripts/cards/**/*.cs"`) with Godot-class excludes. [tests/maguswarrior.Tests.csproj]
+
 ## Deferred from: code review of 0-3-add-ui-string-via-string-table (2026-05-29)
 
 - **Test path hardcoded depth** — `I18nTest.cs` resolves CSV via `AppContext.BaseDirectory + "../../../../"`. Breaks if test output structure differs (e.g., CI publish subdirectory). Consider a walk-up search or `Directory.GetParent()` loop as a more robust alternative. [tests/unit/I18nTest.cs:10-11]

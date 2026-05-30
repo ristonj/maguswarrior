@@ -13,10 +13,12 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 
   <!-- Pure C# files with no Godot dependency — safe to compile without Godot SDK -->
   <ItemGroup>
+    <Compile Include="../scripts/core/GameEventLog.cs" />
     <Compile Include="../scripts/core/Result.cs" />
     <Compile Include="../scripts/core/GameConstants.cs" />
     <Compile Include="../scripts/core/GameState.cs" />
@@ -26,5 +28,14 @@
     <Compile Include="../scripts/core/types/EffectType.cs" />
     <Compile Include="../scripts/save/SaveData.cs" />
     <Compile Include="../scripts/core/SaveMigrator.cs" />
+    <Compile Include="../scripts/cards/CardDefinition.cs" />
+    <Compile Include="../scripts/cards/CardLoader.cs" />
+    <Compile Include="../scripts/cards/effects/IEffect.cs" />
+    <Compile Include="../scripts/cards/effects/EffectContext.cs" />
+    <Compile Include="../scripts/cards/effects/EffectResult.cs" />
+    <Compile Include="../scripts/cards/effects/EffectScheduler.cs" />
+    <Compile Include="../scripts/cards/effects/EffectHookRegistry.cs" />
+    <Compile Include="../scripts/cards/effects/PhaseGate.cs" />
+    <Compile Include="../scripts/cards/effects/movement/MoveEffect.cs" />
   </ItemGroup>
 </Project>

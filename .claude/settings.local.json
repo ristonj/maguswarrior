@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 *)",
+      "Bash(dotnet test*)",
+      "WebFetch(domain:docs.godotengine.org)",
+      "Bash(git diff *)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

@@ -46,13 +46,13 @@ development_status:
   epic-0: in-progress
   0-1-build-and-deploy-to-galaxy-s21: done
   0-2-write-game-state-to-local-save: review
-  0-3-add-ui-string-via-string-table: in-progress
+  0-3-add-ui-string-via-string-table: review
   epic-0-retrospective: optional
 
   # ─── Epic 1a: Effect System Architecture ─────────────────────────────────
-  epic-1a: backlog
-  1a-1-define-and-fire-effect: backlog
-  1a-2-undo-last-event: backlog
+  epic-1a: in-progress
+  1a-1-define-and-fire-effect: done
+  1a-2-undo-last-event: done
   1a-3-full-effect-event-log-in-inspector: backlog
   epic-1a-retrospective: optional
 

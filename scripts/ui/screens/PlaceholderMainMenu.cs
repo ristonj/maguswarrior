@@ -1,5 +1,6 @@
 using Godot;
 using MagusWarrior.Core;
+using MagusWarrior.Core.Types;
 using MagusWarrior.Save;
 
 namespace MagusWarrior.UI;
@@ -14,6 +15,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         else
             Log.Debug("[Save]", $"No save: {result.Error}");
         Log.Debug("[UI]", $"Locale: {TranslationServer.Singleton.GetLocale()}");
+        GameDebug.FireTestEffect(new GameState(), "march", GamePhase.Movement);
     }
 
     public override void _Notification(int what) {

@@ -53,6 +53,12 @@ The root PDFs and images are Mage Knight board game references for design inspir
 
 All planning output lands in `_bmad-output/planning-artifacts/`. Keep `docs/` updated with stable project knowledge so it persists as the authoritative reference across sessions.
 
+## Testing
+
+**TDD is required.** Write the failing test first, confirm it fails, then implement the minimum code to make it pass. Never mark a task complete without running the tests and seeing them green.
+
+`dotnet test tests/maguswarrior.Tests.csproj` may be run at any time without asking for permission.
+
 ## Platform
 
 Primary platform is not yet decided — unity, unreal, godot, and other are all listed in config. This will be set once the GDD is established.
