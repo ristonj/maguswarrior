@@ -13,7 +13,7 @@ config_version=5
 config/name="Magus Warrior"
 config/description="Solo Android adaptation of Mage Knight Ultimate Edition"
 config/version="0.1.0"
-run/main_scene="res://scenes/screens/PlaceholderMainMenu.tscn"
+run/main_scene="res://scenes/MainBootstrap.tscn"
 config/features=PackedStringArray("4.6", "C#", "Mobile")
 config/icon="res://icon.svg"
 

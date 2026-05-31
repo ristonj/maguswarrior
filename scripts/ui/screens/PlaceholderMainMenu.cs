@@ -32,17 +32,31 @@ public partial class PlaceholderMainMenu : CanvasLayer {
             GD.PrintErr("[BOOT] Stack: " + ex.StackTrace);
             return;
         }
+
 #if DEBUG
-        // Debug-only effect inspector. The panel and toggle nodes still exist in the
-        // scene in release builds, but with no wiring they are unreachable. The undo
-        // *mechanism* (GameEventLog/RestoreSnapshot) is non-conditional and ships in
-        // release — player-facing undo (story 1b-4) builds on it. Only this dev
-        // inspector and its GameDebug.UndoLastEvent wrapper are DEBUG-gated.
-        _effectInspector = GetNode<EffectEventLogPanel>("EffectEventLogPanel");
-        _debugToggleArea = GetNode<Button>("DebugToggleArea");
-        _debugToggleArea.Pressed += OnDebugToggleAreaPressed;
+        _effectInspector = new EffectEventLogPanel();
+        _effectInspector.Name = "EffectEventLogPanel";
+        AddChild(_effectInspector);
         _effectInspector.Initialize(_state);
+
+        _debugToggleArea = new Button();
+        _debugToggleArea.Name = "DebugToggleArea";
+        _debugToggleArea.OffsetRight = 80f;
+        _debugToggleArea.OffsetBottom = 80f;
+        _debugToggleArea.Flat = true;
+        _debugToggleArea.ZIndex = 10;
+        _debugToggleArea.Pressed += OnDebugToggleAreaPressed;
+        AddChild(_debugToggleArea);
 #endif
+
+        var titleLabel = new Label();
+        titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
+        titleLabel.AddThemeFontSizeOverride("font_size", 72);
+        titleLabel.Text = "ui.placeholder_menu.title";
+        titleLabel.AutoTranslateMode = AutoTranslateModeEnum.Always;
+        titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
+        titleLabel.VerticalAlignment = VerticalAlignment.Center;
+        AddChild(titleLabel);
 
         var result = _saveManager.Load();
         if (result.IsSuccess)
@@ -52,7 +66,10 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         Log.Debug("[UI]", $"Locale: {TranslationServer.Singleton.GetLocale()}");
         GameDebug.FireTestEffect(_state, "march", GamePhase.Movement);
 
-        var handView = GetNode<HandView>("HandView");
+        var handView = new HandView();
+        handView.Name = "HandView";
+        AddChild(handView);
+
         var testHand = _state.Cards
             .Where(c => c.Type != CardType.Wound)
             .Take(4)
