@@ -9,9 +9,9 @@ using MagusWarrior.Save;
 namespace MagusWarrior.UI;
 
 public partial class PlaceholderMainMenu : CanvasLayer {
-    private readonly GameState _state = new();
-    private readonly SaveManager _saveManager = new();
-    private readonly DeckManager _deckManager = new();
+    private GameState _state = null!;
+    private SaveManager _saveManager = null!;
+    private DeckManager _deckManager = null!;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -20,6 +20,16 @@ public partial class PlaceholderMainMenu : CanvasLayer {
 
     public override void _Ready() {
         GD.Print("[BOOT] PlaceholderMainMenu._Ready entered");
+        try {
+            _state       = new GameState();
+            _saveManager = new SaveManager();
+            _deckManager = new DeckManager();
+            GD.Print("[BOOT] All constructors succeeded");
+        } catch (System.Exception ex) {
+            GD.PrintErr("[BOOT] Constructor failed: " + ex.GetType().Name + ": " + ex.Message);
+            GD.PrintErr("[BOOT] Stack: " + ex.StackTrace);
+            return;
+        }
 #if DEBUG
         // Debug-only effect inspector. The panel and toggle nodes still exist in the
         // scene in release builds, but with no wiring they are unreachable. The undo
