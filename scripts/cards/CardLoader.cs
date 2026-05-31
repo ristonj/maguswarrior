@@ -10,8 +10,13 @@ using YamlDotNet.Serialization.NamingConventions;
 namespace MagusWarrior.Cards;
 
 public static class CardLoader {
-    public static IReadOnlyList<CardDefinition> LoadAll(string yamlPath) {
-        var yaml = File.ReadAllText(yamlPath);
+    // LoadAll reads from the filesystem — used by tests with an absolute path.
+    public static IReadOnlyList<CardDefinition> LoadAll(string yamlPath) =>
+        ParseAll(File.ReadAllText(yamlPath));
+
+    // ParseAll parses YAML content directly — used at runtime via Godot.FileAccess.
+    public static IReadOnlyList<CardDefinition> ParseAll(string yamlContent) {
+        var yaml = yamlContent;
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .WithTypeConverter(new StringOrListConverter())

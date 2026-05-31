@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using MagusWarrior.Cards;
 using MagusWarrior.Core.Types;
+#if GODOT
+using Godot;
+#endif
 
 namespace MagusWarrior.Core;
 
@@ -30,7 +33,15 @@ public class GameState {
 
     private static IReadOnlyList<CardDefinition> LoadCardsOrThrow() {
         try {
+#if GODOT
+            using var f = FileAccess.Open("res://data/cards.yaml", FileAccess.ModeFlags.Read);
+            if (f == null)
+                throw new System.IO.IOException(
+                    $"res://data/cards.yaml not found (Godot error {FileAccess.GetOpenError()})");
+            return CardLoader.ParseAll(f.GetAsText());
+#else
             return CardLoader.LoadAll("data/cards.yaml");
+#endif
         } catch (InvalidOperationException) {
             throw;
         } catch (Exception ex) {
