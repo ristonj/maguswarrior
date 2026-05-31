@@ -19,6 +19,8 @@ public partial class PlaceholderMainMenu : CanvasLayer {
 #endif
 
     public override void _Ready() {
+        using (var bf = FileAccess.Open("user://boot_proof.txt", FileAccess.ModeFlags.Write))
+            bf?.StoreString("_Ready reached");
         GD.Print("[BOOT] PlaceholderMainMenu._Ready entered");
         try {
             _state       = new GameState();
