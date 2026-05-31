@@ -4,8 +4,11 @@ namespace MagusWarrior.Diagnostics;
 
 public partial class CSharpBootDiag : Node {
     public override void _Ready() {
-        using var f = FileAccess.Open("user://csharp_proof.txt", FileAccess.ModeFlags.Write);
-        f?.StoreString("C# autoload _Ready ran");
-        GD.Print("[CS_DIAG] C# autoload _Ready reached");
+        var path = IsInsideTree() && GetParent() is not null && GetParent().Name != "root"
+            ? "user://csharp_child_proof.txt"
+            : "user://csharp_proof.txt";
+        using var f = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+        f?.StoreString("C# Node _Ready ran, parent=" + (GetParent()?.Name ?? "none"));
+        GD.Print("[CS_DIAG] C# _Ready reached, path=" + path);
     }
 }

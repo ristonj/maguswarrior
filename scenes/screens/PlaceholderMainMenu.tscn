@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/screens/PlaceholderMainMenu.cs" id="1_savemgr"]
+[ext_resource type="Script" path="res://scripts/diagnostics/CSharpBootDiag.cs" id="4_csdiag"]
 [ext_resource type="PackedScene" path="res://scenes/debug/EffectEventLogPanel.tscn" id="2_efflp"]
 [ext_resource type="PackedScene" path="res://scenes/components/HandView.tscn" id="3_hview"]
 
@@ -27,3 +28,5 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="HandView" parent="." instance=ExtResource("3_hview")]
+
+[node name="CSharpDiagChild" type="Node" parent="." script=ExtResource("4_csdiag")]
