@@ -1,10 +1,4 @@
-<!-- TreatAsLocalProperty demotes GodotProjectDir from a global to a local property.
-     Godot's Android export invokes `dotnet publish` with GodotProjectDir passed as an
-     empty global property, which a normal <PropertyGroup> (including Directory.Build.props)
-     is forbidden to override — leaving it empty and breaking the source generator (CS8785,
-     'GodotProjectDir is null or empty'). Demoting it lets Godot.NET.Sdk's default
-     (Sdk.props: GodotProjectDir = MSBuildProjectDirectory) take effect during export. -->
-<Project Sdk="Godot.NET.Sdk/4.6.3" TreatAsLocalProperty="GodotProjectDir">
+<Project Sdk="Godot.NET.Sdk/4.6.3">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <TargetFrameworks Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFrameworks>
@@ -13,6 +7,16 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
+  <!-- Godot's Android export does not import Godot.SourceGenerators.props, so the
+       CompilerVisibleProperty registrations for GodotProjectDir never reach the source
+       generator — it sees the property as absent and aborts (CS8785, 'GodotProjectDir is
+       null or empty'), which silently disables _Ready/_Process/signal dispatch on device.
+       The value itself resolves fine (cf. build_property.ProjectDir); it just needs to be
+       made compiler-visible. Register it explicitly here. -->
+  <ItemGroup>
+    <CompilerVisibleProperty Include="GodotProjectDir" />
+    <CompilerVisibleProperty Include="GodotProjectDirBase64" />
+  </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**" />
   </ItemGroup>
