@@ -39,6 +39,7 @@ locale/fallback="en"
 [autoload]
 
 BootDiagnostic="*res://scripts/diagnostics/BootDiagnostic.gd"
+CSharpBootDiag="*res://scripts/diagnostics/CSharpBootDiag.cs"
 
 [rendering]
 
