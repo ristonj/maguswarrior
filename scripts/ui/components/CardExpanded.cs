@@ -6,6 +6,7 @@ using MagusWarrior.Core.Types;
 
 namespace MagusWarrior.UI;
 
+[ScriptPath("res://scripts/ui/components/CardExpanded.cs")]
 public partial class CardExpanded : Control {
     [Signal] public delegate void PlayRequestedEventHandler(string cardId);
     [Signal] public delegate void PlaySidewaysRequestedEventHandler(string cardId);

@@ -3,6 +3,7 @@ using MagusWarrior.Core;
 
 namespace MagusWarrior.UI;
 
+[ScriptPath("res://scripts/ui/debug/EffectEventLogPanel.cs")]
 public partial class EffectEventLogPanel : Panel {
     private GameState? _state;
 

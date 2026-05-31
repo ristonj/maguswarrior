@@ -8,6 +8,7 @@ using MagusWarrior.Save;
 
 namespace MagusWarrior.UI;
 
+[ScriptPath("res://scripts/ui/screens/PlaceholderMainMenu.cs")]
 public partial class PlaceholderMainMenu : CanvasLayer {
     private readonly GameState _state = new();
     private readonly SaveManager _saveManager = new();

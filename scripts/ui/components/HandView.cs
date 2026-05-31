@@ -7,6 +7,7 @@ using MagusWarrior.Deck;
 
 namespace MagusWarrior.UI;
 
+[ScriptPath("res://scripts/ui/components/HandView.cs")]
 public partial class HandView : Control {
     [Export] public PackedScene CardCompactScene { get; set; } = null!;
 
