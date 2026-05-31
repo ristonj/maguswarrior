@@ -53,7 +53,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         titleLabel.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);
         titleLabel.AddThemeFontSizeOverride("font_size", 72);
         titleLabel.Text = "ui.placeholder_menu.title";
-        titleLabel.AutoTranslateMode = AutoTranslateModeEnum.Always;
+        titleLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         titleLabel.HorizontalAlignment = HorizontalAlignment.Center;
         titleLabel.VerticalAlignment = VerticalAlignment.Center;
         AddChild(titleLabel);
