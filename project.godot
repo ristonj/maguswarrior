@@ -36,6 +36,10 @@ project/assembly_name="maguswarrior"
 locale/translations=PackedStringArray("res://data/strings/ui_strings.en.translation")
 locale/fallback="en"
 
+[autoload]
+
+BootDiagnostic="*res://scripts/diagnostics/BootDiagnostic.gd"
+
 [rendering]
 
 renderer/rendering_method="mobile"
