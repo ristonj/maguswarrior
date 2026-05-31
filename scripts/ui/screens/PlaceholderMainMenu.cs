@@ -19,6 +19,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
 #endif
 
     public override void _Ready() {
+        GD.Print("[BOOT] PlaceholderMainMenu._Ready entered");
 #if DEBUG
         // Debug-only effect inspector. The panel and toggle nodes still exist in the
         // scene in release builds, but with no wiring they are unreachable. The undo
