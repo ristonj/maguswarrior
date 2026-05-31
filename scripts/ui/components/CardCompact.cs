@@ -5,9 +5,6 @@ using MagusWarrior.Core.Types;
 
 namespace MagusWarrior.UI;
 
-#if GODOT_ANDROID
-[ScriptPath("res://scripts/ui/components/CardCompact.cs")]
-#endif
 public partial class CardCompact : Control {
     [Signal]
     public delegate void CardTappedEventHandler(string cardId);

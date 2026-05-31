@@ -1,4 +1,10 @@
-<Project Sdk="Godot.NET.Sdk/4.6.3">
+<!-- TreatAsLocalProperty demotes GodotProjectDir from a global to a local property.
+     Godot's Android export invokes `dotnet publish` with GodotProjectDir passed as an
+     empty global property, which a normal <PropertyGroup> (including Directory.Build.props)
+     is forbidden to override — leaving it empty and breaking the source generator (CS8785,
+     'GodotProjectDir is null or empty'). Demoting it lets Godot.NET.Sdk's default
+     (Sdk.props: GodotProjectDir = MSBuildProjectDirectory) take effect during export. -->
+<Project Sdk="Godot.NET.Sdk/4.6.3" TreatAsLocalProperty="GodotProjectDir">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <TargetFrameworks Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFrameworks>

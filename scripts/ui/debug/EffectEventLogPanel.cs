@@ -3,9 +3,6 @@ using MagusWarrior.Core;
 
 namespace MagusWarrior.UI;
 
-#if GODOT_ANDROID
-[ScriptPath("res://scripts/ui/debug/EffectEventLogPanel.cs")]
-#endif
 public partial class EffectEventLogPanel : Panel {
     private GameState? _state;
 

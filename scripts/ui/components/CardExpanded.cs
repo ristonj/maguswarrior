@@ -6,9 +6,6 @@ using MagusWarrior.Core.Types;
 
 namespace MagusWarrior.UI;
 
-#if GODOT_ANDROID
-[ScriptPath("res://scripts/ui/components/CardExpanded.cs")]
-#endif
 public partial class CardExpanded : Control {
     [Signal] public delegate void PlayRequestedEventHandler(string cardId);
     [Signal] public delegate void PlaySidewaysRequestedEventHandler(string cardId);

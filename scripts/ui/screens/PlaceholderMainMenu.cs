@@ -8,9 +8,6 @@ using MagusWarrior.Save;
 
 namespace MagusWarrior.UI;
 
-#if GODOT_ANDROID
-[ScriptPath("res://scripts/ui/screens/PlaceholderMainMenu.cs")]
-#endif
 public partial class PlaceholderMainMenu : CanvasLayer {
     private readonly GameState _state = new();
     private readonly SaveManager _saveManager = new();
