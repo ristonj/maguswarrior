@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**" />
+    <Compile Remove="android/**" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
