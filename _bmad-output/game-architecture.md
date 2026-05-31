@@ -465,7 +465,9 @@ private void HandleCardPlayed(CardPlayedEvent e) {
 
 **`GameDebug.cs`:** Static class with `[Conditional("DEBUG")]` on all methods — zero cost in release builds.
 
-**State inspector overlay:** Toggle via 5-tap in the top-left corner. Dumps serialized `GameState` to an on-screen scrollable panel. Available in all builds for crash reproduction.
+**State inspector overlay:** Toggle via 5-tap in the top-left corner. Dumps serialized `GameState` to an on-screen scrollable panel. **DEBUG builds only** — the wiring is compiled under `#if DEBUG`, so no debug surface is reachable in a release build. (The inspector/toggle nodes may still exist dormant in a scene, but are never wired in release.) Debug builds are produced after each story so the developer can test on device; release builds ship with zero active debug tooling.
+
+**Undo is a player feature, not a debug feature.** The event-log undo *mechanism* — `GameEventLog`, `GameState.RestoreSnapshot`, `EffectScheduler` log append — is plain non-conditional C# and ships in release. Players undo freely until an "undo gate" (new information revealed); the player-facing undo UI lands in story 1b-4 on top of this mechanism. Only the `GameDebug.UndoLastEvent` convenience wrapper (used by the DEBUG-only inspector panel) is `[Conditional("DEBUG")]`.
 
 **Scenario shortcuts (dev only):**
 

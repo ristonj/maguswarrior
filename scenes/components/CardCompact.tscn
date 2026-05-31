@@ -1,0 +1,33 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/components/CardCompact.cs" id="1_ccscript"]
+
+[node name="CardCompact" type="Control" script=ExtResource("1_ccscript")]
+custom_minimum_size = Vector2(120, 120)
+
+[node name="CardPanel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="CardPanel"]
+
+[node name="CardName" type="Label" parent="CardPanel/Layout"]
+text = ""
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 2
+
+[node name="ManaCostLabel" type="Label" parent="CardPanel/Layout"]
+text = ""
+theme_override_font_sizes/font_size = 18
+
+[node name="TapTarget" type="Button" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+z_index = 1

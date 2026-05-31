@@ -1,0 +1,7 @@
+# Team overrides for gds-code-review skill.
+# on_complete: runs at the very end of the workflow (step 10 terminal instruction).
+# Clears the code-review sentinel and switches the model back to Sonnet immediately,
+# rather than waiting for the 30-minute expiry in the UserPromptSubmit hook.
+
+[workflow]
+on_complete = "Before finishing, run this bash command: rm -f /tmp/claude-code-review-mode && tmpf=$(mktemp) && jq '.model = \"claude-sonnet-4-6\"' ~/.claude/settings.json > \"$tmpf\" && mv \"$tmpf\" ~/.claude/settings.json && echo 'Model restored to Sonnet.'"

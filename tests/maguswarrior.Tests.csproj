@@ -37,5 +37,6 @@
     <Compile Include="../scripts/cards/effects/EffectHookRegistry.cs" />
     <Compile Include="../scripts/cards/effects/PhaseGate.cs" />
     <Compile Include="../scripts/cards/effects/movement/MoveEffect.cs" />
+    <Compile Include="../scripts/deck/DeckManager.cs" />
   </ItemGroup>
 </Project>

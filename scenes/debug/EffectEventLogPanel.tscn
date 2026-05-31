@@ -1,0 +1,39 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/debug/EffectEventLogPanel.cs" id="1_efflp"]
+
+[node name="EffectEventLogPanel" type="Panel"]
+script = ExtResource("1_efflp")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TitleLabel" type="Label" parent="Layout"]
+text = "Effect Event Log"
+theme_override_font_sizes/font_size = 36
+
+[node name="Scroll" type="ScrollContainer" parent="Layout"]
+size_flags_vertical = 3
+
+[node name="EntriesContainer" type="VBoxContainer" parent="Layout/Scroll"]
+size_flags_horizontal = 3
+
+[node name="ActionBar" type="HBoxContainer" parent="Layout"]
+
+[node name="UndoLastButton" type="Button" parent="Layout/ActionBar"]
+text = "Undo Last"
+theme_override_font_sizes/font_size = 32
+
+[node name="CloseButton" type="Button" parent="Layout/ActionBar"]
+text = "Close"
+theme_override_font_sizes/font_size = 32

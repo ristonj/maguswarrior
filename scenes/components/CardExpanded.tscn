@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/components/CardExpanded.cs" id="1_cescript"]
+
+[node name="CardExpanded" type="Control" script=ExtResource("1_cescript")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+visible = false
+z_index = 3
+
+[node name="CardPanel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="CardPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CancelButton" type="Button" parent="CardPanel/Layout"]
+text = "✕ Cancel"
+theme_override_font_sizes/font_size = 28
+
+[node name="CardNameLabel" type="Label" parent="CardPanel/Layout"]
+text = ""
+theme_override_font_sizes/font_size = 36
+
+[node name="EffectTextLabel" type="Label" parent="CardPanel/Layout"]
+text = ""
+theme_override_font_sizes/font_size = 28
+autowrap_mode = 2
+
+[node name="ActionBar" type="HBoxContainer" parent="CardPanel/Layout"]
+theme_override_constants/separation = 20
+
+[node name="PlayButton" type="Button" parent="CardPanel/Layout/ActionBar"]
+text = "Play"
+theme_override_font_sizes/font_size = 32
+
+[node name="PlaySidewaysButton" type="Button" parent="CardPanel/Layout/ActionBar"]
+text = "Sideways"
+theme_override_font_sizes/font_size = 32
+
+[node name="PowerButton" type="Button" parent="CardPanel/Layout/ActionBar"]
+text = "Power"
+theme_override_font_sizes/font_size = 32
+visible = false

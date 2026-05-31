@@ -4,6 +4,20 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 1b-1-tap-card-to-see-options (2026-05-31)
+
+- **`HandView` never unsubscribes `HandChanged` from `DeckManager`** — `Initialize` subscribes `deck.HandChanged += RefreshHand` with no matching `_ExitTree` unsubscribe. If `HandView` is freed before `DeckManager`, the delegate dangles and `RefreshHand` fires on a freed node. Not triggered in 1b-1 (both owned by `PlaceholderMainMenu` for the whole session). Add `_ExitTree` override when scene lifecycle gets more complex. [scripts/ui/components/HandView.cs:21]
+- **`QueueFree`'d `CardCompact` nodes can still emit `CardTapped` before frame deletion — ghost tap risk** — `RefreshHand` calls `QueueFree` on old nodes but they remain alive until end of frame. A tap event queued against an old node fires `OnCardTapped` after the hand has been rebuilt, potentially triggering a `First()` lookup on a card no longer in the hand. Not triggerable in 1b-1 (hand set once at startup, never changes). Fix when `SetHand` starts being called dynamically: disconnect signals before `QueueFree`, or use a generation counter to discard stale taps. [scripts/ui/components/HandView.cs:27-35]
+- **`SetHand` fires `HandChanged` before `handView.Initialize` subscribes — silent ordering dependency** — `PlaceholderMainMenu._Ready()` calls `SetHand(testHand)` then `handView.Initialize(...)`. The `HandChanged` event fires during `SetHand` with no subscribers; `Initialize` then calls `RefreshHand()` directly (correct). Works today, but the ordering is a silent assumption: if `SetHand` is ever moved after `Initialize`, or another subscriber expects to catch the first `HandChanged`, it will silently miss it. Consider calling `SetHand` after `Initialize` as the canonical pattern. [scripts/ui/screens/PlaceholderMainMenu.cs:47-50]
+
+---
+
+## Deferred from: code review of 1a-3-full-effect-event-log-in-inspector (2026-05-30)
+
+- **`RefreshDisplay` uses `QueueFree()` + immediate `AddChild()`** — old labels are queued for end-of-frame deletion while new ones are added synchronously, so the container transiently holds both within the frame. Spec (AC3) prescribed `QueueFree()`, and Godot frees old nodes before the next redraw so no visible duplication occurs for this debug tool. Adopt `RemoveChild` + `QueueFree` (or `Free()`) if the panel ever becomes player-facing or refreshes rapidly (Undo-mashing compounds the overlap). [scripts/ui/debug/EffectEventLogPanel.cs:20-32]
+- **`FireTestEffect` is `async void` and not awaited** — if any effect ever performs a real `await`, the panel can render a stale/empty log with no re-refresh path. By design today: `async void` is the documented `[Conditional("DEBUG")]` exception and `MoveEffect.Execute` is synchronous (`Task.FromResult`), so the event is appended before `_Ready()` returns. Revisit when effects perform real awaits. [scripts/ui/screens/PlaceholderMainMenu.cs:27, scripts/cards/effects/EffectScheduler.cs:20]
+- **New Godot UI behavior has zero automated coverage** — refresh formatting, undo wiring, and the 5-tap toggle are not exercised by any test because `EffectEventLogPanel.cs` (a Godot `Panel`) cannot be compiled into the test project. Inherent to the Godot/test-project boundary. Manual on-device verification recommended before closing Epic 1a. [scripts/ui/debug/EffectEventLogPanel.cs]
+
 ## Deferred from: code review of 1a-2-undo-last-event (2026-05-29)
 
 - **Snapshot captures scalars only** — `GameStateSnapshot` holds `CurrentPhase` + `MovePointsThisTurn`. Undo silently fails to restore any other mutable state. By documented design (incremental contract), but the snapshot AND `RestoreSnapshot` MUST be grown in lockstep every time `GameState` gains a mutable field (reputation, fame, hand, board position). A missed field = a silent half-rollback. [scripts/core/GameState.cs, scripts/core/GameEventLog.cs]
