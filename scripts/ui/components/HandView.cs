@@ -7,7 +7,9 @@ using MagusWarrior.Deck;
 
 namespace MagusWarrior.UI;
 
+#if GODOT_ANDROID
 [ScriptPath("res://scripts/ui/components/HandView.cs")]
+#endif
 public partial class HandView : Control {
     [Export] public PackedScene CardCompactScene { get; set; } = null!;
 
