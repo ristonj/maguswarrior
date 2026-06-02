@@ -1,6 +1,15 @@
 # Story 0.2: Write Game State to Local Save
 
-Status: review
+Status: done
+
+> **Device verification (2026-06-02):** AC #9 confirmed on Galaxy S21. Backgrounding the app
+> logs `[Save] Save written` and writes `user://save.json`; relaunch logs
+> `[Save] Save loaded schema_version=1` / `Existing save found: phase=Movement`. This was
+> blocked by a blank-screen bug (the app showed only a grey screen) — root cause was an unrelated
+> Godot-3 inline `script=` in `scenes/MainBootstrap.tscn` that Godot 4 silently ignores, so the
+> main scene ran no script. Fixed in 8c06ca2. Note: AC #5's "script attached to
+> PlaceholderMainMenu.tscn" was superseded earlier by programmatic instantiation
+> (`PlaceholderMainMenu.cs.new()` from `MainBootstrap.gd`); the leftover `.tscn` was deleted in 2918f7d.
 
 ## Story
 
