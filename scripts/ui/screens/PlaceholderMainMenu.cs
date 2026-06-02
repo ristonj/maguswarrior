@@ -19,19 +19,9 @@ public partial class PlaceholderMainMenu : CanvasLayer {
 #endif
 
     public override void _Ready() {
-        using (var bf = FileAccess.Open("user://boot_proof.txt", FileAccess.ModeFlags.Write))
-            bf?.StoreString("_Ready reached");
-        GD.Print("[BOOT] PlaceholderMainMenu._Ready entered");
-        try {
-            _state       = new GameState();
-            _saveManager = new SaveManager();
-            _deckManager = new DeckManager();
-            GD.Print("[BOOT] All constructors succeeded");
-        } catch (System.Exception ex) {
-            GD.PrintErr("[BOOT] Constructor failed: " + ex.GetType().Name + ": " + ex.Message);
-            GD.PrintErr("[BOOT] Stack: " + ex.StackTrace);
-            return;
-        }
+        _state       = new GameState();
+        _saveManager = new SaveManager();
+        _deckManager = new DeckManager();
 
 #if DEBUG
         _effectInspector = new EffectEventLogPanel();
