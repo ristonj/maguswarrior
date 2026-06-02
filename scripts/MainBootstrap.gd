@@ -1,17 +1,18 @@
 extends Node
 
+# Entry point. The main scene's root node runs this on launch and mounts the
+# placeholder UI. PlaceholderMainMenu is a C# CanvasLayer that builds its own
+# children in _Ready(), so we just instantiate it and add it under this node.
 func _ready() -> void:
-	print("[BOOT] MainBootstrap._ready entered")
-	var script = load("res://scripts/ui/screens/PlaceholderMainMenu.cs")
-	if script == null:
-		print("[BOOT] ERROR: failed to load PlaceholderMainMenu.cs")
+	var menu_script := load("res://scripts/ui/screens/PlaceholderMainMenu.cs")
+	if menu_script == null:
+		push_error("MainBootstrap: failed to load PlaceholderMainMenu.cs")
 		return
-	print("[BOOT] C# script loaded OK: ", script)
-	var menu = script.new()
+	var menu = menu_script.new()
 	if menu == null:
-		print("[BOOT] ERROR: script.new() returned null")
+		push_error("MainBootstrap: PlaceholderMainMenu.new() returned null")
 		return
-	print("[BOOT] menu instantiated OK: ", menu)
 	menu.name = "PlaceholderMainMenu"
-	get_tree().get_root().add_child(menu)
-	print("[BOOT] menu added to scene tree")
+	# Add to self, not get_tree().get_root(): during _ready the Window root is
+	# still busy adding the main scene, so add_child() on it fails.
+	add_child(menu)
