@@ -24,6 +24,10 @@ public class GameState {
         MovePointsThisTurn += n;
     }
 
+    // LOCKSTEP: every mutable field added to GameState MUST also be added to
+    // GameStateSnapshot and restored here, or undo silently produces a half-rollback.
+    // Current snapshot fields: CurrentPhase, MovePointsThisTurn.
+    // Add Hand, Fame, Reputation, etc. here the moment they land in GameState.
     public GameStateSnapshot TakeSnapshot() => new(CurrentPhase, MovePointsThisTurn);
 
     public void RestoreSnapshot(GameStateSnapshot snapshot) {

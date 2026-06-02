@@ -219,13 +219,13 @@ cards:
     name: Improvisation
     mana_cost: red
     unpowered:
-      effect_type: [Move, Influence, Combat]  # depends on player's choice
+      effect_type: [Move, Influence, Combat, Block]  # depends on current game phase (story 1b-7)
       text: "Discard another card from your hand to get Move 3, Influence 3, Attack 3, or Block 3."
       discard_for:
         choices: [move, influence, attack, block]
         amount: 3
     powered:
-      effect_type: [Move, Influence, Combat]  # depends on player's choice
+      effect_type: [Move, Influence, Combat, Block]  # depends on current game phase (story 1b-7)
       text: "Discard another card from your hand to get Move 5, Influence 5, Attack 5, or Block 5."
       discard_for:
         choices: [move, influence, attack, block]

@@ -57,6 +57,15 @@ public class EffectSystemTest {
     }
 
     [Fact]
+    public void CardLoader_LoadsImprovisationAlternateEffectTypes() {
+        Assert.True(File.Exists(YamlPath), $"Expected cards.yaml at {YamlPath}");
+        var cards = CardLoader.LoadAll(YamlPath);
+        var improv = cards.FirstOrDefault(c => c.Id == "improvisation");
+        Assert.NotNull(improv);
+        Assert.NotEmpty(improv!.AlternateEffectTypes);
+    }
+
+    [Fact]
     public async Task EventLog_HasOneEntry_AfterEffectFires() {
         var state = EmptyState();
         var scheduler = new EffectScheduler();

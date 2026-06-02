@@ -47,7 +47,7 @@ development_status:
   0-1-build-and-deploy-to-galaxy-s21: done
   0-2-write-game-state-to-local-save: done
   0-3-add-ui-string-via-string-table: done
-  epic-0-retrospective: optional
+  epic-0-retrospective: done
 
   # ─── Epic 1a: Effect System Architecture ─────────────────────────────────
   epic-1a: in-progress

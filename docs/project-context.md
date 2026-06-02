@@ -272,6 +272,35 @@ errors occur during normal play."
 
 ---
 
+## Why These Rules Exist
+
+These are the questions John asked in the Epic 0 retrospective. If you're an agent reading this: don't skip it. John is the sole human reviewer — if he doesn't understand the reasoning, drift goes uncaught.
+
+### Why async/await everywhere — no exceptions
+
+The combat loop is sequential code: ranged phase, then block phase, then melee phase. Each phase needs to pause and wait for a player tap. Without async/await you'd need a state machine or event callbacks to track "we were in block phase, player tapped, now resume." With async/await the loop writes `var choice = await _uiBroker.ChooseOne(...)` and picks up exactly where it left off after the player acts. The Godot UI keeps running (player sees the buttons), but the game logic is frozen at that line until the choice arrives. No flags, no "which phase were we in" tracking.
+
+`async void` is banned because it swallows exceptions silently — a thrown error in an unawaited void method disappears with no stack trace.
+
+### Why `Result<T>` instead of exceptions for game logic
+
+When `SaveManager.Load()` returns `Result<SaveData>`, the caller must check `IsSuccess` before reading `Value`. It cannot accidentally use a default. When a method throws instead, the exception can bubble silently through five call frames and crash somewhere unrelated with a useless stack trace.
+
+The project distinguishes two classes of failure:
+
+- *Expected failures* (save not found, invalid player action) → `Result.Fail`. Caller decides what to do.
+- *Unrecoverable startup failures* (corrupt card data, bad save schema) → throw immediately and loudly. No recovery possible.
+
+### Why pure C# classes — no Godot inheritance outside `scripts/ui/`
+
+`GameState`, `EffectScheduler`, `CardLoader` — none inherit from Godot types. This means `dotnet test` runs all 19+ tests in about two seconds with no Godot editor, no device, no APK. If `GameState` inherited from `Node`, every test would require launching the engine.
+
+It also enforces a hard boundary: business logic cannot accidentally call Godot APIs (which crash outside the engine runtime), and Godot node lifecycle (freed nodes, scene tree changes) cannot corrupt game state.
+
+If you're writing a class outside `scripts/ui/` and feel the urge to inherit from a Godot type — stop. You are in the wrong place.
+
+---
+
 ## LLDs Required Before Full Implementation
 
 These design documents must exist before implementing the systems they cover:

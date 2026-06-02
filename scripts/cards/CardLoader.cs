@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MagusWarrior.Core.Types;
 using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
@@ -38,13 +39,20 @@ public static class CardLoader {
             if (!TryParseCardType(entry.Type, out var cardType))
                 throw new InvalidOperationException($"Card '{entry.Id}' has unrecognized type '{entry.Type}'");
 
+            var rawTypes = entry.Unpowered?.EffectType ?? new List<string>();
+            var alternateTypes = rawTypes.Count > 1
+                ? rawTypes.Skip(1).Select(ParseEffectType).ToArray()
+                : Array.Empty<EffectType>();
+
             result.Add(new CardDefinition {
-                Id        = entry.Id,
-                Name      = entry.Name ?? entry.Id,
-                Type      = cardType,
-                ManaCost  = ParseManaColor(entry.ManaCost),
-                Unpowered = ConvertSpec(entry.Unpowered),
-                Powered   = ConvertSpec(entry.Powered),
+                Id                   = entry.Id,
+                Name                 = entry.Name ?? entry.Id,
+                Type                 = cardType,
+                ManaCost             = ParseManaColor(entry.ManaCost),
+                Unpowered            = ConvertSpec(entry.Unpowered),
+                Powered              = ConvertSpec(entry.Powered),
+                AlternateEffectTypes = alternateTypes,
+                LegalPhases          = entry.LegalPhases?.Select(ParseGamePhase).ToArray(),
             });
         }
         return result;
@@ -95,6 +103,21 @@ public static class CardLoader {
         return (int)result >= 0;
     }
 
+    private static GamePhase ParseGamePhase(string raw) => raw.ToLowerInvariant() switch {
+        "movement"           => GamePhase.Movement,
+        "interaction"        => GamePhase.Interaction,
+        "combatstart"        => GamePhase.CombatStart,
+        "combatranged"       => GamePhase.CombatRanged,
+        "combatblock"        => GamePhase.CombatBlock,
+        "combatassigndamage" => GamePhase.CombatAssignDamage,
+        "combatmelee"        => GamePhase.CombatMelee,
+        "rest"               => GamePhase.Rest,
+        "endofturn"          => GamePhase.EndOfTurn,
+        "any"                => GamePhase.Any,
+        _                    => throw new InvalidOperationException(
+                                    $"Unknown legal_phase '{raw}' in cards.yaml"),
+    };
+
     private static ManaColor? ParseManaColor(string? raw) {
         if (string.IsNullOrEmpty(raw)) return null;
         return raw.ToLowerInvariant() switch {
@@ -115,12 +138,13 @@ public static class CardLoader {
     }
 
     private class YamlCardEntry {
-        public string?       Id       { get; set; }
-        public string?       Type     { get; set; }
-        public string?       Name     { get; set; }
-        public string?       ManaCost { get; set; }
-        public YamlEffectSpec? Unpowered { get; set; }
-        public YamlEffectSpec? Powered   { get; set; }
+        public string?         Id          { get; set; }
+        public string?         Type        { get; set; }
+        public string?         Name        { get; set; }
+        public string?         ManaCost    { get; set; }
+        public List<string>?   LegalPhases { get; set; }
+        public YamlEffectSpec? Unpowered   { get; set; }
+        public YamlEffectSpec? Powered     { get; set; }
     }
 
     private class YamlEffectSpec {
