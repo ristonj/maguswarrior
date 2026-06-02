@@ -1,6 +1,14 @@
 # Story 0.3: Add UI String via String Table
 
-Status: review
+Status: done
+
+> **Device verification (2026-06-02):** AC #7 confirmed on Galaxy S21 — logcat shows
+> `[DEBUG] [UI] Locale: en_US` and the screen renders "Magus Warrior — PLACEHOLDER" (the
+> translated value, not the raw key). Was blocked by the same blank-screen bug as 0.2 (fixed in
+> 8c06ca2). Note: AC #3's Label-in-`PlaceholderMainMenu.tscn` was superseded by programmatic
+> instantiation — the Label is now built in `PlaceholderMainMenu.cs._Ready()` with
+> `Text = "ui.placeholder_menu.title"` and `AutoTranslateMode = Always`; the dead `.tscn` was
+> deleted in 2918f7d. Intent (key-routed, auto-translated, no hardcoded English) is fully met.
 
 ## Story
 
@@ -75,14 +83,14 @@ so that i18n is enforced from the start and adding languages post-v1 requires on
   - [x] Path resolved via `AppContext.BaseDirectory + "../../../../data/strings/ui_strings.csv"` — test binary is at `tests/bin/Debug/net9.0/`, so going up 4 levels reaches project root
   - [x] Run: `dotnet test tests/maguswarrior.Tests.csproj` — all 10 tests pass (8 existing + 2 new)
 
-- [ ] Task 6: On-device verification (AC: 7) — user action required
-  - [ ] Rebuild APK: Project → Export → Android → Export Project (Debug) in Godot editor
-  - [ ] Install: `adb install -r maguswarrior.apk`
-  - [ ] Monitor: `adb logcat -s "Godot" | grep "\[UI\]"`
-  - [ ] Launch app → expect `[DEBUG] [UI] Locale: en`
-  - [ ] Confirm placeholder screen renders "Magus Warrior — PLACEHOLDER" and NOT the raw string "ui.placeholder_menu.title"
-  - [ ] **Note:** Open the Godot editor first to allow it to import `ui_strings.csv` and generate `data/strings/ui_strings.en.translation` — this must happen before the APK export or the translation won't be bundled
-  - [ ] If CS8785 ScriptPathAttributeGenerator recurs (same blocker as Story 0.2 AC9): note it in completion notes and defer — do not block story on this known issue
+- [x] Task 6: On-device verification (AC: 7) — verified on Galaxy S21 2026-06-02
+  - [x] Rebuild APK: Project → Export → Android → Export Project (Debug) in Godot editor
+  - [x] Install: `adb install -r maguswarrior.apk`
+  - [x] Monitor logcat (use `godot:V *:S` filter, NOT `-s "Godot"` — capital-G drops print output)
+  - [x] Launch app → confirmed `[DEBUG] [UI] Locale: en_US`
+  - [x] Confirmed placeholder screen renders "Magus Warrior — PLACEHOLDER", NOT the raw key "ui.placeholder_menu.title"
+  - [x] Editor regenerates `ui_strings.en.translation` from the committed `.csv` + `.csv.import` on import; the `.translation` binary is gitignored (generated artifact), `.csv`/`.csv.import` are committed
+  - [x] CS8785 did not recur (root-caused and fixed separately)
 
 ## Dev Notes
 
