@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using MagusWarrior.Cards;
 using MagusWarrior.Core.Types;
 #if GODOT
@@ -11,8 +12,20 @@ namespace MagusWarrior.Core;
 public class GameState {
     public GamePhase CurrentPhase { get; private set; }
     public int MovePointsThisTurn { get; private set; }
+    public int InfluencePointsThisTurn { get; private set; }
+    // Wrapped in ReadOnlyDictionary so the live backing dictionary can't be cast back to
+    // Dictionary and mutated — all writes must go through AddAttackPoints/AddBlockPoints,
+    // which keeps the snapshot/LOCKSTEP discipline intact. Re-wrapped per access because
+    // RestoreSnapshot reassigns the backing fields.
+    public IReadOnlyDictionary<(EffectType Distance, AttackElement Element), int> AttackPool =>
+        new ReadOnlyDictionary<(EffectType Distance, AttackElement Element), int>(_attackPool);
+    public IReadOnlyDictionary<AttackElement, int> BlockPool =>
+        new ReadOnlyDictionary<AttackElement, int>(_blockPool);
     public IReadOnlyList<CardDefinition> Cards { get; private set; }
     public GameEventLog EventLog { get; } = new();
+
+    private Dictionary<(EffectType Distance, AttackElement Element), int> _attackPool = new();
+    private Dictionary<AttackElement, int> _blockPool = new();
 
     public GameState() : this(LoadCardsOrThrow()) { }
 
@@ -20,19 +33,36 @@ public class GameState {
         Cards = cards;
     }
 
-    public void AddMovePoints(int n) {
-        MovePointsThisTurn += n;
+    public void AddMovePoints(int n) { MovePointsThisTurn += n; }
+    public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; }
+
+    public void AddAttackPoints(int n, EffectType distance, AttackElement element) {
+        var key = (distance, element);
+        _attackPool[key] = _attackPool.GetValueOrDefault(key) + n;
+    }
+
+    public void AddBlockPoints(int n, AttackElement element) {
+        _blockPool[element] = _blockPool.GetValueOrDefault(element) + n;
     }
 
     // LOCKSTEP: every mutable field added to GameState MUST also be added to
     // GameStateSnapshot and restored here, or undo silently produces a half-rollback.
-    // Current snapshot fields: CurrentPhase, MovePointsThisTurn.
+    // Current snapshot fields: CurrentPhase, MovePointsThisTurn, InfluencePointsThisTurn,
+    // AttackPool (keyed by distance+element), BlockPool (keyed by element).
     // Add Hand, Fame, Reputation, etc. here the moment they land in GameState.
-    public GameStateSnapshot TakeSnapshot() => new(CurrentPhase, MovePointsThisTurn);
+    public GameStateSnapshot TakeSnapshot() => new(
+        CurrentPhase,
+        MovePointsThisTurn,
+        InfluencePointsThisTurn,
+        new Dictionary<(EffectType, AttackElement), int>(_attackPool),
+        new Dictionary<AttackElement, int>(_blockPool));
 
     public void RestoreSnapshot(GameStateSnapshot snapshot) {
         CurrentPhase = snapshot.CurrentPhase;
         MovePointsThisTurn = snapshot.MovePointsThisTurn;
+        InfluencePointsThisTurn = snapshot.InfluencePointsThisTurn;
+        _attackPool = new Dictionary<(EffectType, AttackElement), int>(snapshot.AttackPool);
+        _blockPool = new Dictionary<AttackElement, int>(snapshot.BlockPool);
     }
 
     private static IReadOnlyList<CardDefinition> LoadCardsOrThrow() {

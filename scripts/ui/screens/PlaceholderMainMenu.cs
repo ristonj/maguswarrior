@@ -1,6 +1,7 @@
 using System.Linq;
 using Godot;
 using MagusWarrior.Cards;
+using MagusWarrior.Cards.Effects;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
@@ -12,6 +13,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private GameState _state = null!;
     private SaveManager _saveManager = null!;
     private DeckManager _deckManager = null!;
+    private EffectScheduler _effectScheduler = null!;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -19,9 +21,10 @@ public partial class PlaceholderMainMenu : CanvasLayer {
 #endif
 
     public override void _Ready() {
-        _state       = new GameState();
-        _saveManager = new SaveManager();
-        _deckManager = new DeckManager();
+        _state           = new GameState();
+        _saveManager     = new SaveManager();
+        _deckManager     = new DeckManager();
+        _effectScheduler = new EffectScheduler();
 
 #if DEBUG
         _effectInspector = new EffectEventLogPanel();
@@ -65,7 +68,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
             .Take(4)
             .ToList();
         _deckManager.SetHand(testHand);
-        handView.Initialize(_deckManager, _state);
+        handView.Initialize(_deckManager, _state, _effectScheduler);
     }
 
     public override void _Notification(int what) {

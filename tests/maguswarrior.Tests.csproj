@@ -26,6 +26,7 @@
     <Compile Include="../scripts/core/types/ManaColor.cs" />
     <Compile Include="../scripts/core/types/SiteType.cs" />
     <Compile Include="../scripts/core/types/EffectType.cs" />
+    <Compile Include="../scripts/core/types/AttackElement.cs" />
     <Compile Include="../scripts/save/SaveData.cs" />
     <Compile Include="../scripts/core/SaveMigrator.cs" />
     <Compile Include="../scripts/cards/CardDefinition.cs" />
@@ -38,5 +39,9 @@
     <Compile Include="../scripts/cards/effects/PhaseGate.cs" />
     <Compile Include="../scripts/cards/effects/movement/MoveEffect.cs" />
     <Compile Include="../scripts/deck/DeckManager.cs" />
+    <Compile Include="../scripts/cards/SidewaysRule.cs" />
+    <Compile Include="../scripts/cards/effects/combat/AttackEffect.cs" />
+    <Compile Include="../scripts/cards/effects/combat/BlockEffect.cs" />
+    <Compile Include="../scripts/cards/effects/influence/InfluenceEffect.cs" />
   </ItemGroup>
 </Project>

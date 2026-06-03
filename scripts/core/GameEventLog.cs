@@ -4,7 +4,12 @@ using MagusWarrior.Core.Types;
 
 namespace MagusWarrior.Core;
 
-public record GameStateSnapshot(GamePhase CurrentPhase, int MovePointsThisTurn);
+public record GameStateSnapshot(
+    GamePhase CurrentPhase,
+    int MovePointsThisTurn,
+    int InfluencePointsThisTurn,
+    IReadOnlyDictionary<(EffectType Distance, AttackElement Element), int> AttackPool,
+    IReadOnlyDictionary<AttackElement, int> BlockPool);
 
 public record EffectFiredEvent(
     string SourceCardId,

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using MagusWarrior.Cards;
 using MagusWarrior.Cards.Effects;
+using MagusWarrior.Cards.Effects.Combat;
+using MagusWarrior.Cards.Effects.Influence;
 using MagusWarrior.Cards.Effects.Movement;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
@@ -106,5 +108,37 @@ public class EffectSystemTest {
         var log = new GameEventLog();
         var result = log.PopLast();
         Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task AttackEffect_AddsToAttackPool() {
+        var state = EmptyState();
+        var ctx = new EffectContext("rage", EffectType.AttackMelee, GamePhase.CombatMelee, Powered: false);
+        await new AttackEffect(3, EffectType.AttackMelee, AttackElement.Physical).Execute(state, ctx);
+        Assert.Equal(3, state.AttackPool[(EffectType.AttackMelee, AttackElement.Physical)]);
+    }
+
+    [Fact]
+    public async Task BlockEffect_AddsToBlockPool() {
+        var state = EmptyState();
+        var ctx = new EffectContext("stamina", EffectType.Block, GamePhase.CombatBlock, Powered: false);
+        await new BlockEffect(2, AttackElement.Physical).Execute(state, ctx);
+        Assert.Equal(2, state.BlockPool[AttackElement.Physical]);
+    }
+
+    [Fact]
+    public async Task InfluenceEffect_AddsInfluencePoints() {
+        var state = EmptyState();
+        var ctx = new EffectContext("threaten", EffectType.Influence, GamePhase.Interaction, Powered: false);
+        await new InfluenceEffect(1).Execute(state, ctx);
+        Assert.Equal(1, state.InfluencePointsThisTurn);
+    }
+
+    [Fact]
+    public void GameStateSnapshot_CapturesAttackPool() {
+        var state = EmptyState();
+        state.AddAttackPoints(5, EffectType.AttackMelee, AttackElement.Fire);
+        var snapshot = state.TakeSnapshot();
+        Assert.Equal(5, snapshot.AttackPool[(EffectType.AttackMelee, AttackElement.Fire)]);
     }
 }
