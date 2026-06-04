@@ -14,6 +14,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private SaveManager _saveManager = null!;
     private DeckManager _deckManager = null!;
     private EffectScheduler _effectScheduler = null!;
+    private StagingManager _stagingManager = null!;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -25,6 +26,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _saveManager     = new SaveManager();
         _deckManager     = new DeckManager();
         _effectScheduler = new EffectScheduler();
+        _stagingManager  = new StagingManager();
 
 #if DEBUG
         _effectInspector = new EffectEventLogPanel();
@@ -68,7 +70,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
             .Take(4)
             .ToList();
         _deckManager.SetHand(testHand);
-        handView.Initialize(_deckManager, _state, _effectScheduler);
+        handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager);
     }
 
     public override void _Notification(int what) {

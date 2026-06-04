@@ -16,8 +16,15 @@ public partial class HandView : Control {
     private DeckManager _deck = null!;
     private GameState _state = null!;
     private EffectScheduler _scheduler = null!;
+    private StagingManager _stagingManager = null!;
     private CardExpanded _expandedPanel = null!;
+    private StagingAreaView _stagingAreaView = null!;
     private HBoxContainer _cardsContainer = null!;
+    // Re-entrancy guard for OnCommitRequested. Today effects resolve synchronously
+    // (Task.FromResult), so a second tap can't interleave — but once ResolveAll genuinely
+    // awaits (UIBroker), an un-guarded second tap would re-enqueue the same staged cards
+    // and double-apply every effect. The guard closes that window before async lands.
+    private bool _committing;
 
     public override void _Ready() {
         AnchorLeft = 0f;
@@ -28,6 +35,18 @@ public partial class HandView : Control {
         OffsetBottom = 0f;
         GrowHorizontal = GrowDirection.Both;
         GrowVertical = GrowDirection.Begin;
+
+        _stagingAreaView = new StagingAreaView();
+        _stagingAreaView.Name = "StagingAreaView";
+        AddChild(_stagingAreaView);
+        _stagingAreaView.AnchorLeft = 0f;
+        _stagingAreaView.AnchorRight = 1f;
+        _stagingAreaView.AnchorTop = 0f;
+        _stagingAreaView.AnchorBottom = 1f;
+        _stagingAreaView.OffsetBottom = -130f;
+        _stagingAreaView.GrowHorizontal = GrowDirection.Both;
+        _stagingAreaView.GrowVertical = GrowDirection.Both;
+        _stagingAreaView.ZIndex = 1;
 
         _expandedPanel = new CardExpanded();
         _expandedPanel.Name = "CardExpandedPanel";
@@ -54,11 +73,15 @@ public partial class HandView : Control {
         _cardsContainer.AddThemeConstantOverride("separation", 8);
     }
 
-    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler) {
+    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, StagingManager staging) {
         _deck = deck;
         _state = state;
         _scheduler = scheduler;
+        _stagingManager = staging;
+        _expandedPanel.PlayRequested += OnPlayRequested;
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
+        _stagingAreaView.CommitRequested += OnCommitRequested;
+        _stagingAreaView.Initialize(staging);
         deck.HandChanged += RefreshHand;
         RefreshHand();
     }
@@ -85,6 +108,49 @@ public partial class HandView : Control {
             return;
         }
         _expandedPanel.Open(card, _state.CurrentPhase);
+    }
+
+    private void OnPlayRequested(string cardId) {
+        var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
+        if (card is null) {
+            Log.Debug("[UI]", $"OnPlayRequested: card '{cardId}' not found in hand — ignoring stale tap");
+            return;
+        }
+        if (card.Unpowered is null) {
+            Log.Warn("[UI]", $"OnPlayRequested: card '{cardId}' has no unpowered spec — cannot stage");
+            return;
+        }
+        // Remove the card from hand FIRST — same atomicity discipline as OnPlaySidewaysRequested.
+        var result = _deck.PlayCard(cardId);
+        if (!result.IsSuccess) {
+            Log.Warn("[UI]", $"OnPlayRequested: PlayCard failed for '{cardId}': {result.Error}");
+            return;
+        }
+        _stagingManager.Stage(card, card.Unpowered.EffectType);
+        Log.Debug("[UI]", $"Play staged: {cardId} → {card.Unpowered.EffectType}");
+    }
+
+    // async void is an accepted exception here: Godot signal handlers cannot return Task.
+    // Safe because all current effects use Task.FromResult (synchronous path).
+    private async void OnCommitRequested() {
+        if (_committing || _stagingManager.StagedCards.Count == 0) return;
+        _committing = true;
+        try {
+            foreach (var entry in _stagingManager.StagedCards.ToList()) {
+                var effect = BuildEffect(entry);
+                if (effect is null) {
+                    Log.Warn("[UI]", $"OnCommitRequested: unsupported effect type {entry.EffectType} for '{entry.Card.Id}' — skipping");
+                    continue;
+                }
+                var ctx = new EffectContext(entry.Card.Id, entry.EffectType, _state.CurrentPhase, false);
+                _scheduler.Enqueue(effect, 0, ctx);
+            }
+            await _scheduler.ResolveAll(_state);
+            _stagingManager.Clear();
+            Log.Debug("[UI]", "Commit resolved");
+        } finally {
+            _committing = false;
+        }
     }
 
     // async void is an accepted exception here: Godot signal handlers cannot return Task.
@@ -118,5 +184,18 @@ public partial class HandView : Control {
         _scheduler.Enqueue(effect, 0, ctx);
         await _scheduler.ResolveAll(_state);
         Log.Debug("[UI]", $"PlaySideways: {cardId} → {effectType} {amount} applied");
+    }
+
+    private static IEffect? BuildEffect(StagingManager.StagedEntry entry) {
+        var spec = entry.Card.Unpowered;
+        if (spec is null) return null;
+        return entry.EffectType switch {
+            EffectType.Move         => new MoveEffect(spec.Move),
+            EffectType.AttackMelee  => new AttackEffect(spec.Attack, EffectType.AttackMelee, AttackElement.Physical),
+            EffectType.AttackRanged => new AttackEffect(spec.Attack, EffectType.AttackRanged, AttackElement.Physical),
+            EffectType.Block        => new BlockEffect(spec.Block, AttackElement.Physical),
+            EffectType.Influence    => new InfluenceEffect(spec.Influence),
+            _                       => null
+        };
     }
 }

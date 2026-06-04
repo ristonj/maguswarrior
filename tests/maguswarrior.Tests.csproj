@@ -43,5 +43,6 @@
     <Compile Include="../scripts/cards/effects/combat/AttackEffect.cs" />
     <Compile Include="../scripts/cards/effects/combat/BlockEffect.cs" />
     <Compile Include="../scripts/cards/effects/influence/InfluenceEffect.cs" />
+    <Compile Include="../scripts/deck/StagingManager.cs" />
   </ItemGroup>
 </Project>
