@@ -16,6 +16,12 @@ public class DeckManager {
         HandChanged?.Invoke();
     }
 
+    public void ReturnCard(CardDefinition card) {
+        var list = Hand.ToList();
+        list.Add(card);
+        SetHand(list);
+    }
+
     public Result<CardDefinition> PlayCard(string cardId) {
         var list = Hand.ToList();
         var idx = list.FindIndex(c => c.Id == cardId);

@@ -72,4 +72,43 @@ public class StagingManagerTest {
         Assert.Equal(0, totals.Attack);
         Assert.Equal(0, totals.Block);
     }
+
+    [Fact]
+    public void Unstage_RemovesLastStagedCard() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("march",   EffectType.Move, move: 2), EffectType.Move);
+        mgr.Stage(MakeCard("stamina", EffectType.Move, move: 2), EffectType.Move);
+        mgr.Unstage();
+        Assert.Single(mgr.StagedCards);
+        Assert.Equal("march", mgr.StagedCards[0].Card.Id);
+    }
+
+    [Fact]
+    public void Unstage_ReturnsMostRecentEntry() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("march", EffectType.Move, move: 2), EffectType.Move);
+        var entry = mgr.Unstage();
+        Assert.NotNull(entry);
+        Assert.Equal("march", entry!.Card.Id);
+    }
+
+    [Fact]
+    public void Unstage_FiresStagingChanged() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("march", EffectType.Move, move: 2), EffectType.Move);
+        int count = 0;
+        mgr.StagingChanged += () => count++;
+        mgr.Unstage();
+        Assert.Equal(1, count);
+    }
+
+    [Fact]
+    public void Unstage_OnEmptyList_ReturnsNullAndNoEvent() {
+        var mgr = new StagingManager();
+        int count = 0;
+        mgr.StagingChanged += () => count++;
+        var entry = mgr.Unstage();
+        Assert.Null(entry);
+        Assert.Equal(0, count);
+    }
 }

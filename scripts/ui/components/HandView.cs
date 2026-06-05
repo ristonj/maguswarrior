@@ -81,6 +81,7 @@ public partial class HandView : Control {
         _expandedPanel.PlayRequested += OnPlayRequested;
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
         _stagingAreaView.CommitRequested += OnCommitRequested;
+        _stagingAreaView.UndoRequested += OnUndoRequested;
         _stagingAreaView.Initialize(staging);
         deck.HandChanged += RefreshHand;
         RefreshHand();
@@ -128,6 +129,20 @@ public partial class HandView : Control {
         }
         _stagingManager.Stage(card, card.Unpowered.EffectType);
         Log.Debug("[UI]", $"Play staged: {cardId} → {card.Unpowered.EffectType}");
+    }
+
+    private void OnUndoRequested() {
+        // Mirror OnCommitRequested's re-entrancy guard: while a commit is in flight, the
+        // staged cards have been snapshotted and are being resolved. Unstaging during that
+        // window would return a card to hand whose effect still commits from the snapshot
+        // (double-state). Harmless today (ResolveAll is synchronous) — closes the window
+        // before ResolveAll becomes genuinely awaitable (UIBroker). See 1b-3 commit guard.
+        if (_committing) return;
+        if (_stagingManager.StagedCards.Count == 0) return;
+        var entry = _stagingManager.Unstage();
+        if (entry is null) return;
+        _deck.ReturnCard(entry.Card);
+        Log.Debug("[UI]", $"Undo staged: {entry.Card.Id} returned to hand");
     }
 
     // async void is an accepted exception here: Godot signal handlers cannot return Task.

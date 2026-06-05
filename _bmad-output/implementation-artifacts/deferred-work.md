@@ -4,6 +4,13 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 1b-4-undo-staged-cards-before-new-information-revealed (2026-06-04)
+
+- **`DeckManager.ReturnCard` has no Id-uniqueness / membership guard** — `ReturnCard` does `list.Add(card)` without checking whether a card of the same `Id` is already in `Hand`. The hand's "each `Id` appears at most once" invariant — relied on by `OnCardTapped`, `OnPlayRequested`, and `PlayCard` via `FirstOrDefault`/`FindIndex(c => c.Id == ...)` (which silently bind to the first match) — is maintained today only by the LIFO Stage/Unstage convention, not by `ReturnCard` itself. Unreachable through the current undo path (a card is removed from hand on Stage and re-added on Unstage, preserving uniqueness), but the new public API is one careless caller away from a silent wrong-card bind. Fix when hand-invariant hardening is tackled: guard `ReturnCard` against duplicate Ids, or centralize the uniqueness invariant. [scripts/deck/DeckManager.cs]
+- **Integrated `OnUndoRequested` flow has no automated coverage** — the combined unstage-then-return handler lives in `HandView` (Godot `Control`), which cannot be compiled into the pure-C# test project. The two halves are unit-tested in isolation (`Unstage_*` in StagingManagerTest, `ReturnCard_*` in DeckManagerTest) but their composition in the signal handler is verifiable only on-device. Same Godot/test-project boundary already logged for `StagingAreaView`/`HandView` in 1b-1/1b-3. Manual on-device verification recommended before closing Epic 1b. [scripts/ui/components/HandView.cs]
+
+---
+
 ## Deferred from: code review of 1b-3-stage-multiple-cards-and-see-running-totals (2026-06-03)
 
 - **Running totals diverge from committed effect for multi-stat & `choose_one` cards** — `StagingManager.GetTotals` sums all four `EffectSpec` fields per staged card; `HandView.BuildEffect` applies only the single `entry.EffectType` field. They agree for single-stat cards (the whole test hand) but diverge for any multi-field spec. `choose_one` cards (Rage, Determination) load with all-zero stat fields because `CardLoader.ConvertSpec` ignores `choose_one`, so staging Rage shows "Attack: 0" and Commit applies nothing. Both halves are spec-sanctioned (AC1 sums EffectSpec, AC3 switches on EffectType, Dev Notes defer `choose_one`). Fix — unified "what this staged card contributes" representation + the attack-or-block choice prompt — belongs to the `choose_one` story (1b-7 / combat). Surfaces the moment Rage is added to the Epic 1b demo hand. [scripts/deck/StagingManager.cs, scripts/ui/components/HandView.cs]

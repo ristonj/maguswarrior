@@ -6,6 +6,7 @@ namespace MagusWarrior.UI;
 
 public partial class StagingAreaView : Control {
     [Signal] public delegate void CommitRequestedEventHandler();
+    [Signal] public delegate void UndoRequestedEventHandler();
 
     private StagingManager _stagingManager = null!;
     private Label _moveLabel = null!;
@@ -13,6 +14,7 @@ public partial class StagingAreaView : Control {
     private Label _blockLabel = null!;
     private Label _influenceLabel = null!;
     private Button _commitButton = null!;
+    private Button _undoButton = null!;
 
     public override void _Ready() {
         var container = new HBoxContainer();
@@ -45,6 +47,16 @@ public partial class StagingAreaView : Control {
             Log.Debug("[UI]", "Commit tapped");
         };
         container.AddChild(_commitButton);
+
+        _undoButton = new Button();
+        _undoButton.Text = "Undo";
+        _undoButton.AddThemeFontSizeOverride("font_size", 32);
+        _undoButton.Disabled = true;
+        _undoButton.Pressed += () => {
+            EmitSignal(SignalName.UndoRequested);
+            Log.Debug("[UI]", "Undo tapped");
+        };
+        container.AddChild(_undoButton);
     }
 
     public void Initialize(StagingManager staging) {
@@ -60,5 +72,6 @@ public partial class StagingAreaView : Control {
         _blockLabel.Text     = $"Block: {totals.Block}";
         _influenceLabel.Text = $"Influence: {totals.Influence}";
         _commitButton.Disabled = _stagingManager.StagedCards.Count == 0;
+        _undoButton.Disabled   = _stagingManager.StagedCards.Count == 0;
     }
 }

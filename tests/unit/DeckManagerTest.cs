@@ -68,4 +68,22 @@ public class DeckManagerTest {
         var result = dm.PlayCard("march");
         Assert.False(result.IsSuccess);
     }
+
+    [Fact]
+    public void ReturnCard_AppendsToHand() {
+        var dm = new DeckManager();
+        dm.SetHand(new[] { new CardDefinition { Id = "march", Name = "March" } });
+        dm.ReturnCard(new CardDefinition { Id = "stamina", Name = "Stamina" });
+        Assert.Equal(2, dm.Hand.Count);
+        Assert.Equal("stamina", dm.Hand[1].Id);
+    }
+
+    [Fact]
+    public void ReturnCard_FiresHandChanged() {
+        var dm = new DeckManager();
+        int fired = 0;
+        dm.HandChanged += () => fired++;
+        dm.ReturnCard(new CardDefinition { Id = "march", Name = "March" });
+        Assert.Equal(1, fired);
+    }
 }

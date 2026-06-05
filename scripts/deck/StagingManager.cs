@@ -21,6 +21,14 @@ public class StagingManager {
         StagingChanged?.Invoke();
     }
 
+    public StagedEntry? Unstage() {
+        if (_staged.Count == 0) return null;
+        var entry = _staged[_staged.Count - 1];
+        _staged.RemoveAt(_staged.Count - 1);
+        StagingChanged?.Invoke();
+        return entry;
+    }
+
     public void Clear() {
         _staged.Clear();
         StagingChanged?.Invoke();
