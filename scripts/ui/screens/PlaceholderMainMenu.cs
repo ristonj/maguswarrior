@@ -69,6 +69,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
             .Where(c => c.Type != CardType.Wound)
             .Take(4)
             .ToList();
+        testHand.Add(WoundCard.Create()); // 1b-5: verify red, untappable wound on device
         _deckManager.SetHand(testHand);
         handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager);
     }

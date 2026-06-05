@@ -4,6 +4,12 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 1b-5-cannot-tap-wound-card (2026-06-04)
+
+- **`OnPlaySidewaysRequested` wound guard null-card fall-through relies on `PlayCard` fail-safe without a comment** — the guard `card is not null && card.Type == CardType.Wound` correctly skips when `card` is null (stale ghost-tap), letting execution fall through to `PlayCard` which returns `Result.Fail`. This is the same fail-safe the pre-existing code relied on, and it works. However a future reader adding wound-specific handling between the guard and `PlayCard` could silently re-open the gap. The Dev Notes explain the intent but the code itself has no bridging comment at the fall-through point. Low priority; add a brief comment ("null = stale tap, handled by PlayCard below") when next touching `OnPlaySidewaysRequested`. [scripts/ui/components/HandView.cs]
+
+---
+
 ## Deferred from: code review of 1b-4-undo-staged-cards-before-new-information-revealed (2026-06-04)
 
 - **`DeckManager.ReturnCard` has no Id-uniqueness / membership guard** — `ReturnCard` does `list.Add(card)` without checking whether a card of the same `Id` is already in `Hand`. The hand's "each `Id` appears at most once" invariant — relied on by `OnCardTapped`, `OnPlayRequested`, and `PlayCard` via `FirstOrDefault`/`FindIndex(c => c.Id == ...)` (which silently bind to the first match) — is maintained today only by the LIFO Stage/Unstage convention, not by `ReturnCard` itself. Unreachable through the current undo path (a card is removed from hand on Stage and re-added on Unstage, preserving uniqueness), but the new public API is one careless caller away from a silent wrong-card bind. Fix when hand-invariant hardening is tackled: guard `ReturnCard` against duplicate Ids, or centralize the uniqueness invariant. [scripts/deck/DeckManager.cs]

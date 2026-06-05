@@ -108,6 +108,10 @@ public partial class HandView : Control {
             Log.Debug("[UI]", $"OnCardTapped: card '{cardId}' not found in hand — ignoring stale tap");
             return;
         }
+        if (card.Type == CardType.Wound) {
+            Log.Debug("[UI]", $"OnCardTapped: '{cardId}' is a Wound — not tappable, ignoring");
+            return;
+        }
         _expandedPanel.Open(card, _state.CurrentPhase);
     }
 
@@ -115,6 +119,10 @@ public partial class HandView : Control {
         var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
         if (card is null) {
             Log.Debug("[UI]", $"OnPlayRequested: card '{cardId}' not found in hand — ignoring stale tap");
+            return;
+        }
+        if (card.Type == CardType.Wound) {
+            Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' is a Wound — cannot be played");
             return;
         }
         if (card.Unpowered is null) {
@@ -171,6 +179,14 @@ public partial class HandView : Control {
     // async void is an accepted exception here: Godot signal handlers cannot return Task.
     // Safe because all current effects use Task.FromResult (synchronous path).
     private async void OnPlaySidewaysRequested(string cardId) {
+        // Wounds cannot be played in any way through the normal hand flow (rulebook p4).
+        // The skill exception (play a wound sideways x2) is a separate, skill-initiated
+        // path that requires explicit wound selection — it does not route through here.
+        var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
+        if (card is not null && card.Type == CardType.Wound) {
+            Log.Warn("[UI]", $"OnPlaySidewaysRequested: '{cardId}' is a Wound — cannot be played sideways");
+            return;
+        }
         var sideways = SidewaysRule.GetEffect(_state.CurrentPhase);
         if (sideways is null) {
             Log.Debug("[UI]", $"PlaySideways: no sideways effect in {_state.CurrentPhase}");
