@@ -112,6 +112,14 @@ public partial class HandView : Control {
             Log.Debug("[UI]", $"OnCardTapped: '{cardId}' is a Wound — not tappable, ignoring");
             return;
         }
+        if (_state.CurrentPhase == GamePhase.Rest) {
+            bool hasLegalPlay = card.Unpowered != null
+                && PhaseGate.IsLegal(card.Unpowered.EffectType, GamePhase.Rest);
+            if (!hasLegalPlay) {
+                Log.Debug("[UI]", $"OnCardTapped: '{cardId}' — no legal play in Rest phase; use rest controls to discard");
+                return;
+            }
+        }
         _expandedPanel.Open(card, _state.CurrentPhase);
     }
 
@@ -123,6 +131,14 @@ public partial class HandView : Control {
         }
         if (card.Type == CardType.Wound) {
             Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' is a Wound — cannot be played");
+            return;
+        }
+        // Defense-in-depth Rest guard (mirrors OnCardTapped): a CardExpanded panel opened in a
+        // play phase can stay open across a Rest declaration, so Play can still be tapped during
+        // Rest. Block any card with no legal play in Rest (Heal/Special fall through via PhaseGate).
+        if (_state.CurrentPhase == GamePhase.Rest
+            && !(card.Unpowered != null && PhaseGate.IsLegal(card.Unpowered.EffectType, GamePhase.Rest))) {
+            Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' has no legal play in Rest phase — cannot be played during Rest");
             return;
         }
         if (card.Unpowered is null) {

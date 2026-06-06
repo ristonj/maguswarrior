@@ -33,6 +33,11 @@ public class GameState {
         Cards = cards;
     }
 
+    // SetPhase is the explicit phase-mutation API for the turn loop (TurnManager, RestView).
+    // CurrentPhase is already in GameStateSnapshot, so phase transitions are captured by
+    // TakeSnapshot/RestoreSnapshot without any additional snapshot changes.
+    public void SetPhase(GamePhase phase) { CurrentPhase = phase; }
+
     public void AddMovePoints(int n) { MovePointsThisTurn += n; }
     public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; }
 
@@ -47,7 +52,8 @@ public class GameState {
 
     // LOCKSTEP: every mutable field added to GameState MUST also be added to
     // GameStateSnapshot and restored here, or undo silently produces a half-rollback.
-    // Current snapshot fields: CurrentPhase, MovePointsThisTurn, InfluencePointsThisTurn,
+    // Current snapshot fields: CurrentPhase (mutated via SetPhase and RestoreSnapshot),
+    // MovePointsThisTurn, InfluencePointsThisTurn,
     // AttackPool (keyed by distance+element), BlockPool (keyed by element).
     // Add Hand, Fame, Reputation, etc. here the moment they land in GameState.
     public GameStateSnapshot TakeSnapshot() => new(

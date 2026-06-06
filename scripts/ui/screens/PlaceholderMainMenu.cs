@@ -15,6 +15,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private DeckManager _deckManager = null!;
     private EffectScheduler _effectScheduler = null!;
     private StagingManager _stagingManager = null!;
+    private RestView _restView = null!;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -72,6 +73,11 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         testHand.Add(WoundCard.Create()); // 1b-5: verify red, untappable wound on device
         _deckManager.SetHand(testHand);
         handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager);
+
+        _restView = new RestView();
+        _restView.Name = "RestView";
+        AddChild(_restView);
+        _restView.Initialize(_deckManager, _state);
     }
 
     public override void _Notification(int what) {

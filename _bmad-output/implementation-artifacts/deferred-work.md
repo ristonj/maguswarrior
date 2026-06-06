@@ -4,6 +4,23 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ---
 
+## Deferred from: code review of 1b-6-declare-rest-turn-and-discard-per-rest-rules (2026-06-06)
+
+- **Exhaustion auto-discard uses magic string `DiscardCard("wound")`** — `RestView.OnDeclareRestPressed` discards by literal id `"wound"`, but `IsExhaustion` keys off `CardType.Wound`. Works today because every Wound has `Id = "wound"` (`WoundCard.Create`), but if Wound ids ever diverge the discard fails while `IsExhaustion` is true → `_endRestButton` stays disabled → unfinishable Rest. Fix: discard the first card found by `Type == CardType.Wound` (align with the type-based check). [scripts/ui/components/RestView.cs]
+- **`OnDeclareRestPressed` mutates phase to Rest before the fallible discard, with no re-check or rollback** — phase is set to `Rest` first; the exhaustion `DiscardCard` can (in principle) fail, leaving the player soft-locked (End Rest disabled, Declare disabled by `inRest`). Also relies entirely on the button's `Disabled` state rather than re-checking `RestRule.CanDeclareRest`. Unreachable in the current scaffold (IsExhaustion guarantees a Wound; hand is static before Rest). Add a re-validate + phase rollback when the turn loop (Epic 7) makes phase transitions dynamic. [scripts/ui/components/RestView.cs]
+- **HandView Rest-gate checks only `card.Unpowered`, not a Powered effect** — `OnCardTapped`'s Rest guard computes `hasLegalPlay` from `Unpowered` only; a card with a Powered-only Rest-legal effect would be wrongly blocked from opening CardExpanded. Powered play is not wired up yet (Power button always disabled), so unreachable. Revisit when powered play lands. [scripts/ui/components/HandView.cs]
+- **Declaring Rest doesn't reset HandView interaction state (open panel / pre-staged cards)** — RestView is a sibling node with no reference to `HandView._expandedPanel` or the staging manager, so declaring Rest leaves an open CardExpanded visible and lets cards staged in Movement be committed during Rest (`OnCommitRequested` has no phase gate). The reachable Play-during-Rest path is closed by the `OnPlayRequested` guard patch; this remaining coordination gap wants a turn coordinator (Epic 7 TurnManager) that resets interaction state on phase change. Supersedes the implementation-time "stale Play signal during Rest" note below. [scripts/ui/components/RestView.cs, scripts/ui/components/HandView.cs]
+
+---
+
+## Deferred from: implementation of 1b-6-declare-rest-turn-and-discard-per-rest-rules (2026-06-06)
+
+- **Latent: stale Play signal during Rest** — if a ghost tap from a prior `CardTapped` signal propagates after `OnDeclareRestPressed` (same Godot signal-replay risk from 1b-1), a non-Heal card could reach `OnPlayRequested` during Rest phase. `OnCommitRequested` does not check PhaseGate before calling `BuildEffect`; a ghost play during Rest would stage an illegal effect. Mitigation: add a `PhaseGate.IsLegal` check at the top of `OnCommitRequested` when phase transitions become more frequent. Harmless today (no observable ghost-play source in the current scaffold). [scripts/ui/components/HandView.cs]
+- **Deck reshuffle not implemented** — `DeckManager.DiscardPile` accumulates cards from rest discards, card plays (future), and other discard actions but is never reshuffled back into the deck. Any card draw effect or "draw to hand limit" mechanism would attempt to draw from an empty deck without triggering a shuffle. Implement `DeckManager.ReshuffleDiscardIntoDeck()` when deck cycling is needed (end-of-turn draw step, Epic 7). [scripts/deck/DeckManager.cs]
+- **RestView.HandChanged subscription never unsubscribed** — `RestView.Initialize` subscribes `_deck.HandChanged += RefreshView` with no matching `_ExitTree` unsubscribe. Same pattern as existing `HandView.HandChanged` deferral (logged from 1b-1 and 1b-3 reviews). Add `_ExitTree` override when scene lifecycle gets more complex. [scripts/ui/components/RestView.cs]
+
+---
+
 ## Deferred from: code review of 1b-5-cannot-tap-wound-card (2026-06-04)
 
 - **`OnPlaySidewaysRequested` wound guard null-card fall-through relies on `PlayCard` fail-safe without a comment** — the guard `card is not null && card.Type == CardType.Wound` correctly skips when `card` is null (stale ghost-tap), letting execution fall through to `PlayCard` which returns `Result.Fail`. This is the same fail-safe the pre-existing code relied on, and it works. However a future reader adding wound-specific handling between the guard and `PlayCard` could silently re-open the gap. The Dev Notes explain the intent but the code itself has no bridging comment at the fall-through point. Low priority; add a brief comment ("null = stale tap, handled by PlayCard below") when next touching `OnPlaySidewaysRequested`. [scripts/ui/components/HandView.cs]
@@ -87,7 +104,7 @@ Items logged here were surfaced during code review but deferred as pre-existing,
 
 ## Deferred from: code review of 0-1-build-and-deploy-to-galaxy-s21 (2026-05-21)
 
-- **GameState.CurrentPhase private set** — CombatResolver (Epic 3) must be able to advance CurrentPhase; `private set` will cause a compile error. Fix: expose `internal set` or a dedicated `SetPhase` method when CombatResolver is implemented. [scripts/core/GameState.cs]
+- ~~**GameState.CurrentPhase private set**~~ — **RESOLVED in 1b-6**: `public void SetPhase(GamePhase phase)` added to `GameState`. CombatResolver and TurnManager will call `SetPhase` for all phase transitions. [scripts/core/GameState.cs]
 - **GamePhase missing CombatStart/ActionPhase** — `docs/combat-flow-lld.md` references `CombatStart`, `CombatAssignDamage`, and `ActionPhase` which are absent from the committed enum. Pending resolution of Decision D3 (enum vs LLD authority). [scripts/core/types/GamePhase.cs]
 - **GameDebug.Inspect(object?) boxes value types in release builds** — `[Conditional("DEBUG")]` strips the body but arguments are still evaluated and boxed in release. Revisit when Inspect is called from hot paths; consider wrapping call sites in `#if DEBUG` or changing signature to `string`. [scripts/core/GameDebug.cs]
 - **GameConstants.MaxHandSize vs Hero.UnmodifiedHandSize** — Two independent sources of truth for starting hand size. When Hero is built (Epic 3+), ensure UnmodifiedHandSize is initialized from GameConstants.MaxHandSize and there is a single canonical source. [scripts/core/GameConstants.cs]

@@ -45,5 +45,6 @@
     <Compile Include="../scripts/cards/effects/influence/InfluenceEffect.cs" />
     <Compile Include="../scripts/deck/StagingManager.cs" />
     <Compile Include="../scripts/cards/WoundCard.cs" />
+    <Compile Include="../scripts/cards/RestRule.cs" />
   </ItemGroup>
 </Project>
