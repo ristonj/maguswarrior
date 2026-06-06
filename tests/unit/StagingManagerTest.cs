@@ -111,4 +111,56 @@ public class StagingManagerTest {
         Assert.Null(entry);
         Assert.Equal(0, count);
     }
+
+    [Fact]
+    public void Stage_WithCostCard_UnstageReturnsCostCard() {
+        var mgr = new StagingManager();
+        var improv = MakeCard("improvisation", EffectType.Move);
+        var cost   = MakeCard("march", EffectType.Move, move: 2);
+        mgr.Stage(improv, EffectType.Move, costCard: cost, overrideAmount: 3);
+        var entry = mgr.Unstage();
+        Assert.NotNull(entry!.CostCard);
+        Assert.Equal("march", entry.CostCard!.Id);
+    }
+
+    [Fact]
+    public void GetTotals_WithOverrideAmount_Move() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("improvisation", EffectType.Move), EffectType.Move,
+                  overrideAmount: 3);
+        Assert.Equal(3, mgr.GetTotals().Move);
+    }
+
+    [Fact]
+    public void GetTotals_WithOverrideAmount_Attack() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("improvisation", EffectType.AttackMelee), EffectType.AttackMelee,
+                  overrideAmount: 3);
+        Assert.Equal(3, mgr.GetTotals().Attack);
+    }
+
+    [Fact]
+    public void GetTotals_WithOverrideAmount_Block() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("improvisation", EffectType.Block), EffectType.Block,
+                  overrideAmount: 3);
+        Assert.Equal(3, mgr.GetTotals().Block);
+    }
+
+    [Fact]
+    public void GetTotals_WithOverrideAmount_Influence() {
+        var mgr = new StagingManager();
+        mgr.Stage(MakeCard("improvisation", EffectType.Influence), EffectType.Influence,
+                  overrideAmount: 3);
+        Assert.Equal(3, mgr.GetTotals().Influence);
+    }
+
+    [Fact]
+    public void GetTotals_WithOverrideAmount_DoesNotReadSpec() {
+        var mgr = new StagingManager();
+        // card spec says move: 1, but OverrideAmount: 3 should win
+        mgr.Stage(MakeCard("improvisation", EffectType.Move, move: 1), EffectType.Move,
+                  overrideAmount: 3);
+        Assert.Equal(3, mgr.GetTotals().Move);
+    }
 }

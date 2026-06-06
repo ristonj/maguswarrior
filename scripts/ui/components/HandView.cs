@@ -6,6 +6,7 @@ using MagusWarrior.Cards.Effects;
 using MagusWarrior.Cards.Effects.Combat;
 using MagusWarrior.Cards.Effects.Influence;
 using MagusWarrior.Cards.Effects.Movement;
+using MagusWarrior.Cards.Effects.Special;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
@@ -25,6 +26,7 @@ public partial class HandView : Control {
     // awaits (UIBroker), an un-guarded second tap would re-enqueue the same staged cards
     // and double-apply every effect. The guard closes that window before async lands.
     private bool _committing;
+    private ImprovisationView? _improvView;
 
     public override void _Ready() {
         AnchorLeft = 0f;
@@ -82,9 +84,13 @@ public partial class HandView : Control {
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
         _stagingAreaView.CommitRequested += OnCommitRequested;
         _stagingAreaView.UndoRequested += OnUndoRequested;
-        _stagingAreaView.Initialize(staging);
+        _stagingAreaView.Initialize(staging, state);
         deck.HandChanged += RefreshHand;
         RefreshHand();
+    }
+
+    public void SetImprovisationView(ImprovisationView view) {
+        _improvView = view;
     }
 
     private void RefreshHand() {
@@ -141,6 +147,11 @@ public partial class HandView : Control {
             Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' has no legal play in Rest phase — cannot be played during Rest");
             return;
         }
+        // Intercept multi-step cards before the normal stage path. Activate handles PlayCard internally.
+        if (cardId == "improvisation" && _improvView != null) {
+            _improvView.Activate(card);
+            return;
+        }
         if (card.Unpowered is null) {
             Log.Warn("[UI]", $"OnPlayRequested: card '{cardId}' has no unpowered spec — cannot stage");
             return;
@@ -166,7 +177,10 @@ public partial class HandView : Control {
         var entry = _stagingManager.Unstage();
         if (entry is null) return;
         _deck.ReturnCard(entry.Card);
-        Log.Debug("[UI]", $"Undo staged: {entry.Card.Id} returned to hand");
+        if (entry.CostCard != null)
+            _deck.ReturnCard(entry.CostCard);
+        Log.Debug("[UI]", $"Undo staged: {entry.Card.Id} returned to hand" +
+            (entry.CostCard != null ? $", cost card {entry.CostCard.Id} returned" : ""));
     }
 
     // async void is an accepted exception here: Godot signal handlers cannot return Task.
@@ -234,6 +248,8 @@ public partial class HandView : Control {
     }
 
     private static IEffect? BuildEffect(StagingManager.StagedEntry entry) {
+        if (entry.OverrideAmount.HasValue)
+            return new ImprovisationEffect(entry.EffectType, entry.OverrideAmount.Value);
         var spec = entry.Card.Unpowered;
         if (spec is null) return null;
         return entry.EffectType switch {

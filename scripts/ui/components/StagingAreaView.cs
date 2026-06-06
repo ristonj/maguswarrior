@@ -9,6 +9,7 @@ public partial class StagingAreaView : Control {
     [Signal] public delegate void UndoRequestedEventHandler();
 
     private StagingManager _stagingManager = null!;
+    private GameState _state = null!;
     private Label _moveLabel = null!;
     private Label _attackLabel = null!;
     private Label _blockLabel = null!;
@@ -59,18 +60,20 @@ public partial class StagingAreaView : Control {
         container.AddChild(_undoButton);
     }
 
-    public void Initialize(StagingManager staging) {
+    public void Initialize(StagingManager staging, GameState state) {
         _stagingManager = staging;
+        _state = state;
         staging.StagingChanged += Refresh;
+        state.ResourcesChanged += Refresh;
         Refresh();
     }
 
     private void Refresh() {
-        var totals = _stagingManager.GetTotals();
-        _moveLabel.Text      = $"Move: {totals.Move}";
-        _attackLabel.Text    = $"Attack: {totals.Attack}";
-        _blockLabel.Text     = $"Block: {totals.Block}";
-        _influenceLabel.Text = $"Influence: {totals.Influence}";
+        var staged = _stagingManager.GetTotals();
+        _moveLabel.Text      = $"Move: {_state.MovePointsThisTurn + staged.Move}";
+        _attackLabel.Text    = $"Attack: {_state.TotalAttackThisTurn + staged.Attack}";
+        _blockLabel.Text     = $"Block: {_state.TotalBlockThisTurn + staged.Block}";
+        _influenceLabel.Text = $"Influence: {_state.InfluencePointsThisTurn + staged.Influence}";
         _commitButton.Disabled = _stagingManager.StagedCards.Count == 0;
         _undoButton.Disabled   = _stagingManager.StagedCards.Count == 0;
     }

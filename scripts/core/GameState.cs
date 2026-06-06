@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using MagusWarrior.Cards;
 using MagusWarrior.Core.Types;
 #if GODOT
@@ -10,9 +11,13 @@ using Godot;
 namespace MagusWarrior.Core;
 
 public class GameState {
+    public event Action? ResourcesChanged;
+
     public GamePhase CurrentPhase { get; private set; }
     public int MovePointsThisTurn { get; private set; }
     public int InfluencePointsThisTurn { get; private set; }
+    public int TotalAttackThisTurn => _attackPool.Values.Sum();
+    public int TotalBlockThisTurn  => _blockPool.Values.Sum();
     // Wrapped in ReadOnlyDictionary so the live backing dictionary can't be cast back to
     // Dictionary and mutated — all writes must go through AddAttackPoints/AddBlockPoints,
     // which keeps the snapshot/LOCKSTEP discipline intact. Re-wrapped per access because
@@ -38,16 +43,18 @@ public class GameState {
     // TakeSnapshot/RestoreSnapshot without any additional snapshot changes.
     public void SetPhase(GamePhase phase) { CurrentPhase = phase; }
 
-    public void AddMovePoints(int n) { MovePointsThisTurn += n; }
-    public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; }
+    public void AddMovePoints(int n) { MovePointsThisTurn += n; ResourcesChanged?.Invoke(); }
+    public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; ResourcesChanged?.Invoke(); }
 
     public void AddAttackPoints(int n, EffectType distance, AttackElement element) {
         var key = (distance, element);
         _attackPool[key] = _attackPool.GetValueOrDefault(key) + n;
+        ResourcesChanged?.Invoke();
     }
 
     public void AddBlockPoints(int n, AttackElement element) {
         _blockPool[element] = _blockPool.GetValueOrDefault(element) + n;
+        ResourcesChanged?.Invoke();
     }
 
     // LOCKSTEP: every mutable field added to GameState MUST also be added to

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using MagusWarrior.Cards;
@@ -16,6 +17,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private EffectScheduler _effectScheduler = null!;
     private StagingManager _stagingManager = null!;
     private RestView _restView = null!;
+    private ImprovisationView _improvView = null!;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -66,11 +68,13 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         handView.Name = "HandView";
         AddChild(handView);
 
-        var testHand = _state.Cards
-            .Where(c => c.Type != CardType.Wound)
-            .Take(4)
-            .ToList();
-        testHand.Add(WoundCard.Create()); // 1b-5: verify red, untappable wound on device
+        // Explicit test hand: Improvisation first so it's always verifiable on device.
+        var allNonWound = _state.Cards.Where(c => c.Type != CardType.Wound).ToList();
+        var improv = allNonWound.First(c => c.Id == "improvisation");
+        var others = allNonWound.Where(c => c.Id != "improvisation").Take(3).ToList();
+        var testHand = new List<CardDefinition> { improv };
+        testHand.AddRange(others);
+        testHand.Add(WoundCard.Create());
         _deckManager.SetHand(testHand);
         handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager);
 
@@ -78,6 +82,12 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _restView.Name = "RestView";
         AddChild(_restView);
         _restView.Initialize(_deckManager, _state);
+
+        _improvView = new ImprovisationView();
+        _improvView.Name = "ImprovisationView";
+        AddChild(_improvView);
+        _improvView.Initialize(_deckManager, _state, _stagingManager);
+        handView.SetImprovisationView(_improvView);
     }
 
     public override void _Notification(int what) {
