@@ -46,5 +46,7 @@
     <Compile Include="../scripts/deck/StagingManager.cs" />
     <Compile Include="../scripts/cards/WoundCard.cs" />
     <Compile Include="../scripts/cards/RestRule.cs" />
+    <Compile Include="../scripts/cards/ImprovisationRule.cs" />
+    <Compile Include="../scripts/cards/effects/special/ImprovisationEffect.cs" />
   </ItemGroup>
 </Project>

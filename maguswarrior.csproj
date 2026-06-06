@@ -24,4 +24,13 @@
   <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
+  <!-- Desktop/editor runs via the standalone player have no runtimeconfig.json with NuGet
+       probing paths, so transitive package assemblies (YamlDotNet) aren't resolved from the
+       NuGet cache and the game fails at startup ("Could not load YamlDotNet"). Copy package
+       assemblies into the output dir for desktop/editor builds so app-base probing finds them.
+       Scoped to NON-Android: the Android export build (hardware-verified) is left unchanged —
+       Godot bundles assemblies into the APK itself there. -->
+  <PropertyGroup Condition=" '$(GodotTargetPlatform)' != 'android' ">
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
 </Project>

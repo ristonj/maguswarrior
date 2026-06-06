@@ -19,7 +19,7 @@ brief: null
 
 ## Executive Summary
 
-**Magus Warrior** architecture is designed for Godot 4.6.2 + C# targeting Android 12+ (Samsung Galaxy S21, landscape only).
+**Magus Warrior** architecture is designed for Godot 4.6.3 + C# targeting Android 12+ (Samsung Galaxy S21, landscape only).
 
 **Key Architectural Decisions:**
 
@@ -43,7 +43,7 @@ brief: null
 
 | Requirement | Version | Notes |
 | --- | --- | --- |
-| Godot Engine | 4.6.2 | With C# / .NET support enabled |
+| Godot Engine | 4.6.3 | With C# / .NET support enabled |
 | .NET SDK | 8.0+ | Required for Godot C# |
 | Android SDK | API 31+ | Android 12 minimum target |
 | Android NDK | Latest stable | Required for Godot Android export |
@@ -60,7 +60,7 @@ Both MCPs live outside the project directory — `godot-mcp` at `~/git/godot-mcp
 
 ### First Steps
 
-1. Create new Godot 4.6.2 project at the `maguswarrior/` root — this is the Godot project root (`project.godot` lives here)
+1. Create new Godot 4.6.3 project at the `maguswarrior/` root — this is the Godot project root (`project.godot` lives here)
 2. Enable C# support in Godot project settings
 3. Create the directory structure defined in the Project Structure section
 4. Implement `scripts/core/` (Result\<T\>, Log, GameConstants, GameState stub) before any other system
@@ -171,7 +171,7 @@ Novel interaction patterns (no standard Godot pattern applies directly):
 
 ### Selected Engine
 
-Godot 4.6.2 + C#
+Godot 4.6.3 + C#
 
 Locked from GDD. Rationale: C# typing suits complex game state; no royalties; Godot 4.6 adds C# i18n parser support, Storage Access Framework compliance for Play Store, and Vulkan Mobile fixes for Adreno/Mali GPUs (Galaxy S21 Adreno 660).
 

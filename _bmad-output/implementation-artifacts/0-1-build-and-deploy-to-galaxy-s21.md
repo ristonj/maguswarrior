@@ -73,7 +73,7 @@ so that the Android build pipeline and project infrastructure are verified on ta
 ### This project already has a scaffold — what was pre-created
 
 The following already exist in the repo from the initial scaffold:
-- `project.godot` — minimal Godot 4.6.2 config; Godot may update this on first open
+- `project.godot` — minimal Godot 4.6.3 config; Godot may update this on first open
 - `maguswarrior.csproj` — Godot C# project file; Godot will validate/update SDK version on first open
 - Full directory structure under `scripts/`, `scenes/`, `assets/`, `tests/`
 - `.gitignore` updated with Godot entries

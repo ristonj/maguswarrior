@@ -1,3 +1,4 @@
+using System.Linq;
 using Godot;
 using MagusWarrior.Cards;
 using MagusWarrior.Cards.Effects;
@@ -88,8 +89,10 @@ public partial class CardExpanded : Control {
         _cardNameLabel.Text = card.Name;
         _effectTextLabel.Text = card.Unpowered?.Text ?? "(no effect)";
 
-        _playButton.Disabled = !(card.Unpowered != null &&
-            PhaseGate.IsLegal(card.Unpowered.EffectType, currentPhase));
+        bool hasLegalPlay = card.Unpowered != null && (
+            PhaseGate.IsLegal(card.Unpowered.EffectType, currentPhase) ||
+            card.AlternateEffectTypes.Any(t => PhaseGate.IsLegal(t, currentPhase)));
+        _playButton.Disabled = !hasLegalPlay;
         _playSidewaysButton.Disabled = false;
         _powerButton.Visible = card.ManaCost.HasValue;
         _powerButton.Disabled = true;

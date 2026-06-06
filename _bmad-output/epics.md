@@ -126,7 +126,7 @@ Tap Rage → see Play / Play Sideways / Power / Cancel → play it → staging a
 - As a player, I can undo staged cards before new information is revealed
 - As a player, I cannot tap a Wound card so I know it is unplayable
 - As a player, I can declare a Rest turn and discard per rest rules (Standard Rest: discard 1 non-Wound + any Wounds; Exhaustion: only when all Wounds, discard exactly 1 Wound) so hand recovery is correctly governed — no movement, combat, or Influence during rest; Special and Healing effects still allowed
-- As a player, the Improvisation card gives me the resource determined by the current game phase (Move during movement, Block during block, Attack during melee, Influence during interaction, Healing during special) — not my free choice — so Improvisation resolves differently from sideways play
+- As a player, the Improvisation card gives me the resource determined by the current game phase (Move during movement, Attack during melee, Block during block, Influence during interaction) — not my free choice — so Improvisation resolves differently from sideways play
 
 ### UI Verification
 Effect inspector (from 1a) shows card as effect source. Running totals update real-time. Wound renders red. Phase indicator updates correctly. Rest turn: movement and combat action buttons disabled; special/healing still available. Improvisation: verify resource type matches current phase in all five phase contexts.
