@@ -62,8 +62,6 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         else
             Log.Debug("[Save]", $"No save: {result.Error}");
         Log.Debug("[UI]", $"Locale: {TranslationServer.Singleton.GetLocale()}");
-        GameDebug.FireTestEffect(_state, "march", GamePhase.Movement);
-
         var handView = new HandView();
         handView.Name = "HandView";
         AddChild(handView);
