@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-06"  # 1b-7 reviewed + done
+last_updated: "2026-06-06"  # epic-1 retro done
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +54,7 @@ development_status:
   1a-1-define-and-fire-effect: done
   1a-2-undo-last-event: done
   1a-3-full-effect-event-log-in-inspector: done
-  epic-1a-retrospective: optional
+  epic-1a-retrospective: done
 
   # ─── Epic 1b: Hand Mechanics + Wound Treatment ───────────────────────────
   epic-1b: in-progress
@@ -65,7 +65,7 @@ development_status:
   1b-5-cannot-tap-wound-card: done
   1b-6-declare-rest-turn-and-discard-per-rest-rules: done
   1b-7-improvisation-card-gives-resource-determined-by-current-game-phase: done
-  epic-1b-retrospective: optional
+  epic-1b-retrospective: done
 
   # ─── Epic 2: Hex Map + Movement ──────────────────────────────────────────
   epic-2: backlog
