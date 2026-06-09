@@ -21,11 +21,7 @@ public partial class HandView : Control {
     private CardExpanded _expandedPanel = null!;
     private StagingAreaView _stagingAreaView = null!;
     private HBoxContainer _cardsContainer = null!;
-    // Re-entrancy guard for OnCommitRequested. Today effects resolve synchronously
-    // (Task.FromResult), so a second tap can't interleave — but once ResolveAll genuinely
-    // awaits (UIBroker), an un-guarded second tap would re-enqueue the same staged cards
-    // and double-apply every effect. The guard closes that window before async lands.
-    private bool _committing;
+    private InputLock _lock = null!;
     private ImprovisationView? _improvView;
 
     public override void _Ready() {
@@ -75,11 +71,12 @@ public partial class HandView : Control {
         _cardsContainer.AddThemeConstantOverride("separation", 8);
     }
 
-    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, StagingManager staging) {
+    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, StagingManager staging, InputLock inputLock) {
         _deck = deck;
         _state = state;
         _scheduler = scheduler;
         _stagingManager = staging;
+        _lock = inputLock;
         _expandedPanel.PlayRequested += OnPlayRequested;
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
         _stagingAreaView.CommitRequested += OnCommitRequested;
@@ -167,12 +164,7 @@ public partial class HandView : Control {
     }
 
     private void OnUndoRequested() {
-        // Mirror OnCommitRequested's re-entrancy guard: while a commit is in flight, the
-        // staged cards have been snapshotted and are being resolved. Unstaging during that
-        // window would return a card to hand whose effect still commits from the snapshot
-        // (double-state). Harmless today (ResolveAll is synchronous) — closes the window
-        // before ResolveAll becomes genuinely awaitable (UIBroker). See 1b-3 commit guard.
-        if (_committing) return;
+        if (_lock.IsLocked) return;
         if (_stagingManager.StagedCards.Count == 0) return;
         var entry = _stagingManager.Unstage();
         if (entry is null) return;
@@ -186,8 +178,10 @@ public partial class HandView : Control {
     // async void is an accepted exception here: Godot signal handlers cannot return Task.
     // Safe because all current effects use Task.FromResult (synchronous path).
     private async void OnCommitRequested() {
-        if (_committing || _stagingManager.StagedCards.Count == 0) return;
-        _committing = true;
+        // Check for work BEFORE acquiring the lock: if the count check came after a successful
+        // TryAcquire (via `||` short-circuit), an empty-staging tap would acquire the lock then
+        // return before the try/finally, leaking it and deadlocking every view that shares it.
+        if (_stagingManager.StagedCards.Count == 0 || !_lock.TryAcquire()) return;
         try {
             foreach (var entry in _stagingManager.StagedCards.ToList()) {
                 var effect = BuildEffect(entry);
@@ -202,49 +196,54 @@ public partial class HandView : Control {
             _stagingManager.Clear();
             Log.Debug("[UI]", "Commit resolved");
         } finally {
-            _committing = false;
+            _lock.Release();
         }
     }
 
     // async void is an accepted exception here: Godot signal handlers cannot return Task.
     // Safe because all current effects use Task.FromResult (synchronous path).
     private async void OnPlaySidewaysRequested(string cardId) {
-        // Wounds cannot be played in any way through the normal hand flow (rulebook p4).
-        // The skill exception (play a wound sideways x2) is a separate, skill-initiated
-        // path that requires explicit wound selection — it does not route through here.
-        var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
-        if (card is not null && card.Type == CardType.Wound) {
-            Log.Warn("[UI]", $"OnPlaySidewaysRequested: '{cardId}' is a Wound — cannot be played sideways");
-            return;
+        if (!_lock.TryAcquire()) return;
+        try {
+            // Wounds cannot be played in any way through the normal hand flow (rulebook p4).
+            // The skill exception (play a wound sideways x2) is a separate, skill-initiated
+            // path that requires explicit wound selection — it does not route through here.
+            var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
+            if (card is not null && card.Type == CardType.Wound) {
+                Log.Warn("[UI]", $"OnPlaySidewaysRequested: '{cardId}' is a Wound — cannot be played sideways");
+                return;
+            }
+            var sideways = SidewaysRule.GetEffect(_state.CurrentPhase);
+            if (sideways is null) {
+                Log.Debug("[UI]", $"PlaySideways: no sideways effect in {_state.CurrentPhase}");
+                return;
+            }
+            // Remove the card from hand FIRST: the resource is granted only if the card
+            // actually leaves the hand. This guards against double-resolve and orphaned
+            // resources once ResolveAll becomes genuinely awaitable (UIBroker). Full atomic
+            // rollback (card returns to hand if a future awaitable effect fails) is deferred
+            // to the UIBroker story — Hand is not yet part of the GameState snapshot.
+            var result = _deck.PlayCard(cardId);
+            if (!result.IsSuccess) {
+                Log.Warn("[UI]", $"PlaySideways: PlayCard failed for '{cardId}': {result.Error}");
+                return;
+            }
+            var (effectType, amount) = sideways.Value;
+            IEffect effect = effectType switch {
+                EffectType.Move        => new MoveEffect(amount),
+                EffectType.AttackMelee => new AttackEffect(amount, EffectType.AttackMelee, AttackElement.Physical),
+                EffectType.Block       => new BlockEffect(amount, AttackElement.Physical),
+                EffectType.Influence   => new InfluenceEffect(amount),
+                _                      => throw new InvalidOperationException(
+                                              $"SidewaysRule returned unexpected EffectType: {effectType}")
+            };
+            var ctx = new EffectContext(cardId, effectType, _state.CurrentPhase, false);
+            _scheduler.Enqueue(effect, 0, ctx);
+            await _scheduler.ResolveAll(_state);
+            Log.Debug("[UI]", $"PlaySideways: {cardId} → {effectType} {amount} applied");
+        } finally {
+            _lock.Release();
         }
-        var sideways = SidewaysRule.GetEffect(_state.CurrentPhase);
-        if (sideways is null) {
-            Log.Debug("[UI]", $"PlaySideways: no sideways effect in {_state.CurrentPhase}");
-            return;
-        }
-        // Remove the card from hand FIRST: the resource is granted only if the card
-        // actually leaves the hand. This guards against double-resolve and orphaned
-        // resources once ResolveAll becomes genuinely awaitable (UIBroker). Full atomic
-        // rollback (card returns to hand if a future awaitable effect fails) is deferred
-        // to the UIBroker story — Hand is not yet part of the GameState snapshot.
-        var result = _deck.PlayCard(cardId);
-        if (!result.IsSuccess) {
-            Log.Warn("[UI]", $"PlaySideways: PlayCard failed for '{cardId}': {result.Error}");
-            return;
-        }
-        var (effectType, amount) = sideways.Value;
-        IEffect effect = effectType switch {
-            EffectType.Move        => new MoveEffect(amount),
-            EffectType.AttackMelee => new AttackEffect(amount, EffectType.AttackMelee, AttackElement.Physical),
-            EffectType.Block       => new BlockEffect(amount, AttackElement.Physical),
-            EffectType.Influence   => new InfluenceEffect(amount),
-            _                      => throw new InvalidOperationException(
-                                          $"SidewaysRule returned unexpected EffectType: {effectType}")
-        };
-        var ctx = new EffectContext(cardId, effectType, _state.CurrentPhase, false);
-        _scheduler.Enqueue(effect, 0, ctx);
-        await _scheduler.ResolveAll(_state);
-        Log.Debug("[UI]", $"PlaySideways: {cardId} → {effectType} {amount} applied");
     }
 
     private static IEffect? BuildEffect(StagingManager.StagedEntry entry) {

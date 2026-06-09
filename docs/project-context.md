@@ -301,6 +301,42 @@ If you're writing a class outside `scripts/ui/` and feel the urge to inherit fro
 
 ---
 
+## Input Lock
+
+`InputLock` (`scripts/ui/InputLock.cs`) is the single re-entrancy guard shared by all UI views. Every `async void` Godot signal handler that mutates game state — or any synchronous handler that must not interleave with another — must acquire the lock before proceeding and release it in a `finally` block.
+
+```csharp
+// CORRECT — centralized guard, guaranteed release
+private async void OnCommitRequested() {
+    if (!_lock.TryAcquire()) return;
+    try {
+        // ... mutate game state
+    } finally {
+        _lock.Release();
+    }
+}
+
+// FORBIDDEN — per-component bool, not guaranteed on exception
+private bool _committing;
+private async void OnCommitRequested() {
+    if (_committing) return;
+    _committing = true;
+    // ... if an exception occurs, _committing is never reset → UI is permanently locked
+}
+```
+
+One `InputLock` instance is created in `PlaceholderMainMenu` and passed to every view through `Initialize`. While any view holds the lock, all other views reject user input — this closes cross-view races that per-component bools cannot.
+
+**Why a shared instance, not per-component:**
+In Epic 1b, `HandView._committing` prevented HandView re-entry but could not block `ImprovisationView` from firing simultaneously. A shared lock gives the invariant: only one stateful UI operation runs at a time, across all views.
+
+**Lock lifetime for multi-step flows:**
+When a multi-step overlay acquires the lock in a terminal handler (`OnResourceSelected`), the acquire-and-release happens within that single method call. The overlay's full-screen ZIndex prevents other inputs from reaching other views during the session — the lock adds defense-in-depth at the close path.
+
+**If you add a new `async void` Godot signal handler that mutates game state:** inject `InputLock` via `Initialize`, add `if (!_lock.TryAcquire()) return;` at the top, wrap the body in `try { } finally { _lock.Release(); }`.
+
+---
+
 ## LLDs Required Before Full Implementation
 
 These design documents must exist before implementing the systems they cover:

@@ -16,6 +16,7 @@ public partial class ImprovisationView : Control {
     private VBoxContainer _discardPanel = null!;
     private HBoxContainer _resourcePanel = null!;
 
+    private InputLock _lock = null!;
     private CardDefinition? _improvCard;
     private CardDefinition? _discardedCard;
 
@@ -51,10 +52,11 @@ public partial class ImprovisationView : Control {
         layout.AddChild(_resourcePanel);
     }
 
-    public void Initialize(DeckManager deck, GameState state, StagingManager staging) {
+    public void Initialize(DeckManager deck, GameState state, StagingManager staging, InputLock inputLock) {
         _deck = deck;
         _state = state;
         _stagingManager = staging;
+        _lock = inputLock;
     }
 
     public void Activate(CardDefinition improvCard) {
@@ -156,12 +158,17 @@ public partial class ImprovisationView : Control {
     }
 
     private void OnResourceSelected(EffectType effectType, int amount) {
-        if (_improvCard is null) return;
-        Log.Debug("[UI]", $"Improvisation: staging {effectType} {amount} in {_state.CurrentPhase}");
-        _stagingManager.Stage(_improvCard, effectType, costCard: _discardedCard, overrideAmount: amount);
-        _improvCard = null;
-        _discardedCard = null;
-        Visible = false;
-        Log.Debug("[UI]", "ImprovisationView closed");
+        if (!_lock.TryAcquire()) return;
+        try {
+            if (_improvCard is null) return;
+            Log.Debug("[UI]", $"Improvisation: staging {effectType} {amount} in {_state.CurrentPhase}");
+            _stagingManager.Stage(_improvCard, effectType, costCard: _discardedCard, overrideAmount: amount);
+            _improvCard = null;
+            _discardedCard = null;
+            Visible = false;
+            Log.Debug("[UI]", "ImprovisationView closed");
+        } finally {
+            _lock.Release();
+        }
     }
 }

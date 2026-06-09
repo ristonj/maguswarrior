@@ -18,35 +18,23 @@
 
   <!-- Pure C# files with no Godot dependency — safe to compile without Godot SDK -->
   <ItemGroup>
+    <!-- scripts/core: per-file because Log.cs and GameDebug.cs have direct Godot (GD.Print) deps -->
     <Compile Include="../scripts/core/GameEventLog.cs" />
     <Compile Include="../scripts/core/Result.cs" />
     <Compile Include="../scripts/core/GameConstants.cs" />
     <Compile Include="../scripts/core/GameState.cs" />
-    <Compile Include="../scripts/core/types/GamePhase.cs" />
-    <Compile Include="../scripts/core/types/ManaColor.cs" />
-    <Compile Include="../scripts/core/types/SiteType.cs" />
-    <Compile Include="../scripts/core/types/EffectType.cs" />
-    <Compile Include="../scripts/core/types/AttackElement.cs" />
-    <Compile Include="../scripts/save/SaveData.cs" />
     <Compile Include="../scripts/core/SaveMigrator.cs" />
-    <Compile Include="../scripts/cards/CardDefinition.cs" />
-    <Compile Include="../scripts/cards/CardLoader.cs" />
-    <Compile Include="../scripts/cards/effects/IEffect.cs" />
-    <Compile Include="../scripts/cards/effects/EffectContext.cs" />
-    <Compile Include="../scripts/cards/effects/EffectResult.cs" />
-    <Compile Include="../scripts/cards/effects/EffectScheduler.cs" />
-    <Compile Include="../scripts/cards/effects/EffectHookRegistry.cs" />
-    <Compile Include="../scripts/cards/effects/PhaseGate.cs" />
-    <Compile Include="../scripts/cards/effects/movement/MoveEffect.cs" />
-    <Compile Include="../scripts/deck/DeckManager.cs" />
-    <Compile Include="../scripts/cards/SidewaysRule.cs" />
-    <Compile Include="../scripts/cards/effects/combat/AttackEffect.cs" />
-    <Compile Include="../scripts/cards/effects/combat/BlockEffect.cs" />
-    <Compile Include="../scripts/cards/effects/influence/InfluenceEffect.cs" />
-    <Compile Include="../scripts/deck/StagingManager.cs" />
-    <Compile Include="../scripts/cards/WoundCard.cs" />
-    <Compile Include="../scripts/cards/RestRule.cs" />
-    <Compile Include="../scripts/cards/ImprovisationRule.cs" />
-    <Compile Include="../scripts/cards/effects/special/ImprovisationEffect.cs" />
+    <Compile Include="../scripts/core/types/**/*.cs" />
+    <!-- scripts/cards and scripts/deck: fully pure C# subtrees — glob picks up all future files -->
+    <Compile Include="../scripts/cards/**/*.cs" />
+    <Compile Include="../scripts/deck/**/*.cs" />
+    <!-- scripts/save: only SaveData is pure C#; SaveManager uses Godot FileAccess directly -->
+    <Compile Include="../scripts/save/SaveData.cs" />
+    <!-- scripts/ui: only InputLock is pure C# in this subtree -->
+    <Compile Include="../scripts/ui/InputLock.cs" />
+    <!-- scripts/hex: fully pure C# -->
+    <Compile Include="../scripts/hex/**/*.cs" />
+    <!-- scripts/map: fully pure C# -->
+    <Compile Include="../scripts/map/**/*.cs" />
   </ItemGroup>
 </Project>

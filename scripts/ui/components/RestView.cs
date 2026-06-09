@@ -17,6 +17,7 @@ public partial class RestView : Control {
     private VBoxContainer _cardRows = null!;
     private Button _endRestButton = null!;
 
+    private InputLock _lock = null!;
     private bool _nonWoundDiscarded;
     private bool _inExhaustion;
 
@@ -62,42 +63,48 @@ public partial class RestView : Control {
         _restPanel.AddChild(_endRestButton);
     }
 
-    public void Initialize(DeckManager deck, GameState state) {
+    public void Initialize(DeckManager deck, GameState state, InputLock inputLock) {
         _deck = deck;
         _state = state;
+        _lock = inputLock;
         _deck.HandChanged += RefreshView;
         RefreshView();
     }
 
     private void OnDeclareRestPressed() {
-        _state.SetPhase(GamePhase.Rest);
+        if (!_lock.TryAcquire()) return;
+        try {
+            _state.SetPhase(GamePhase.Rest);
 
-        if (RestRule.IsExhaustion(_deck.Hand)) {
-            _inExhaustion = true;
-            _nonWoundDiscarded = false;
-            Log.Debug("[UI]", "Rest declared: Exhaustion");
-            _statusLabel.Text = "Exhaustion rest — discarding 1 Wound…";
-            _restPanel.Visible = true;
-            _declareRestButton.Disabled = true;
+            if (RestRule.IsExhaustion(_deck.Hand)) {
+                _inExhaustion = true;
+                _nonWoundDiscarded = false;
+                Log.Debug("[UI]", "Rest declared: Exhaustion");
+                _statusLabel.Text = "Exhaustion rest — discarding 1 Wound…";
+                _restPanel.Visible = true;
+                _declareRestButton.Disabled = true;
 
-            var r = _deck.DiscardCard("wound");
-            if (r.IsSuccess) {
-                _nonWoundDiscarded = true;
-                _endRestButton.Disabled = false;
-                _statusLabel.Text = "Exhaustion rest — Wound discarded";
-                Log.Debug("[UI]", "Rest discard: wound (wound=True) [Exhaustion auto-discard]");
+                var r = _deck.DiscardCard("wound");
+                if (r.IsSuccess) {
+                    _nonWoundDiscarded = true;
+                    _endRestButton.Disabled = false;
+                    _statusLabel.Text = "Exhaustion rest — Wound discarded";
+                    Log.Debug("[UI]", "Rest discard: wound (wound=True) [Exhaustion auto-discard]");
+                } else {
+                    Log.Warn("[UI]", $"Exhaustion auto-discard failed: {r.Error}");
+                }
             } else {
-                Log.Warn("[UI]", $"Exhaustion auto-discard failed: {r.Error}");
+                _inExhaustion = false;
+                _nonWoundDiscarded = false;
+                Log.Debug("[UI]", "Rest declared: Standard Rest");
+                _statusLabel.Text = "Standard Rest: discard 1 non-Wound card";
+                _endRestButton.Disabled = true;
+                _restPanel.Visible = true;
+                _declareRestButton.Disabled = true;
+                BuildDiscardRows();
             }
-        } else {
-            _inExhaustion = false;
-            _nonWoundDiscarded = false;
-            Log.Debug("[UI]", "Rest declared: Standard Rest");
-            _statusLabel.Text = "Standard Rest: discard 1 non-Wound card";
-            _endRestButton.Disabled = true;
-            _restPanel.Visible = true;
-            _declareRestButton.Disabled = true;
-            BuildDiscardRows();
+        } finally {
+            _lock.Release();
         }
     }
 
@@ -167,12 +174,17 @@ public partial class RestView : Control {
     }
 
     private void OnEndRestPressed() {
-        _state.SetPhase(GamePhase.Movement);
-        _nonWoundDiscarded = false;
-        _inExhaustion = false;
-        _restPanel.Visible = false;
-        _endRestButton.Disabled = true;
-        Log.Debug("[UI]", "Rest completed — phase returned to Movement");
-        RefreshView();
+        if (!_lock.TryAcquire()) return;
+        try {
+            _state.SetPhase(GamePhase.Movement);
+            _nonWoundDiscarded = false;
+            _inExhaustion = false;
+            _restPanel.Visible = false;
+            _endRestButton.Disabled = true;
+            Log.Debug("[UI]", "Rest completed — phase returned to Movement");
+            RefreshView();
+        } finally {
+            _lock.Release();
+        }
     }
 }

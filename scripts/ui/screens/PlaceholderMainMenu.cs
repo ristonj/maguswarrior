@@ -6,6 +6,8 @@ using MagusWarrior.Cards.Effects;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
+using MagusWarrior.Hex;
+using MagusWarrior.Map;
 using MagusWarrior.Save;
 
 namespace MagusWarrior.UI;
@@ -16,6 +18,8 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private DeckManager _deckManager = null!;
     private EffectScheduler _effectScheduler = null!;
     private StagingManager _stagingManager = null!;
+    private InputLock _inputLock = null!;
+    private WorldMap _worldMap = null!;
     private RestView _restView = null!;
     private ImprovisationView _improvView = null!;
 #if DEBUG
@@ -30,6 +34,8 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _deckManager     = new DeckManager();
         _effectScheduler = new EffectScheduler();
         _stagingManager  = new StagingManager();
+        _inputLock       = new InputLock();
+        _worldMap        = BuildStartingMap();
 
 #if DEBUG
         _effectInspector = new EffectEventLogPanel();
@@ -56,6 +62,12 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         titleLabel.VerticalAlignment = VerticalAlignment.Center;
         AddChild(titleLabel);
 
+        var hexMapView = new HexMapView();
+        hexMapView.Name = "HexMapView";
+        hexMapView.Position = new Vector2(540f, 600f);
+        AddChild(hexMapView);
+        hexMapView.Initialize(_worldMap);
+
         var result = _saveManager.Load();
         if (result.IsSuccess)
             Log.Debug("[Save]", $"Existing save found: phase={result.Value!.current_phase}");
@@ -74,18 +86,39 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         testHand.AddRange(others);
         testHand.Add(WoundCard.Create());
         _deckManager.SetHand(testHand);
-        handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager);
+        handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager, _inputLock);
 
         _restView = new RestView();
         _restView.Name = "RestView";
         AddChild(_restView);
-        _restView.Initialize(_deckManager, _state);
+        _restView.Initialize(_deckManager, _state, _inputLock);
 
         _improvView = new ImprovisationView();
         _improvView.Name = "ImprovisationView";
         AddChild(_improvView);
-        _improvView.Initialize(_deckManager, _state, _stagingManager);
+        _improvView.Initialize(_deckManager, _state, _stagingManager, _inputLock);
         handView.SetImprovisationView(_improvView);
+    }
+
+    private static WorldMap BuildStartingMap() {
+        var tile = new MapTile(
+            tileId: "starting",
+            tileType: TileType.Starting,
+            isRevealed: true,
+            origin: new HexCoord(0, 0),
+            hexes: new[] {
+                (new HexCoord( 0,  0), TerrainType.Plains),
+                (new HexCoord( 1,  0), TerrainType.Plains),
+                (new HexCoord(-1,  0), TerrainType.Forest),
+                (new HexCoord( 0,  1), TerrainType.Hills),
+                (new HexCoord( 0, -1), TerrainType.Swamp),
+                (new HexCoord( 1, -1), TerrainType.Plains),
+                (new HexCoord(-1,  1), TerrainType.Wasteland),
+            }
+        );
+        var map = new WorldMap(new HexCoord(0, 0));
+        map.PlaceTile(tile);
+        return map;
     }
 
     public override void _Notification(int what) {
