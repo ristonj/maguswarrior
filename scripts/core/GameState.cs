@@ -12,8 +12,10 @@ namespace MagusWarrior.Core;
 
 public class GameState {
     public event Action? ResourcesChanged;
+    public event Action? DayNightChanged;
 
     public GamePhase CurrentPhase { get; private set; }
+    public bool IsDay { get; private set; } = true;
     public int MovePointsThisTurn { get; private set; }
     public int InfluencePointsThisTurn { get; private set; }
     public int TotalAttackThisTurn => _attackPool.Values.Sum();
@@ -43,7 +45,15 @@ public class GameState {
     // TakeSnapshot/RestoreSnapshot without any additional snapshot changes.
     public void SetPhase(GamePhase phase) { CurrentPhase = phase; }
 
+    public void SetIsDay(bool isDay) {
+        if (IsDay == isDay) return;
+        IsDay = isDay;
+        DayNightChanged?.Invoke();
+    }
+
     public void AddMovePoints(int n) { MovePointsThisTurn += n; ResourcesChanged?.Invoke(); }
+    public void SpendMovePoints(int n) { MovePointsThisTurn -= n; ResourcesChanged?.Invoke(); }
+    public void ResetMovePoints() { MovePointsThisTurn = 0; ResourcesChanged?.Invoke(); }
     public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; ResourcesChanged?.Invoke(); }
 
     public void AddAttackPoints(int n, EffectType distance, AttackElement element) {
@@ -61,14 +71,15 @@ public class GameState {
     // GameStateSnapshot and restored here, or undo silently produces a half-rollback.
     // Current snapshot fields: CurrentPhase (mutated via SetPhase and RestoreSnapshot),
     // MovePointsThisTurn, InfluencePointsThisTurn,
-    // AttackPool (keyed by distance+element), BlockPool (keyed by element).
+    // AttackPool (keyed by distance+element), BlockPool (keyed by element), IsDay.
     // Add Hand, Fame, Reputation, etc. here the moment they land in GameState.
     public GameStateSnapshot TakeSnapshot() => new(
         CurrentPhase,
         MovePointsThisTurn,
         InfluencePointsThisTurn,
         new Dictionary<(EffectType, AttackElement), int>(_attackPool),
-        new Dictionary<AttackElement, int>(_blockPool));
+        new Dictionary<AttackElement, int>(_blockPool),
+        IsDay);
 
     public void RestoreSnapshot(GameStateSnapshot snapshot) {
         CurrentPhase = snapshot.CurrentPhase;
@@ -76,6 +87,7 @@ public class GameState {
         InfluencePointsThisTurn = snapshot.InfluencePointsThisTurn;
         _attackPool = new Dictionary<(EffectType, AttackElement), int>(snapshot.AttackPool);
         _blockPool = new Dictionary<AttackElement, int>(snapshot.BlockPool);
+        IsDay = snapshot.IsDay;
     }
 
     private static IReadOnlyList<CardDefinition> LoadCardsOrThrow() {

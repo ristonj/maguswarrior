@@ -9,7 +9,8 @@ public record GameStateSnapshot(
     int MovePointsThisTurn,
     int InfluencePointsThisTurn,
     IReadOnlyDictionary<(EffectType Distance, AttackElement Element), int> AttackPool,
-    IReadOnlyDictionary<AttackElement, int> BlockPool);
+    IReadOnlyDictionary<AttackElement, int> BlockPool,
+    bool IsDay);
 
 public record EffectFiredEvent(
     string SourceCardId,

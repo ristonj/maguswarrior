@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-08"  # story 2-1 done (reviewed)
+last_updated: "2026-06-10"  # story 2-3 done (code-complete + reviewed; manual at end of epic)
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -71,8 +71,8 @@ development_status:
   epic-2: in-progress
   2-0-input-lock-re-entrancy-guard: done
   2-1-see-hex-map-and-hero-position: done
-  2-2-tap-hex-to-preview-move-cost: backlog
-  2-3-spend-move-points-to-cross-hexes: backlog
+  2-2-tap-hex-to-preview-move-cost: done
+  2-3-spend-move-points-to-cross-hexes: done
   2-4-reveal-new-tile-by-moving-to-map-edge: backlog
   2-5-see-remaining-tile-counts: backlog
   epic-2-retrospective: optional

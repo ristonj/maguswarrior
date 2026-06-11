@@ -41,7 +41,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _effectInspector = new EffectEventLogPanel();
         _effectInspector.Name = "EffectEventLogPanel";
         AddChild(_effectInspector);
-        _effectInspector.Initialize(_state);
+        _effectInspector.Initialize(_state, _worldMap);
 
         _debugToggleArea = new Button();
         _debugToggleArea.Name = "DebugToggleArea";
@@ -66,7 +66,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         hexMapView.Name = "HexMapView";
         hexMapView.Position = new Vector2(540f, 600f);
         AddChild(hexMapView);
-        hexMapView.Initialize(_worldMap);
+        hexMapView.Initialize(_worldMap, _state, _inputLock);
 
         var result = _saveManager.Load();
         if (result.IsSuccess)
