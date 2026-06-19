@@ -135,6 +135,17 @@ HexMapView is positioned at screen `(540, 600)`. The 7 starting hexes and their 
 
 ## Epic-2 manual pass sign-off
 
-- [ ] All outstanding boxes above checked
-- Date: _______  ·  Device(s): _______  ·  Build/commit: _______
-- [ ] `epic-2-retrospective` run (currently `optional` in sprint-status)
+**Pass result — 2026-06-19, WSLg desktop (Godot 4.6.3 mono, Emulate Touch From Mouse enabled), commit `469fe8d`:**
+
+John played a full end-to-end explore loop. Log (`[Input]`/`[HexGrid]`) + visual confirmation verified:
+- ✅ 2-2 cost preview (Plains cost=2, Forest cost=3); red at 0 points, green when affordable
+- ✅ 2-3 move (`Hero moved to 1,0 cost=2 remaining=0`) + undo (`Move undone: back to 0,0 refund=2 remaining=2`); hero marker visibly moves
+- ✅ 2-4 explore-unaffordable refused to reveal (11× `affordable=False`, no reveal); reveal fired (`Tile 'countryside-1' revealed`), all 7 fog hexes turned to terrain colors; moved onto the newly-revealed Forest hex
+- ✅ 2-5 tile-count overlay read `Countryside: 8   Core: 3` at launch and ticked to `Countryside: 7` on reveal; top-right, no overlap
+- ⏭️ **Not exercised:** 2-4 AC7 (tap own hex after reveal → undo locked). Logic is covered by `RevealTile_ClearsMovePath` unit test; benign to leave for a future on-device pass.
+
+**UX finding (playtest) — staging/commit model friction:** John flagged that each card play required an explicit **Commit** tap before its effect showed in the HUD. Desired: no manual commit in the normal flow; the **tile-explore undo gate** should be the only commit point and should **auto-commit** prior staged actions (ideally with a "this will commit your previous actions" warning). Captured for the retro — see memory `project_commit_model_feedback.md`. Not a 2.x story bug; it's a course-correction to the staging→HUD UX.
+
+- [x] All behavioral + visual boxes confirmed (AC7 undo-lock skipped, unit-test-covered)
+- Date: 2026-06-19  ·  Device(s): WSLg desktop (Galaxy S21 on-device pass still pending)  ·  Build/commit: `469fe8d`
+- [x] `epic-2-retrospective` run — 2026-06-19; retro doc at `epic-2-retro-2026-06-19.md`; commit-model UX finding captured; undo gate principle defined; story 3-0 (TripUndoGate) queued

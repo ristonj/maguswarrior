@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-19"  # story 2-5 done (code-complete + reviewed; manual at end of epic)
+last_updated: "2026-06-19"  # epic-2 retro done
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -75,7 +75,7 @@ development_status:
   2-3-spend-move-points-to-cross-hexes: done
   2-4-reveal-new-tile-by-moving-to-map-edge: done
   2-5-see-remaining-tile-counts: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   # ─── Epic 3: Combat System ───────────────────────────────────────────────
   epic-3: backlog

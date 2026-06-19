@@ -37,6 +37,10 @@ locale/translations=PackedStringArray("res://data/strings/ui_strings.en.translat
 locale/fallback="en"
 
 
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
 [rendering]
 
 renderer/rendering_method="mobile"
