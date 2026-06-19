@@ -1,7 +1,9 @@
 using System.Linq;
+using System.Threading.Tasks;
 using Godot;
 using MagusWarrior.Cards;
 using MagusWarrior.Cards.Effects;
+using MagusWarrior.Cards.Effects.Special;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
@@ -11,7 +13,7 @@ namespace MagusWarrior.UI;
 public partial class ImprovisationView : Control {
     private DeckManager _deck = null!;
     private GameState _state = null!;
-    private StagingManager _stagingManager = null!;
+    private EffectScheduler _scheduler = null!;
     private Label _statusLabel = null!;
     private VBoxContainer _discardPanel = null!;
     private HBoxContainer _resourcePanel = null!;
@@ -52,10 +54,10 @@ public partial class ImprovisationView : Control {
         layout.AddChild(_resourcePanel);
     }
 
-    public void Initialize(DeckManager deck, GameState state, StagingManager staging, InputLock inputLock) {
+    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, InputLock inputLock) {
         _deck = deck;
         _state = state;
-        _stagingManager = staging;
+        _scheduler = scheduler;
         _lock = inputLock;
     }
 
@@ -157,12 +159,18 @@ public partial class ImprovisationView : Control {
         }
     }
 
-    private void OnResourceSelected(EffectType effectType, int amount) {
+    // async void accepted: Godot button callback; InputLock prevents re-entry.
+    private async void OnResourceSelected(EffectType effectType, int amount) {
         if (!_lock.TryAcquire()) return;
         try {
             if (_improvCard is null) return;
-            Log.Debug("[UI]", $"Improvisation: staging {effectType} {amount} in {_state.CurrentPhase}");
-            _stagingManager.Stage(_improvCard, effectType, costCard: _discardedCard, overrideAmount: amount);
+            var costCardId = _discardedCard?.Id;
+            var effect = new ImprovisationEffect(effectType, amount);
+            // Pass cost card ID so the EventLog entry can track what was discarded (enables undo)
+            var ctx = new EffectContext(_improvCard.Id, effectType, _state.CurrentPhase, false, costCardId);
+            _scheduler.Enqueue(effect, 0, ctx);
+            await _scheduler.ResolveAll(_state);
+            Log.Debug("[UI]", $"Improvisation resolved: {effectType} {amount} in {_state.CurrentPhase}");
             _improvCard = null;
             _discardedCard = null;
             Visible = false;

@@ -17,7 +17,6 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private SaveManager _saveManager = null!;
     private DeckManager _deckManager = null!;
     private EffectScheduler _effectScheduler = null!;
-    private StagingManager _stagingManager = null!;
     private InputLock _inputLock = null!;
     private WorldMap _worldMap = null!;
     private TileStock _tileStock = null!;
@@ -40,9 +39,9 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _saveManager     = new SaveManager();
         _deckManager     = new DeckManager();
         _effectScheduler = new EffectScheduler();
-        _stagingManager  = new StagingManager();
         _inputLock       = new InputLock();
         _worldMap        = BuildStartingMap();
+        _state.UndoGateCrossed += _worldMap.ClearMovePath;
 
         _tileStock = new TileStock(FirstReconCountrysideTiles, FirstReconCoreTiles);
         _worldMap.TileRevealed += tile => _tileStock.RecordReveal(tile.TileType);
@@ -101,7 +100,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         testHand.AddRange(others);
         testHand.Add(WoundCard.Create());
         _deckManager.SetHand(testHand);
-        handView.Initialize(_deckManager, _state, _effectScheduler, _stagingManager, _inputLock);
+        handView.Initialize(_deckManager, _state, _effectScheduler, _inputLock);
 
         _restView = new RestView();
         _restView.Name = "RestView";
@@ -111,7 +110,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _improvView = new ImprovisationView();
         _improvView.Name = "ImprovisationView";
         AddChild(_improvView);
-        _improvView.Initialize(_deckManager, _state, _stagingManager, _inputLock);
+        _improvView.Initialize(_deckManager, _state, _effectScheduler, _inputLock);
         handView.SetImprovisationView(_improvView);
     }
 

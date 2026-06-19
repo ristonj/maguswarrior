@@ -17,7 +17,6 @@ public partial class HandView : Control {
     private DeckManager _deck = null!;
     private GameState _state = null!;
     private EffectScheduler _scheduler = null!;
-    private StagingManager _stagingManager = null!;
     private CardExpanded _expandedPanel = null!;
     private StagingAreaView _stagingAreaView = null!;
     private HBoxContainer _cardsContainer = null!;
@@ -71,17 +70,15 @@ public partial class HandView : Control {
         _cardsContainer.AddThemeConstantOverride("separation", 8);
     }
 
-    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, StagingManager staging, InputLock inputLock) {
+    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, InputLock inputLock) {
         _deck = deck;
         _state = state;
         _scheduler = scheduler;
-        _stagingManager = staging;
         _lock = inputLock;
         _expandedPanel.PlayRequested += OnPlayRequested;
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
-        _stagingAreaView.CommitRequested += OnCommitRequested;
         _stagingAreaView.UndoRequested += OnUndoRequested;
-        _stagingAreaView.Initialize(staging, state);
+        _stagingAreaView.Initialize(state);
         deck.HandChanged += RefreshHand;
         RefreshHand();
     }
@@ -126,88 +123,82 @@ public partial class HandView : Control {
         _expandedPanel.Open(card, _state.CurrentPhase);
     }
 
-    private void OnPlayRequested(string cardId) {
-        var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
-        if (card is null) {
-            Log.Debug("[UI]", $"OnPlayRequested: card '{cardId}' not found in hand — ignoring stale tap");
-            return;
-        }
-        if (card.Type == CardType.Wound) {
-            Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' is a Wound — cannot be played");
-            return;
-        }
-        // Defense-in-depth Rest guard (mirrors OnCardTapped): a CardExpanded panel opened in a
-        // play phase can stay open across a Rest declaration, so Play can still be tapped during
-        // Rest. Block any card with no legal play in Rest (Heal/Special fall through via PhaseGate).
-        if (_state.CurrentPhase == GamePhase.Rest
-            && !(card.Unpowered != null && PhaseGate.IsLegal(card.Unpowered.EffectType, GamePhase.Rest))) {
-            Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' has no legal play in Rest phase — cannot be played during Rest");
-            return;
-        }
-        // Intercept multi-step cards before the normal stage path. Activate handles PlayCard internally.
-        if (cardId == "improvisation" && _improvView != null) {
-            _improvView.Activate(card);
-            return;
-        }
-        if (card.Unpowered is null) {
-            Log.Warn("[UI]", $"OnPlayRequested: card '{cardId}' has no unpowered spec — cannot stage");
-            return;
-        }
-        // Remove the card from hand FIRST — same atomicity discipline as OnPlaySidewaysRequested.
-        var result = _deck.PlayCard(cardId);
-        if (!result.IsSuccess) {
-            Log.Warn("[UI]", $"OnPlayRequested: PlayCard failed for '{cardId}': {result.Error}");
-            return;
-        }
-        _stagingManager.Stage(card, card.Unpowered.EffectType);
-        Log.Debug("[UI]", $"Play staged: {cardId} → {card.Unpowered.EffectType}");
-    }
-
-    private void OnUndoRequested() {
-        if (_lock.IsLocked) return;
-        if (_stagingManager.StagedCards.Count == 0) return;
-        var entry = _stagingManager.Unstage();
-        if (entry is null) return;
-        _deck.ReturnCard(entry.Card);
-        if (entry.CostCard != null)
-            _deck.ReturnCard(entry.CostCard);
-        Log.Debug("[UI]", $"Undo staged: {entry.Card.Id} returned to hand" +
-            (entry.CostCard != null ? $", cost card {entry.CostCard.Id} returned" : ""));
-    }
-
-    // async void is an accepted exception here: Godot signal handlers cannot return Task.
-    // Safe because all current effects use Task.FromResult (synchronous path).
-    private async void OnCommitRequested() {
-        // Check for work BEFORE acquiring the lock: if the count check came after a successful
-        // TryAcquire (via `||` short-circuit), an empty-staging tap would acquire the lock then
-        // return before the try/finally, leaking it and deadlocking every view that shares it.
-        if (_stagingManager.StagedCards.Count == 0 || !_lock.TryAcquire()) return;
+    // async void accepted: Godot signal handler cannot return Task. InputLock prevents re-entry.
+    private async void OnPlayRequested(string cardId) {
+        if (!_lock.TryAcquire()) return;
         try {
-            foreach (var entry in _stagingManager.StagedCards.ToList()) {
-                var effect = BuildEffect(entry);
-                if (effect is null) {
-                    Log.Warn("[UI]", $"OnCommitRequested: unsupported effect type {entry.EffectType} for '{entry.Card.Id}' — skipping");
-                    continue;
-                }
-                var ctx = new EffectContext(entry.Card.Id, entry.EffectType, _state.CurrentPhase, false);
-                _scheduler.Enqueue(effect, 0, ctx);
+            var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
+            if (card is null) {
+                Log.Debug("[UI]", $"OnPlayRequested: card '{cardId}' not found in hand — ignoring stale tap");
+                return;
             }
+            if (card.Type == CardType.Wound) {
+                Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' is a Wound — cannot be played");
+                return;
+            }
+            // Defense-in-depth Rest guard: a CardExpanded panel opened in a play phase can stay
+            // open across a Rest declaration, so Play can still be tapped during Rest.
+            if (_state.CurrentPhase == GamePhase.Rest
+                && !(card.Unpowered != null && PhaseGate.IsLegal(card.Unpowered.EffectType, GamePhase.Rest))) {
+                Log.Warn("[UI]", $"OnPlayRequested: '{cardId}' has no legal play in Rest phase");
+                return;
+            }
+            // Intercept multi-step cards before the normal play path. Activate handles PlayCard internally.
+            if (cardId == "improvisation" && _improvView != null) {
+                _improvView.Activate(card);
+                return;
+            }
+            if (card.Unpowered is null) {
+                Log.Warn("[UI]", $"OnPlayRequested: card '{cardId}' has no unpowered spec");
+                return;
+            }
+            var result = _deck.PlayCard(cardId);
+            if (!result.IsSuccess) {
+                Log.Warn("[UI]", $"OnPlayRequested: PlayCard failed for '{cardId}': {result.Error}");
+                return;
+            }
+            var effect = BuildEffect(card, card.Unpowered.EffectType);
+            if (effect is null) {
+                Log.Warn("[UI]", $"OnPlayRequested: unsupported effect type {card.Unpowered.EffectType} for '{cardId}'");
+                return;
+            }
+            var ctx = new EffectContext(card.Id, card.Unpowered.EffectType, _state.CurrentPhase, false);
+            _scheduler.Enqueue(effect, 0, ctx);
             await _scheduler.ResolveAll(_state);
-            _stagingManager.Clear();
-            Log.Debug("[UI]", "Commit resolved");
+            Log.Debug("[UI]", $"Play resolved: {cardId} → {card.Unpowered.EffectType}");
         } finally {
             _lock.Release();
         }
     }
 
-    // async void is an accepted exception here: Godot signal handlers cannot return Task.
-    // Safe because all current effects use Task.FromResult (synchronous path).
+    private void OnUndoRequested() {
+        if (_lock.IsLocked) return;
+        var ev = _state.EventLog.Events.LastOrDefault();
+        if (ev is null) {
+            Log.Debug("[UI]", "OnUndoRequested: nothing to undo");
+            return;
+        }
+        _state.EventLog.PopLast();
+
+        var card = _state.Cards.FirstOrDefault(c => c.Id == ev.SourceCardId);
+        if (card != null) _deck.ReturnCard(card);
+
+        if (ev.CostCardId != null) {
+            var recall = _deck.RecallFromDiscard(ev.CostCardId);
+            if (!recall.IsSuccess)
+                Log.Warn("[UI]", $"OnUndoRequested: cost card '{ev.CostCardId}' not in discard — {recall.Error}");
+        }
+
+        _state.RestoreSnapshot(ev.StateBefore);
+        Log.Debug("[UI]", $"Undo play: {ev.SourceCardId}/{ev.EffectType} reversed" +
+            (ev.CostCardId != null ? $", cost card '{ev.CostCardId}' recalled" : ""));
+    }
+
+    // async void accepted: Godot signal handler cannot return Task. InputLock prevents re-entry.
     private async void OnPlaySidewaysRequested(string cardId) {
         if (!_lock.TryAcquire()) return;
         try {
             // Wounds cannot be played in any way through the normal hand flow (rulebook p4).
-            // The skill exception (play a wound sideways x2) is a separate, skill-initiated
-            // path that requires explicit wound selection — it does not route through here.
             var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);
             if (card is not null && card.Type == CardType.Wound) {
                 Log.Warn("[UI]", $"OnPlaySidewaysRequested: '{cardId}' is a Wound — cannot be played sideways");
@@ -218,11 +209,7 @@ public partial class HandView : Control {
                 Log.Debug("[UI]", $"PlaySideways: no sideways effect in {_state.CurrentPhase}");
                 return;
             }
-            // Remove the card from hand FIRST: the resource is granted only if the card
-            // actually leaves the hand. This guards against double-resolve and orphaned
-            // resources once ResolveAll becomes genuinely awaitable (UIBroker). Full atomic
-            // rollback (card returns to hand if a future awaitable effect fails) is deferred
-            // to the UIBroker story — Hand is not yet part of the GameState snapshot.
+            // Remove card from hand FIRST to guard against double-resolve.
             var result = _deck.PlayCard(cardId);
             if (!result.IsSuccess) {
                 Log.Warn("[UI]", $"PlaySideways: PlayCard failed for '{cardId}': {result.Error}");
@@ -246,12 +233,10 @@ public partial class HandView : Control {
         }
     }
 
-    private static IEffect? BuildEffect(StagingManager.StagedEntry entry) {
-        if (entry.OverrideAmount.HasValue)
-            return new ImprovisationEffect(entry.EffectType, entry.OverrideAmount.Value);
-        var spec = entry.Card.Unpowered;
+    private static IEffect? BuildEffect(CardDefinition card, EffectType effectType) {
+        var spec = card.Unpowered;
         if (spec is null) return null;
-        return entry.EffectType switch {
+        return effectType switch {
             EffectType.Move         => new MoveEffect(spec.Move),
             EffectType.AttackMelee  => new AttackEffect(spec.Attack, EffectType.AttackMelee, AttackElement.Physical),
             EffectType.AttackRanged => new AttackEffect(spec.Attack, EffectType.AttackRanged, AttackElement.Physical),

@@ -37,6 +37,18 @@ public class DeckManager {
         return Result<CardDefinition>.Ok(discarded);
     }
 
+    public Result<CardDefinition> RecallFromDiscard(string cardId) {
+        var pile = DiscardPile.ToList();
+        var idx = pile.FindIndex(c => c.Id == cardId);
+        if (idx < 0)
+            return Result<CardDefinition>.Fail($"Card '{cardId}' not in discard pile");
+        var card = pile[idx];
+        pile.RemoveAt(idx);
+        DiscardPile = pile;
+        ReturnCard(card);
+        return Result<CardDefinition>.Ok(card);
+    }
+
     public Result<CardDefinition> PlayCard(string cardId) {
         var list = Hand.ToList();
         var idx = list.FindIndex(c => c.Id == cardId);

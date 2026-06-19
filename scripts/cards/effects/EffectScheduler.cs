@@ -22,7 +22,8 @@ public class EffectScheduler {
                 pending.Ctx.ChosenType,
                 pending.Ctx.Phase,
                 pending.Ctx.Powered,
-                snapshot));
+                snapshot,
+                pending.Ctx.CostCardId));
             foreach (var triggered in result.Triggered)
                 _queue.Enqueue(new PendingEffect(triggered.Effect, triggered.Ctx), triggered.Priority);
         }

@@ -17,7 +17,8 @@ public record EffectFiredEvent(
     EffectType EffectType,
     GamePhase Phase,
     bool Powered,
-    GameStateSnapshot StateBefore);
+    GameStateSnapshot StateBefore,
+    string? CostCardId = null);
 
 public class GameEventLog {
     private readonly List<EffectFiredEvent> _events = new();
@@ -32,4 +33,6 @@ public class GameEventLog {
         _events.RemoveAt(_events.Count - 1);
         return last;
     }
+
+    public void Clear() => _events.Clear();
 }

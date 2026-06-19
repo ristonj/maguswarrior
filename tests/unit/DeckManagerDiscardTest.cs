@@ -56,4 +56,27 @@ public class DeckManagerDiscardTest {
         Assert.Single(dm.Hand);
         Assert.Equal("stamina", dm.Hand[0].Id);
     }
+
+    [Fact]
+    public void RecallFromDiscard_MovesCardFromDiscardToHand() {
+        var dm = new DeckManager();
+        var card = new CardDefinition { Id = "march", Name = "March" };
+        dm.SetHand(new[] { card });
+        dm.DiscardCard("march");
+        Assert.Empty(dm.Hand);
+        Assert.Single(dm.DiscardPile);
+
+        var result = dm.RecallFromDiscard("march");
+
+        Assert.True(result.IsSuccess);
+        Assert.Single(dm.Hand);
+        Assert.Empty(dm.DiscardPile);
+    }
+
+    [Fact]
+    public void RecallFromDiscard_Fails_WhenCardNotInDiscard() {
+        var dm = new DeckManager();
+        var result = dm.RecallFromDiscard("nonexistent");
+        Assert.False(result.IsSuccess);
+    }
 }

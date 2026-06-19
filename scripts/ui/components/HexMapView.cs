@@ -136,6 +136,7 @@ public partial class HexMapView : Node2D {
                 _previewIsExplore = false;
                 _previewLabel.Visible = false;
                 _state.SpendMovePoints(RevealCost);
+                _state.TripUndoGate();
                 _map.RevealTile(unrevealedTile);
                 Log.Debug("[Input]", $"Tile '{unrevealedTile.TileId}' revealed from {coord.Q},{coord.R} remaining={_state.MovePointsThisTurn}");
             } else {

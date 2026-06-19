@@ -13,6 +13,8 @@ namespace MagusWarrior.Core;
 public class GameState {
     public event Action? ResourcesChanged;
     public event Action? DayNightChanged;
+    public event Action? UndoGateCrossed;
+    public GameStateSnapshot? LastGateSnapshot { get; private set; }
 
     public GamePhase CurrentPhase { get; private set; }
     public bool IsDay { get; private set; } = true;
@@ -68,6 +70,15 @@ public class GameState {
     public void AddBlockPoints(int n, AttackElement element) {
         _blockPool[element] = _blockPool.GetValueOrDefault(element) + n;
         ResourcesChanged?.Invoke();
+    }
+
+    public void TripUndoGate() {
+        LastGateSnapshot = TakeSnapshot();
+        EventLog.Clear();
+        UndoGateCrossed?.Invoke();
+#if GODOT
+        Log.Debug("[Core]", "Undo gate crossed — snapshot written, event log cleared");
+#endif
     }
 
     // LOCKSTEP: every mutable field added to GameState MUST also be added to
