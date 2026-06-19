@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-19"  # epic-2 retro done
+last_updated: "2026-06-19"  # epic-2 closed; epic-3 branch created
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -68,7 +68,7 @@ development_status:
   epic-1b-retrospective: done
 
   # ─── Epic 2: Hex Map + Movement ──────────────────────────────────────────
-  epic-2: in-progress
+  epic-2: done
   2-0-input-lock-re-entrancy-guard: done
   2-1-see-hex-map-and-hero-position: done
   2-2-tap-hex-to-preview-move-cost: done
@@ -78,7 +78,7 @@ development_status:
   epic-2-retrospective: done
 
   # ─── Epic 3: Combat System ───────────────────────────────────────────────
-  epic-3: backlog
+  epic-3: in-progress
   3-1-see-current-combat-phase: backlog
   3-2-use-ranged-siege-attack-in-phase-1: backlog
   3-3-block-incoming-damage: backlog

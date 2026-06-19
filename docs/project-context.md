@@ -103,7 +103,8 @@ Quick reference:
 | HexGrid | `scripts/hex/` |
 | WorldMap, SiteInteraction | `scripts/map/` |
 | ManaPool | `scripts/mana/` |
-| DeckManager | `scripts/deck/` |
+| Hero (hand, draw pile, discard pile, fame, reputation, units) | `scripts/hero/` |
+| DeckManager (migrates into Hero in Epic 3+) | `scripts/deck/` |
 | UnitRoster | `scripts/units/` |
 | UIBroker, ChoiceRequests | `scripts/broker/` |
 | SaveManager, SaveData | `scripts/save/` |
@@ -298,6 +299,28 @@ The project distinguishes two classes of failure:
 It also enforces a hard boundary: business logic cannot accidentally call Godot APIs (which crash outside the engine runtime), and Godot node lifecycle (freed nodes, scene tree changes) cannot corrupt game state.
 
 If you're writing a class outside `scripts/ui/` and feel the urge to inherit from a Godot type — stop. You are in the wrong place.
+
+---
+
+## Undo Gates
+
+Undo is free until new information is revealed. The moment hidden state becomes visible, `GameState.TripUndoGate()` fires — it resolves all staged card effects, clears the move path, fires `UndoGateCrossed`, and writes the durable save checkpoint.
+
+**There is no Commit button.** Cards resolve their effects immediately when played. The gate is the only commit mechanism.
+
+**Any code that reveals previously hidden state must call `TripUndoGate`.** Non-exhaustive list of gates:
+
+- Tile reveal (fog hexes turn to terrain)
+- Enemy token flip (face-down token turned up when combat begins)
+- Card draw mid-turn
+- Source die re-roll mid-turn
+- Offer row refresh (Advanced Actions / Spells)
+- Artifact acquisition
+- Ruin reveal
+
+**The gate fires when the value becomes visible** — not when the player declares intent. A player can undo the decision to enter combat as long as no enemy token has been flipped.
+
+**Never call `WorldMap.RevealTile()` directly from game logic** — always go through `TripUndoGate` first so the undo stack clears before the reveal fires.
 
 ---
 

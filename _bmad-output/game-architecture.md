@@ -234,6 +234,7 @@ The following are decided in Step 4:
 | 10 | State Management | Singleton `GameState` with constructor injection; no Godot AutoLoad for logic |
 | 11 | Asset Loading | Preload all at startup — vector/flat art is small; no streaming needed |
 | 12 | Audio Architecture | Godot bus system — SFX bus + Music bus; no custom audio manager |
+| 13 | Hero Model | `Hero` class owns hand, draw pile, discard pile, fame, reputation, and units; `GameState` holds the `Hero` instance; `DeckManager` migrates into `Hero` in Epic 3+ |
 
 ### Game Logic / Scene Boundary
 
@@ -320,9 +321,44 @@ Lower priority number = resolves first. Timing-based effects ("at end of combat"
 
 ### Undo System
 
-Pre-commit only. Before any action commits to `GameState`, a snapshot of relevant state is taken. Players can un-stage cards and cancel targeting freely. Once an action commits (revealing new information — card draw, tile reveal, die roll, enemy draw), it is final.
+Pre-commit only. Players may freely undo any action that has not yet caused new information to be revealed. Once an **undo gate** fires, all pending actions are committed and the undo stack clears. No manual Commit button exists — the gate is the commit point.
 
-**Rationale:** The GDD defines this explicitly: "Undo is free until new information is revealed." Full event-sourced undo is not implemented in v1 — it is a second game inside the first. Pre-commit undo covers the felt need at low implementation cost.
+**Implementation:** `GameState.TripUndoGate()` is the single entry point. It: resolves all staged card effects, clears the move path, fires `UndoGateCrossed`, and writes a durable snapshot. Code that reveals hidden state must call `TripUndoGate` (never commit staged actions directly).
+
+**Undo gates — non-exhaustive list:**
+
+| Event | When the gate fires |
+| --- | --- |
+| Tile reveal | When the fog hexes become visible (not when player declares intent to move there) |
+| Enemy token flip | When the token is turned face-up (entering combat, not declaring intent to fight) |
+| Card draw mid-turn | When the card enters the hand |
+| Source die re-roll | When the new face is revealed |
+| Offer row refresh (AA/Spells) | When the new cards appear |
+| Artifact acquisition | When the artifact enters the player's area |
+| Ruin reveal | When ruin contents become visible |
+
+**Checkpoint semantics:** The durable snapshot written at each `TripUndoGate` call is the restoration point for story 3-6 (force-quit mid-combat). Gate and checkpoint are the same event.
+
+**Rationale:** The GDD defines this explicitly: "Undo is free until new information is revealed." Full event-sourced undo is not implemented in v1. Pre-commit undo covers the felt need at low implementation cost. The gate list makes the rule concrete enough that any implementation agent can wire it correctly without re-deriving the principle.
+
+### Hero Model
+
+`Hero` class (pure C#, `scripts/hero/Hero.cs`) is the container for all per-hero mutable state:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| `Hand` | `List<Card>` | Cards currently held |
+| `DrawPile` | `List<Card>` | Ordered draw pile |
+| `DiscardPile` | `List<Card>` | Used cards |
+| `Fame` | `int` | Accumulated fame |
+| `Reputation` | `int` | Current reputation (signed) |
+| `Units` | `List<Unit>` | Hired unit roster |
+
+`GameState` holds a `Hero` property. Systems that query deck state, fame, or units query `GameState.Hero` — never directly accessing `DeckManager` members.
+
+**Migration path:** `DeckManager` continues to exist through the early Epic 3 stories. Its responsibilities transfer to `Hero` across combat stories as each story touches the hand. `DeckManager` is removed once `Hero` fully owns its responsibilities. This is not a single-story refactor — it tracks Epic 3 story-by-story.
+
+**Why a separate Hero class:** `GameState` was accumulating properties that belong to a hero entity. Combat mechanics need "draw a card," "add wound to hand," "unit absorbed damage" — operations that read naturally as hero-entity operations. `Hero` makes that boundary explicit and sets up v2 multi-hero support without foreclosing it.
 
 ### Hex Grid
 
@@ -588,7 +624,8 @@ maguswarrior/               # Godot project root — project.godot lives here
 | HexGrid | `scripts/hex/` |
 | WorldMap, SiteInteraction | `scripts/map/` |
 | ManaPool, source dice | `scripts/mana/` |
-| DeckManager (uniqueness enforcement) | `scripts/deck/` |
+| Hero (hand, draw pile, discard pile, fame, reputation, units) | `scripts/hero/` |
+| DeckManager (uniqueness enforcement — migrates into Hero in Epic 3+) | `scripts/deck/` |
 | UnitRoster | `scripts/units/` |
 | UIBroker, ChoiceRequests | `scripts/broker/` |
 | SaveManager, SaveData | `scripts/save/` |
