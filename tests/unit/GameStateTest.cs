@@ -137,4 +137,20 @@ public class GameStateTest {
         state.ResetMovePoints();
         Assert.True(fired);
     }
+
+    [Fact]
+    public void AddFame_IncreasesFame() {
+        var state = EmptyState();
+        state.AddFame(3);
+        Assert.Equal(3, state.Fame);
+    }
+
+    [Fact]
+    public void AddFame_FiresResourcesChanged() {
+        var state = EmptyState();
+        bool fired = false;
+        state.ResourcesChanged += () => fired = true;
+        state.AddFame(1);
+        Assert.True(fired);
+    }
 }

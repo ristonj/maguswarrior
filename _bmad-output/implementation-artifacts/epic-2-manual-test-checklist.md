@@ -81,11 +81,55 @@ HexMapView is positioned at screen `(540, 600)`. The 7 starting hexes and their 
 
 ## Story 2-4 — Reveal new tile by moving to map edge
 
-*(not yet developed)*
+**Automated:** ✅ 168 tests green · main build 0/0 · Opus 4.8 multi-layer code review passed (4 patches applied, 3 deferred)
+
+**Starting map reference (updated — 2 tiles, 14 hexes):**
+
+| Hex (Q,R) | Tile | Terrain | Revealed |
+|-----------|------|---------|---------|
+| (0,0) | starting | Plains | ✅ |
+| (1,0) | starting | Plains | ✅ |
+| (-1,0) | starting | Forest | ✅ |
+| (0,1) | starting | Hills | ✅ |
+| (0,-1) | starting | Swamp | ✅ |
+| (1,-1) | starting | Plains | ✅ |
+| (-1,1) | starting | Wasteland | ✅ |
+| (2,0) | countryside-1 | Forest | ❌ fog — adjacent to (1,0) |
+| (2,1) | countryside-1 | Mountain | ❌ fog |
+| (3,-1) | countryside-1 | Desert | ❌ fog |
+| (3,0) | countryside-1 | Plains | ❌ fog |
+| (3,1) | countryside-1 | Wasteland | ❌ fog |
+| (4,-1) | countryside-1 | Plains | ❌ fog |
+| (4,0) | countryside-1 | Hills | ❌ fog |
+
+**Manual (outstanding):**
+
+- [ ] Launch → 14 hex polygons visible; 7 terrain-colored (starting tile), 7 dark near-black fog (countryside-1)
+- [ ] Tap (2,0) fog hex from hero at (0,0) → "Explore: 2" label appears in **red** (0 Move points, not affordable)
+- [ ] Stage a Move card (gain ≥ 2 points) without re-tapping → label flips to **green** (live re-render, AC5)
+- [ ] Tap (3,0) fog hex from (0,0) — non-adjacent → "Explore: 2" preview (green/red by affordability); no reveal (AC4)
+- [ ] Move hero to (1,0) (Plains, costs 2) → hero marker moves, points decrease
+- [ ] With ≥ 2 Move points remaining, tap (2,0) → **all 7 fog hexes re-color to terrain** (Forest dark green at (2,0), Hills brown at (4,0), etc.); preview label hides; Godot log shows `[Input] Tile 'countryside-1' revealed` (AC2)
+- [ ] After reveal, tap hero's current hex → **nothing** (undo disabled, `CanUndoMove` is false) (AC7)
+- [ ] Move onto now-revealed (2,0) — Forest, Day cost 3 — with ≥ 3 remaining points → hero moves (AC6)
+- [ ] Confirm Fame stays 0 after reveal (fame-on-reveal is not wired — scenario-specific) (AC10)
+
+**Edge cases:**
+- [ ] Tap (2,0) fog hex with < 2 points → "Explore: 2" **red** preview; no reveal (AC3)
+- [ ] If a preview label is visible when reveal fires → it disappears (AC8)
+- [ ] Single-tap reveals immediately — no second confirmation tap (AC9)
 
 ## Story 2-5 — See remaining tile counts
 
-*(not yet developed)*
+**Automated:** ✅ 177 tests green · main build 0/0 · Opus 4.8 multi-layer code review passed (2 test patches applied, 3 deferred)
+
+**Manual (outstanding):**
+
+- [ ] Launch → top-right overlay reads `Countryside: 8   Core: 3`
+- [ ] Overlay does not overlap the centered title, the hex map, or the (invisible) top-left debug toggle
+- [ ] Move hero to (1,0), reveal (2,0) (tap the fog hex with ≥ 2 Move points) → overlay updates **live** to `Countryside: 7   Core: 3` with no re-tap
+- [ ] Core count stays `3` throughout (no core tile in the current map)
+- [ ] Reveal does not move the count below 0 (only one countryside tile exists to reveal)
 
 ---
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Godot;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
@@ -9,6 +10,7 @@ namespace MagusWarrior.UI;
 
 public partial class HexMapView : Node2D {
     private const float HexSize = 80f;
+    private const int RevealCost = 2;
 
     private WorldMap _map = null!;
     private GameState _state = null!;
@@ -16,6 +18,8 @@ public partial class HexMapView : Node2D {
     private Polygon2D _heroMarker = null!;
     private Label _previewLabel = null!;
     private HexCoord? _previewedHex;
+    private bool _previewIsExplore;
+    private readonly Dictionary<HexCoord, Polygon2D> _hexPolygons = new();
 
     public void Initialize(WorldMap map, GameState state, InputLock inputLock) {
         _map = map;
@@ -24,13 +28,16 @@ public partial class HexMapView : Node2D {
 
         var corners = HexCorners(HexSize);
         int hexCount = 0;
-        foreach (var (coord, hexState) in _map.Grid.AllHexes()) {
-            var poly = new Polygon2D();
-            poly.Polygon = corners;
-            poly.Color = TerrainColor(hexState.Terrain);
-            poly.Position = HexToPixel(coord);
-            AddChild(poly);
-            hexCount++;
+        foreach (var tile in _map.PlacedTiles) {
+            foreach (var (worldCoord, terrain) in tile.WorldHexes()) {
+                var poly = new Polygon2D();
+                poly.Polygon = corners;
+                poly.Color = tile.IsRevealed ? TerrainColor(terrain) : FogColor();
+                poly.Position = HexToPixel(worldCoord);
+                AddChild(poly);
+                _hexPolygons[worldCoord] = poly;
+                hexCount++;
+            }
         }
 
         _heroMarker = new Polygon2D();
@@ -49,8 +56,9 @@ public partial class HexMapView : Node2D {
         AddChild(_previewLabel);
 
         _map.HeroMoved += coord => _heroMarker.Position = HexToPixel(coord);
-        _state.ResourcesChanged += RefreshPreview;  // move-point change → re-evaluate affordability
-        _state.DayNightChanged += RefreshPreview;    // day/night flip → re-evaluate cost
+        _map.TileRevealed += OnTileRevealed;
+        _state.ResourcesChanged += RefreshPreview;
+        _state.DayNightChanged += RefreshPreview;
         Log.Debug("[HexGrid]", $"HexMapView initialized: {hexCount} hexes, hero at {_map.HeroPosition.Q},{_map.HeroPosition.R}");
     }
 
@@ -75,14 +83,14 @@ public partial class HexMapView : Node2D {
     private void HandleHexTap(Vector2 localPos) {
         var coord = PixelToHex(localPos);
 
-        // Tap hero's current position → undo last move
+        // Branch 1: hero's current hex → undo last move
         if (coord == _map.HeroPosition) {
             if (!_map.CanUndoMove) return;
             var result = _map.UndoLastMove();
             if (result is { } r) {
-                // Clear the preview BEFORE AddMovePoints fires ResourcesChanged → RefreshPreview,
-                // so a stale preview isn't re-rendered for one frame. Mirrors the commit branch.
+                // Clear preview BEFORE AddMovePoints fires ResourcesChanged → RefreshPreview
                 _previewedHex = null;
+                _previewIsExplore = false;
                 _previewLabel.Visible = false;
                 _state.AddMovePoints(r.CostRefund);
                 Log.Debug("[Input]", $"Move undone: back to {r.Previous.Q},{r.Previous.R} refund={r.CostRefund} remaining={_state.MovePointsThisTurn}");
@@ -90,36 +98,83 @@ public partial class HexMapView : Node2D {
             return;
         }
 
+        // Branch 2: revealed hex → movement commit or cost preview
         var hexState = _map.Grid.GetState(coord);
-        if (hexState == null) return;  // off-grid
+        if (hexState != null) {
+            int? cost = TerrainCosts.GetCost(hexState.Terrain, _state.IsDay);
+            bool isAdjacent = false;
+            foreach (var n in _map.HeroPosition.Neighbors())
+                if (n == coord) { isAdjacent = true; break; }
 
-        int? cost = TerrainCosts.GetCost(hexState.Terrain, _state.IsDay);
-        bool isAdjacent = false;
-        foreach (var n in _map.HeroPosition.Neighbors())
-            if (n == coord) { isAdjacent = true; break; }
-
-        if (isAdjacent && cost != null && _state.MovePointsThisTurn >= cost.Value) {
-            // Valid move: commit immediately — no confirmation needed, undo is free
-            _previewedHex = null;
-            _previewLabel.Visible = false;
-            _state.SpendMovePoints(cost.Value);
-            _map.CommitHeroMove(coord, cost.Value);
-            Log.Debug("[Input]", $"Hero moved to {coord.Q},{coord.R} cost={cost} remaining={_state.MovePointsThisTurn}");
-        } else {
-            // Not a valid move: preview only
-            _previewedHex = coord;
-            UpdatePreviewLabel(coord, cost);
-            Log.Debug("[Input]", $"Hex tapped: {coord.Q},{coord.R} terrain={hexState.Terrain} cost={cost?.ToString() ?? "impassable"}");
+            if (isAdjacent && cost != null && _state.MovePointsThisTurn >= cost.Value) {
+                // Valid move: commit immediately — undo is free until tile reveal
+                _previewedHex = null;
+                _previewIsExplore = false;
+                _previewLabel.Visible = false;
+                _state.SpendMovePoints(cost.Value);
+                _map.CommitHeroMove(coord, cost.Value);
+                Log.Debug("[Input]", $"Hero moved to {coord.Q},{coord.R} cost={cost} remaining={_state.MovePointsThisTurn}");
+            } else {
+                _previewedHex = coord;
+                _previewIsExplore = false;
+                UpdatePreviewLabel(coord, cost);
+                Log.Debug("[Input]", $"Hex tapped: {coord.Q},{coord.R} terrain={hexState.Terrain} cost={cost?.ToString() ?? "impassable"}");
+            }
+            return;
         }
+
+        // Branch 3: unrevealed tile hex → explore commit or explore preview
+        var unrevealedTile = _map.FindTileForCoord(coord);
+        if (unrevealedTile != null) {
+            bool isAdjacent = false;
+            foreach (var n in _map.HeroPosition.Neighbors())
+                if (n == coord) { isAdjacent = true; break; }
+
+            if (isAdjacent && _state.MovePointsThisTurn >= RevealCost) {
+                // Clear preview BEFORE SpendMovePoints fires ResourcesChanged → RefreshPreview
+                _previewedHex = null;
+                _previewIsExplore = false;
+                _previewLabel.Visible = false;
+                _state.SpendMovePoints(RevealCost);
+                _map.RevealTile(unrevealedTile);
+                Log.Debug("[Input]", $"Tile '{unrevealedTile.TileId}' revealed from {coord.Q},{coord.R} remaining={_state.MovePointsThisTurn}");
+            } else {
+                _previewedHex = coord;
+                _previewIsExplore = true;
+                UpdateExploreLabelVisuals(coord);
+                Log.Debug("[Input]", $"Unrevealed hex tapped: {coord.Q},{coord.R} adjacent={isAdjacent} affordable={_state.MovePointsThisTurn >= RevealCost}");
+            }
+            return;
+        }
+
+        // Branch 4: complete miss (off-grid, not unrevealed) — no-op
     }
 
-    // Re-evaluate the visible preview when move points or day/night change so its cost
-    // and affordability color never go stale. No-op when nothing is currently previewed.
+    private void OnTileRevealed(MapTile tile) {
+        foreach (var (worldCoord, terrain) in tile.WorldHexes()) {
+            if (_hexPolygons.TryGetValue(worldCoord, out var poly))
+                poly.Color = TerrainColor(terrain);
+        }
+        _previewedHex = null;
+        _previewIsExplore = false;
+        _previewLabel.Visible = false;
+        Log.Debug("[HexGrid]", $"Tile '{tile.TileId}' revealed — {_hexPolygons.Count} total hexes");
+    }
+
+    // Re-evaluate the visible preview when move points or day/night change.
+    // No-op when nothing is currently previewed.
     private void RefreshPreview() {
         if (_previewedHex is not { } coord) return;
-        var hexState = _map.Grid.GetState(coord);
-        if (hexState == null) return;
-        UpdatePreviewLabel(coord, TerrainCosts.GetCost(hexState.Terrain, _state.IsDay));
+        if (_previewIsExplore) {
+            // Self-heal parity with the movement branch: if the previewed coord is no
+            // longer an unrevealed tile (e.g. its tile got revealed), drop the preview.
+            if (_map.FindTileForCoord(coord) == null) { _previewedHex = null; _previewIsExplore = false; _previewLabel.Visible = false; return; }
+            UpdateExploreLabelVisuals(coord);
+        } else {
+            var hexState = _map.Grid.GetState(coord);
+            if (hexState == null) { _previewedHex = null; _previewLabel.Visible = false; return; }
+            UpdatePreviewLabel(coord, TerrainCosts.GetCost(hexState.Terrain, _state.IsDay));
+        }
     }
 
     private void UpdatePreviewLabel(HexCoord coord, int? cost) {
@@ -134,6 +189,17 @@ public partial class HexMapView : Node2D {
                     ? new Color(0.298f, 0.686f, 0.314f)   // #4CAF50 green
                     : new Color(0.957f, 0.263f, 0.212f));  // #F44336 red
         }
+        _previewLabel.Position = HexToPixel(coord) + new Vector2(-30f, -HexSize - 10f);
+        _previewLabel.Visible = true;
+    }
+
+    private void UpdateExploreLabelVisuals(HexCoord coord) {
+        _previewLabel.Text = $"Explore: {RevealCost}";
+        bool canAfford = _state.MovePointsThisTurn >= RevealCost;
+        _previewLabel.AddThemeColorOverride("font_color",
+            canAfford
+                ? new Color(0.298f, 0.686f, 0.314f)   // #4CAF50 green
+                : new Color(0.957f, 0.263f, 0.212f));  // #F44336 red
         _previewLabel.Position = HexToPixel(coord) + new Vector2(-30f, -HexSize - 10f);
         _previewLabel.Visible = true;
     }
@@ -175,6 +241,8 @@ public partial class HexMapView : Node2D {
         }
         return corners;
     }
+
+    private static Color FogColor() => new Color(0.1f, 0.1f, 0.1f);
 
     private static Color TerrainColor(TerrainType terrain) => terrain switch {
         TerrainType.Plains    => new Color(0.298f, 0.686f, 0.314f),  // #4CAF50

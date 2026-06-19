@@ -170,4 +170,83 @@ public class WorldMapTest {
         Assert.False(map.CanUndoMove);
         Assert.Null(map.UndoLastMove());
     }
+
+    [Fact]
+    public void RevealTile_PopulatesGridFromUnrevealedTile() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        Assert.False(map.Grid.Contains(new HexCoord(5, 0)));
+        map.RevealTile(tile);
+        Assert.True(map.Grid.Contains(new HexCoord(5, 0)));
+    }
+
+    [Fact]
+    public void RevealTile_SetsIsRevealedTrue() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        map.RevealTile(tile);
+        Assert.True(tile.IsRevealed);
+    }
+
+    [Fact]
+    public void RevealTile_FiresTileRevealedEvent() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        MapTile? received = null;
+        map.TileRevealed += t => received = t;
+        map.RevealTile(tile);
+        Assert.Same(tile, received);
+    }
+
+    [Fact]
+    public void RevealTile_ClearsMovePath() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        map.PlaceTile(RevealedTile(new HexCoord(0, 0)));
+        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
+        Assert.True(map.CanUndoMove);
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        map.RevealTile(tile);
+        Assert.False(map.CanUndoMove);
+    }
+
+    [Fact]
+    public void FindTileForCoord_ReturnsOwningUnrevealedTile() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        var result = map.FindTileForCoord(new HexCoord(5, 0));
+        Assert.Same(tile, result);
+    }
+
+    [Fact]
+    public void FindTileForCoord_ReturnsNullForRevealedTile() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = RevealedTile(new HexCoord(0, 0));
+        map.PlaceTile(tile);
+        var result = map.FindTileForCoord(new HexCoord(0, 0));
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void FindTileForCoord_ReturnsNullForMiss() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var result = map.FindTileForCoord(new HexCoord(99, 99));
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void RevealTile_OnAlreadyRevealedTile_DoesNotRefire() {
+        var map = new WorldMap(new HexCoord(0, 0));
+        var tile = UnrevealedTile(new HexCoord(5, 0));
+        map.PlaceTile(tile);
+        map.RevealTile(tile);
+        int fireCount = 0;
+        map.TileRevealed += _ => fireCount++;
+        map.RevealTile(tile);  // second call on already-revealed tile is a no-op
+        Assert.Equal(0, fireCount);
+    }
 }

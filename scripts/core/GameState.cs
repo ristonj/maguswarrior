@@ -51,9 +51,12 @@ public class GameState {
         DayNightChanged?.Invoke();
     }
 
+    public int Fame { get; private set; } = 0;
+
     public void AddMovePoints(int n) { MovePointsThisTurn += n; ResourcesChanged?.Invoke(); }
     public void SpendMovePoints(int n) { MovePointsThisTurn -= n; ResourcesChanged?.Invoke(); }
     public void ResetMovePoints() { MovePointsThisTurn = 0; ResourcesChanged?.Invoke(); }
+    public void AddFame(int n) { Fame += n; ResourcesChanged?.Invoke(); }
     public void AddInfluencePoints(int n) { InfluencePointsThisTurn += n; ResourcesChanged?.Invoke(); }
 
     public void AddAttackPoints(int n, EffectType distance, AttackElement element) {

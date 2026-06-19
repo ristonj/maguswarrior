@@ -20,8 +20,15 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private StagingManager _stagingManager = null!;
     private InputLock _inputLock = null!;
     private WorldMap _worldMap = null!;
+    private TileStock _tileStock = null!;
+    private TileCountView _tileCountView = null!;
     private RestView _restView = null!;
     private ImprovisationView _improvView = null!;
+
+    // First Reconnaissance scenario deck sizes (V-shape: 8 countryside + 3 core).
+    // Hardcoded for now; real per-scenario configuration lands in Epic 7.
+    private const int FirstReconCountrysideTiles = 8;
+    private const int FirstReconCoreTiles = 3;
 #if DEBUG
     private EffectEventLogPanel _effectInspector = null!;
     private Button _debugToggleArea = null!;
@@ -36,6 +43,9 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _stagingManager  = new StagingManager();
         _inputLock       = new InputLock();
         _worldMap        = BuildStartingMap();
+
+        _tileStock = new TileStock(FirstReconCountrysideTiles, FirstReconCoreTiles);
+        _worldMap.TileRevealed += tile => _tileStock.RecordReveal(tile.TileType);
 
 #if DEBUG
         _effectInspector = new EffectEventLogPanel();
@@ -67,6 +77,11 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         hexMapView.Position = new Vector2(540f, 600f);
         AddChild(hexMapView);
         hexMapView.Initialize(_worldMap, _state, _inputLock);
+
+        _tileCountView = new TileCountView();
+        _tileCountView.Name = "TileCountView";
+        AddChild(_tileCountView);
+        _tileCountView.Initialize(_tileStock);
 
         var result = _saveManager.Load();
         if (result.IsSuccess)
@@ -101,7 +116,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     }
 
     private static WorldMap BuildStartingMap() {
-        var tile = new MapTile(
+        var startingTile = new MapTile(
             tileId: "starting",
             tileType: TileType.Starting,
             isRevealed: true,
@@ -116,8 +131,28 @@ public partial class PlaceholderMainMenu : CanvasLayer {
                 (new HexCoord(-1,  1), TerrainType.Wasteland),
             }
         );
+
+        // Countryside tile centered at (3,0). World hex (2,0) is adjacent to starting (1,0).
+        // No world coords overlap with the starting tile (verified in story 2-4 spec).
+        var countryside1 = new MapTile(
+            tileId: "countryside-1",
+            tileType: TileType.Countryside,
+            isRevealed: false,
+            origin: new HexCoord(3, 0),
+            hexes: new[] {
+                (new HexCoord( 0,  0), TerrainType.Plains),     // world (3,0)
+                (new HexCoord( 1,  0), TerrainType.Hills),      // world (4,0)
+                (new HexCoord(-1,  0), TerrainType.Forest),     // world (2,0) — adjacent to starting (1,0)
+                (new HexCoord( 0,  1), TerrainType.Wasteland),  // world (3,1)
+                (new HexCoord( 0, -1), TerrainType.Desert),     // world (3,-1)
+                (new HexCoord( 1, -1), TerrainType.Plains),     // world (4,-1)
+                (new HexCoord(-1,  1), TerrainType.Mountain),   // world (2,1)
+            }
+        );
+
         var map = new WorldMap(new HexCoord(0, 0));
-        map.PlaceTile(tile);
+        map.PlaceTile(startingTile);
+        map.PlaceTile(countryside1);
         return map;
     }
 
