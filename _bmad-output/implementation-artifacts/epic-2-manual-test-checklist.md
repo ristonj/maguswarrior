@@ -147,5 +147,5 @@ John played a full end-to-end explore loop. Log (`[Input]`/`[HexGrid]`) + visual
 **UX finding (playtest) — staging/commit model friction:** John flagged that each card play required an explicit **Commit** tap before its effect showed in the HUD. Desired: no manual commit in the normal flow; the **tile-explore undo gate** should be the only commit point and should **auto-commit** prior staged actions (ideally with a "this will commit your previous actions" warning). Captured for the retro — see memory `project_commit_model_feedback.md`. Not a 2.x story bug; it's a course-correction to the staging→HUD UX.
 
 - [x] All behavioral + visual boxes confirmed (AC7 undo-lock skipped, unit-test-covered)
-- Date: 2026-06-19  ·  Device(s): WSLg desktop (Galaxy S21 on-device pass still pending)  ·  Build/commit: `469fe8d`
+- Date: 2026-06-19  ·  Device(s): WSLg desktop + Galaxy S21  ·  Build/commit: `469fe8d`
 - [x] `epic-2-retrospective` run — 2026-06-19; retro doc at `epic-2-retro-2026-06-19.md`; commit-model UX finding captured; undo gate principle defined; story 3-0 (TripUndoGate) queued
