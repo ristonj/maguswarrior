@@ -462,7 +462,7 @@ if (assignment.Source.HasAbility(EnemyAbility.Brutal)) d *= 2;
 
 **Step 2 — Assignment loop** (repeats until d = 0):
 
-> **Option A — Assign to a unit** (blocked if `combat.UnitDamageLocked`; only units not in `alreadyAssigned` may be selected):
+> **Option A — Assign to a unit** — a unit is eligible only if ALL three hold: (1) it is **not wounded** (`unit.WoundCount == 0`) — a unit carrying wounds from this or a prior combat is inert and cannot absorb damage until healed; (2) it is not in `alreadyAssigned` (not already assigned damage this combat); (3) `combat.UnitDamageLocked` is false:
 > ```csharp
 > alreadyAssigned.Add(unit); // unit is "used up" this combat regardless of outcome
 > if (unit.HasResistanceTo(assignment.DamageType)) d -= unit.Armor;
@@ -502,9 +502,10 @@ if (assignment.Source.HasAbility(EnemyAbility.Brutal)) d *= 2;
 |------|-----------|
 | Brutal | Double the damage before any assignment |
 | Unit resistance | Armor subtracted an extra time (twice total); if damage reaches zero before wounding, no wound is given |
+| Wounded unit excluded | A unit with any wounds (`WoundCount > 0`) is ineligible for damage assignment — and cannot activate or block — until healed. Persists across combats. |
 | Paralyze vs unit | Checked before wounding: unit is destroyed without receiving a wound |
-| Unit wound | 1 wound marker placed on unit |
-| Poison vs unit | Unit takes a second wound (only if not destroyed by Paralyze) |
+| Unit wound | 1 wound marker placed on unit (does not destroy it; accumulating wounds never destroys a unit — only `Destroy()`/Paralyze does). Each wound requires one heal to remove. |
+| Poison vs unit | Unit takes a second wound (only if not destroyed by Paralyze) → requires two heals before usable again |
 | Paralyze vs hero | Hero discards all non-wound cards from hand (same effect as knockout) |
 | Poison vs hero | For every wound drawn to hand, one additional wound goes to discard pile |
 | Knockout | When new wounds drawn to hand ≥ hero's unmodified hand size: discard all non-wound cards, `IsKnockedOut = true`. Hero continues taking wounds from subsequent assignments. Phase 4 still runs. |
