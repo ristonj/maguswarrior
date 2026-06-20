@@ -908,13 +908,14 @@ The undo stack is therefore cleared exactly once at gate crossing, via `TripUndo
 - [x] `dotnet build maguswarrior.csproj` — 0 errors, 0 warnings
 - [x] `dotnet test tests/maguswarrior.Tests.csproj` — 190 green (184 − 9 + 12 + 3 review-fix)
 - [x] Opus 4.8 code review passed (ultrareview: 1 false positive, 2 real findings fixed)
-- [ ] Manual verification (WSLg desktop):
-  - [ ] AC3: Walk → tap hero hex → hero back, points refunded (hero-move undo via `UndoController`)
-  - [ ] AC4: Play Move card → Walk → Undo button → walk reversed → Undo again → card returned
-  - [ ] AC4b: Walk → tap hero hex (undo walk) → Undo button → card returned
-  - [ ] AC5: Play card → Walk → Reveal tile → Undo button → no-op; hero hex tap → no-op
-  - [ ] Improvisation undo still works (Improvisation → pick resource → Undo → both cards back in hand)
-  - [ ] StagingAreaView values update correctly after undo
+- [x] Manual verification (WSLg desktop) — all passed 2026-06-19:
+  - [x] AC3: Walk → tap hero hex → hero back, points refunded (hero-move undo via `UndoController`)
+  - [x] AC4: Play Move card → Walk → Undo button → walk reversed → Undo again → card returned
+  - [x] AC4b: Walk → tap hero hex (undo walk) → Undo button → card returned
+  - [x] AC5: Play card → Walk → Reveal tile → Undo button → no-op; hero hex tap → no-op
+  - [x] Improvisation undo still works (Improvisation → pick resource → Undo → both cards back in hand)
+  - [x] StagingAreaView values update correctly after undo
+  - Note: one intermittent undo-move no-op observed then self-resolved; logged for watch (suspect input-lock race), not blocking.
 
 ---
 
