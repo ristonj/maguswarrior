@@ -1,7 +1,10 @@
 # Team overrides for gds-code-review skill.
-# on_complete: runs at the very end of the workflow (step 10 terminal instruction).
-# Clears the code-review sentinel and switches the model back to Sonnet immediately,
-# rather than waiting for the 30-minute expiry in the UserPromptSubmit hook.
+#
+# Model auto-switching was REMOVED 2026-06-19. Previously a UserPromptSubmit hook
+# in ~/.claude/settings.json forced Opus during /gds-code-review and this on_complete
+# restored Sonnet at the end. That loop rewrote the model on every prompt and fought
+# manual /model choices, so it was retired. Default model is now a plain Sonnet in
+# settings.json; switch to Opus manually with /model when you want a review in Opus.
 
 [workflow]
-on_complete = "Before finishing, run this bash command: rm -f /tmp/claude-code-review-mode && tmpf=$(mktemp) && jq '.model = \"claude-sonnet-4-6\"' ~/.claude/settings.json > \"$tmpf\" && mv \"$tmpf\" ~/.claude/settings.json && echo 'Model restored to Sonnet.'"
+on_complete = ""
