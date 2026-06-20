@@ -165,11 +165,13 @@ public partial class ImprovisationView : Control {
         try {
             if (_improvCard is null) return;
             var costCardId = _discardedCard?.Id;
+            var sourceCardId = _improvCard.Id;    // capture before async gap clears _improvCard
+            var stateBefore = _state.TakeSnapshot();   // capture BEFORE enqueue
             var effect = new ImprovisationEffect(effectType, amount);
-            // Pass cost card ID so the EventLog entry can track what was discarded (enables undo)
-            var ctx = new EffectContext(_improvCard.Id, effectType, _state.CurrentPhase, false, costCardId);
+            var ctx = new EffectContext(sourceCardId, effectType, _state.CurrentPhase, false, costCardId);
             _scheduler.Enqueue(effect, 0, ctx);
             await _scheduler.ResolveAll(_state);
+            _state.UndoController.PushCardPlay(sourceCardId, costCardId, stateBefore);
             Log.Debug("[UI]", $"Improvisation resolved: {effectType} {amount} in {_state.CurrentPhase}");
             _improvCard = null;
             _discardedCard = null;

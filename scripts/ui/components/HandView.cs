@@ -10,6 +10,7 @@ using MagusWarrior.Cards.Effects.Special;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
+using MagusWarrior.Map;
 
 namespace MagusWarrior.UI;
 
@@ -17,6 +18,7 @@ public partial class HandView : Control {
     private DeckManager _deck = null!;
     private GameState _state = null!;
     private EffectScheduler _scheduler = null!;
+    private WorldMap _map = null!;
     private CardExpanded _expandedPanel = null!;
     private StagingAreaView _stagingAreaView = null!;
     private HBoxContainer _cardsContainer = null!;
@@ -70,10 +72,11 @@ public partial class HandView : Control {
         _cardsContainer.AddThemeConstantOverride("separation", 8);
     }
 
-    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, InputLock inputLock) {
+    public void Initialize(DeckManager deck, GameState state, EffectScheduler scheduler, InputLock inputLock, WorldMap map) {
         _deck = deck;
         _state = state;
         _scheduler = scheduler;
+        _map = map;
         _lock = inputLock;
         _expandedPanel.PlayRequested += OnPlayRequested;
         _expandedPanel.PlaySidewaysRequested += OnPlaySidewaysRequested;
@@ -162,9 +165,11 @@ public partial class HandView : Control {
                 Log.Warn("[UI]", $"OnPlayRequested: unsupported effect type {card.Unpowered.EffectType} for '{cardId}'");
                 return;
             }
+            var stateBefore = _state.TakeSnapshot();   // capture BEFORE enqueue
             var ctx = new EffectContext(card.Id, card.Unpowered.EffectType, _state.CurrentPhase, false);
             _scheduler.Enqueue(effect, 0, ctx);
             await _scheduler.ResolveAll(_state);
+            _state.UndoController.PushCardPlay(card.Id, null, stateBefore);
             Log.Debug("[UI]", $"Play resolved: {cardId} → {card.Unpowered.EffectType}");
         } finally {
             _lock.Release();
@@ -173,31 +178,11 @@ public partial class HandView : Control {
 
     private void OnUndoRequested() {
         if (_lock.IsLocked) return;
-        var ev = _state.EventLog.Events.LastOrDefault();
-        if (ev is null) {
-            Log.Debug("[UI]", "OnUndoRequested: nothing to undo");
-            return;
-        }
-
-        // Recall the cost card FIRST: it is the only step that can fail. If the cost card is
-        // not in the discard pile, abort before mutating anything else — otherwise resources
-        // would roll back while the cost card stays lost (partial rollback).
-        if (ev.CostCardId != null) {
-            var recall = _deck.RecallFromDiscard(ev.CostCardId);
-            if (!recall.IsSuccess) {
-                Log.Warn("[UI]", $"OnUndoRequested: cost card '{ev.CostCardId}' not in discard — aborting undo ({recall.Error})");
-                return;
-            }
-        }
-
-        _state.EventLog.PopLast();
-
-        var card = _state.Cards.FirstOrDefault(c => c.Id == ev.SourceCardId);
-        if (card != null) _deck.ReturnCard(card);
-
-        _state.RestoreSnapshot(ev.StateBefore);
-        Log.Debug("[UI]", $"Undo play: {ev.SourceCardId}/{ev.EffectType} reversed" +
-            (ev.CostCardId != null ? $", cost card '{ev.CostCardId}' recalled" : ""));
+        var result = _state.UndoController.ExecuteUndo(_state, _deck, _map);
+        if (result.IsSuccess)
+            Log.Debug("[UI]", $"Undo: {result.Value}");
+        else
+            Log.Debug("[UI]", $"OnUndoRequested: {result.Error}");
     }
 
     // async void accepted: Godot signal handler cannot return Task. InputLock prevents re-entry.
@@ -230,9 +215,11 @@ public partial class HandView : Control {
                 _                      => throw new InvalidOperationException(
                                               $"SidewaysRule returned unexpected EffectType: {effectType}")
             };
+            var stateBefore = _state.TakeSnapshot();   // capture BEFORE enqueue
             var ctx = new EffectContext(cardId, effectType, _state.CurrentPhase, false);
             _scheduler.Enqueue(effect, 0, ctx);
             await _scheduler.ResolveAll(_state);
+            _state.UndoController.PushCardPlay(cardId, null, stateBefore);
             Log.Debug("[UI]", $"PlaySideways: {cardId} → {effectType} {amount} applied");
         } finally {
             _lock.Release();

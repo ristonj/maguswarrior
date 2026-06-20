@@ -89,15 +89,9 @@ public class WorldMapTest {
     }
 
     [Fact]
-    public void CanUndoMove_FalseInitially() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        Assert.False(map.CanUndoMove);
-    }
-
-    [Fact]
     public void CommitHeroMove_UpdatesHeroPosition() {
         var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
+        map.CommitHeroMove(new HexCoord(1, 0));
         Assert.Equal(new HexCoord(1, 0), map.HeroPosition);
     }
 
@@ -106,69 +100,8 @@ public class WorldMapTest {
         var map = new WorldMap(new HexCoord(0, 0));
         HexCoord received = default;
         map.HeroMoved += c => received = c;
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
+        map.CommitHeroMove(new HexCoord(1, 0));
         Assert.Equal(new HexCoord(1, 0), received);
-    }
-
-    [Fact]
-    public void CommitHeroMove_EnablesUndo() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        Assert.True(map.CanUndoMove);
-    }
-
-    [Fact]
-    public void UndoLastMove_RestoresPreviousPosition() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        map.UndoLastMove();
-        Assert.Equal(new HexCoord(0, 0), map.HeroPosition);
-    }
-
-    [Fact]
-    public void UndoLastMove_ReturnsCorrectCostRefund() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 3);
-        var result = map.UndoLastMove();
-        Assert.NotNull(result);
-        Assert.Equal(3, result!.Value.CostRefund);
-    }
-
-    [Fact]
-    public void UndoLastMove_FiresHeroMoved() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        HexCoord received = default;
-        map.HeroMoved += c => received = c;
-        map.UndoLastMove();
-        Assert.Equal(new HexCoord(0, 0), received);
-    }
-
-    [Fact]
-    public void UndoLastMove_WhenNothingToUndo_ReturnsNull() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        Assert.Null(map.UndoLastMove());
-    }
-
-    [Fact]
-    public void UndoLastMove_MultiHop_UndoesInReverseOrder() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        map.CommitHeroMove(new HexCoord(1, 1), costPaid: 3);
-        map.UndoLastMove();
-        Assert.Equal(new HexCoord(1, 0), map.HeroPosition);
-        map.UndoLastMove();
-        Assert.Equal(new HexCoord(0, 0), map.HeroPosition);
-        Assert.False(map.CanUndoMove);
-    }
-
-    [Fact]
-    public void ClearMovePath_DisablesUndo() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        map.ClearMovePath();
-        Assert.False(map.CanUndoMove);
-        Assert.Null(map.UndoLastMove());
     }
 
     [Fact]
@@ -199,18 +132,6 @@ public class WorldMapTest {
         map.TileRevealed += t => received = t;
         map.RevealTile(tile);
         Assert.Same(tile, received);
-    }
-
-    [Fact]
-    public void RevealTile_ClearsMovePath() {
-        var map = new WorldMap(new HexCoord(0, 0));
-        map.PlaceTile(RevealedTile(new HexCoord(0, 0)));
-        map.CommitHeroMove(new HexCoord(1, 0), costPaid: 2);
-        Assert.True(map.CanUndoMove);
-        var tile = UnrevealedTile(new HexCoord(5, 0));
-        map.PlaceTile(tile);
-        map.RevealTile(tile);
-        Assert.False(map.CanUndoMove);
     }
 
     [Fact]

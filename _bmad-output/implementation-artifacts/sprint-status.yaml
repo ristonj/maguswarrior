@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-19"  # story 3-0 reviewed + closed; 3-0b queued
+last_updated: "2026-06-19"  # story 3-0b done; 187 tests green
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -84,7 +84,7 @@ development_status:
   # tested, group-aware UndoController (from 3-0 code review). Create + complete
   # before 3-1 — combat introduces the triggered effects that need group undo.
   # Run: /gds-create-story 3-0b-unify-undo-controller
-  3-0b-unify-undo-controller: backlog
+  3-0b-unify-undo-controller: done
   3-1-see-current-combat-phase: backlog
   3-2-use-ranged-siege-attack-in-phase-1: backlog
   3-3-block-incoming-damage: backlog

@@ -32,6 +32,7 @@ public class GameState {
         new ReadOnlyDictionary<AttackElement, int>(_blockPool);
     public IReadOnlyList<CardDefinition> Cards { get; private set; }
     public GameEventLog EventLog { get; } = new();
+    public UndoController UndoController { get; } = new();
 
     private Dictionary<(EffectType Distance, AttackElement Element), int> _attackPool = new();
     private Dictionary<AttackElement, int> _blockPool = new();
@@ -75,6 +76,7 @@ public class GameState {
     public void TripUndoGate() {
         LastGateSnapshot = TakeSnapshot();
         EventLog.Clear();
+        UndoController.Clear();
         UndoGateCrossed?.Invoke();
 #if GODOT
         Log.Debug("[Core]", "Undo gate crossed — snapshot written, event log cleared");
@@ -96,12 +98,18 @@ public class GameState {
         IsDay);
 
     public void RestoreSnapshot(GameStateSnapshot snapshot) {
+        var dayChanged = IsDay != snapshot.IsDay;
         CurrentPhase = snapshot.CurrentPhase;
         MovePointsThisTurn = snapshot.MovePointsThisTurn;
         InfluencePointsThisTurn = snapshot.InfluencePointsThisTurn;
         _attackPool = new Dictionary<(EffectType, AttackElement), int>(snapshot.AttackPool);
         _blockPool = new Dictionary<AttackElement, int>(snapshot.BlockPool);
         IsDay = snapshot.IsDay;
+        // RestoreSnapshot is a mutator like the additive ones above — it MUST fire the same
+        // notifications, or observers (StagingAreaView subscribes only to ResourcesChanged)
+        // stay stale after an undo. See LOCKSTEP note: event-firing parity, not just field parity.
+        ResourcesChanged?.Invoke();
+        if (dayChanged) DayNightChanged?.Invoke();
     }
 
     private static IReadOnlyList<CardDefinition> LoadCardsOrThrow() {

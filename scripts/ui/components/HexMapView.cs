@@ -83,17 +83,19 @@ public partial class HexMapView : Node2D {
     private void HandleHexTap(Vector2 localPos) {
         var coord = PixelToHex(localPos);
 
-        // Branch 1: hero's current hex → undo last move
+        // Branch 1: hero's current hex → undo last move via UndoController
         if (coord == _map.HeroPosition) {
-            if (!_map.CanUndoMove) return;
-            var result = _map.UndoLastMove();
-            if (result is { } r) {
+            if (!_state.UndoController.CanUndoHeroMove) return;
+            var move = _state.UndoController.PopHeroMove();
+            if (move is { } m) {
                 // Clear preview BEFORE AddMovePoints fires ResourcesChanged → RefreshPreview
                 _previewedHex = null;
                 _previewIsExplore = false;
                 _previewLabel.Visible = false;
-                _state.AddMovePoints(r.CostRefund);
-                Log.Debug("[Input]", $"Move undone: back to {r.Previous.Q},{r.Previous.R} refund={r.CostRefund} remaining={_state.MovePointsThisTurn}");
+                // SetHeroPosition fires HeroMoved → marker updates automatically
+                _map.SetHeroPosition(m.Previous);
+                _state.AddMovePoints(m.CostRefund);
+                Log.Debug("[Input]", $"Move undone: back to {m.Previous.Q},{m.Previous.R} refund={m.CostRefund} remaining={_state.MovePointsThisTurn}");
             }
             return;
         }
@@ -111,8 +113,10 @@ public partial class HexMapView : Node2D {
                 _previewedHex = null;
                 _previewIsExplore = false;
                 _previewLabel.Visible = false;
+                var prevPos = _map.HeroPosition;  // capture BEFORE CommitHeroMove changes it
                 _state.SpendMovePoints(cost.Value);
-                _map.CommitHeroMove(coord, cost.Value);
+                _map.CommitHeroMove(coord);
+                _state.UndoController.PushHeroMove(prevPos, cost.Value);
                 Log.Debug("[Input]", $"Hero moved to {coord.Q},{coord.R} cost={cost} remaining={_state.MovePointsThisTurn}");
             } else {
                 _previewedHex = coord;

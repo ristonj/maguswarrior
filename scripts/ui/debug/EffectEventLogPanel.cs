@@ -1,12 +1,10 @@
 using Godot;
 using MagusWarrior.Core;
-using MagusWarrior.Map;
 
 namespace MagusWarrior.UI;
 
 public partial class EffectEventLogPanel : Panel {
     private GameState? _state;
-    private WorldMap? _map;
     private VBoxContainer _entriesContainer = null!;
 
     public override void _Ready() {
@@ -46,9 +44,8 @@ public partial class EffectEventLogPanel : Panel {
         actionBar.AddChild(closeButton);
     }
 
-    public void Initialize(GameState state, WorldMap map) {
+    public void Initialize(GameState state) {
         _state = state;
-        _map = map;
     }
 
     public void RefreshDisplay() {
@@ -72,14 +69,11 @@ public partial class EffectEventLogPanel : Panel {
     private void OnUndoLastPressed() {
         if (_state == null) return;
         GameDebug.UndoLastEvent(_state);
-        // A card-effect undo (RestoreSnapshot) rolls back MovePointsThisTurn but NOT the
-        // movement undo stack (WorldMap._movePath is outside GameStateSnapshot — separate
-        // mechanisms, full coordination deferred to TurnManager in Epic 7). Without this,
-        // points already refunded by the snapshot restore could be refunded a SECOND time by
-        // a later UndoLastMove → move-point duplication. Dropping the path here closes that
-        // double-refund. Residual: the hero stays on the moved-to hex (position is not part
-        // of the snapshot) — a benign desync, not a resource exploit.
-        _map?.ClearMovePath();
+        // Debug surgery on EventLog (PopLast + RestoreSnapshot) bypasses UndoController,
+        // so its card-play/hero-move stack is now stale relative to EventLog. A later
+        // player Undo would double-refund off that stale stack. Collapse to a known-clean
+        // state — the structural equivalent of the old _map.ClearMovePath() defense.
+        _state.UndoController.Clear();
         RefreshDisplay();
     }
 }

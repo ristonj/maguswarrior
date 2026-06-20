@@ -94,6 +94,41 @@ public class GameStateTest {
     }
 
     [Fact]
+    public void RestoreSnapshot_FiresResourcesChanged() {
+        // RestoreSnapshot is the undo path; observers like StagingAreaView refresh only on
+        // ResourcesChanged, so the restore MUST fire it or the HUD goes stale after undo.
+        var state = EmptyState();
+        var snap = state.TakeSnapshot();
+        state.AddMovePoints(3);
+        bool fired = false;
+        state.ResourcesChanged += () => fired = true;
+        state.RestoreSnapshot(snap);
+        Assert.True(fired);
+    }
+
+    [Fact]
+    public void RestoreSnapshot_WhenIsDayChanges_FiresDayNightChanged() {
+        var state = EmptyState();
+        var snap = state.TakeSnapshot();  // IsDay = true
+        state.SetIsDay(false);
+        bool fired = false;
+        state.DayNightChanged += () => fired = true;
+        state.RestoreSnapshot(snap);  // restores IsDay = true (a change from false)
+        Assert.True(fired);
+    }
+
+    [Fact]
+    public void RestoreSnapshot_WhenIsDayUnchanged_DoesNotFireDayNightChanged() {
+        var state = EmptyState();
+        var snap = state.TakeSnapshot();  // IsDay = true
+        state.AddMovePoints(2);           // mutate something other than IsDay
+        bool fired = false;
+        state.DayNightChanged += () => fired = true;
+        state.RestoreSnapshot(snap);  // IsDay stays true — no day/night transition
+        Assert.False(fired);
+    }
+
+    [Fact]
     public void SpendMovePoints_DecrementsCorrectly() {
         var state = EmptyState();
         state.AddMovePoints(5);

@@ -41,7 +41,6 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _effectScheduler = new EffectScheduler();
         _inputLock       = new InputLock();
         _worldMap        = BuildStartingMap();
-        _state.UndoGateCrossed += _worldMap.ClearMovePath;
 
         _tileStock = new TileStock(FirstReconCountrysideTiles, FirstReconCoreTiles);
         _worldMap.TileRevealed += tile => _tileStock.RecordReveal(tile.TileType);
@@ -50,7 +49,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _effectInspector = new EffectEventLogPanel();
         _effectInspector.Name = "EffectEventLogPanel";
         AddChild(_effectInspector);
-        _effectInspector.Initialize(_state, _worldMap);
+        _effectInspector.Initialize(_state);
 
         _debugToggleArea = new Button();
         _debugToggleArea.Name = "DebugToggleArea";
@@ -100,7 +99,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         testHand.AddRange(others);
         testHand.Add(WoundCard.Create());
         _deckManager.SetHand(testHand);
-        handView.Initialize(_deckManager, _state, _effectScheduler, _inputLock);
+        handView.Initialize(_deckManager, _state, _effectScheduler, _inputLock, _worldMap);
 
         _restView = new RestView();
         _restView.Name = "RestView";
