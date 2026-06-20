@@ -111,6 +111,32 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         AddChild(_improvView);
         _improvView.Initialize(_deckManager, _state, _effectScheduler, _inputLock);
         handView.SetImprovisationView(_improvView);
+
+#if DEBUG
+        // Dev combat trigger — remove/replace when CombatResolver.ResolveCombat is wired in 3-2
+        var combatRow = new HBoxContainer();
+        combatRow.AddThemeConstantOverride("separation", 10);
+        combatRow.Position = new Vector2(10f, 540f);
+        AddChild(combatRow);
+
+        var startCombatBtn = new Button();
+        startCombatBtn.Text = "Combat: Start";
+        startCombatBtn.AddThemeFontSizeOverride("font_size", 24);
+        startCombatBtn.Pressed += () => {
+            _state.SetPhase(GamePhase.CombatRanged);
+            Log.Debug("[UI]", "Dev: entered CombatRanged phase");
+        };
+        combatRow.AddChild(startCombatBtn);
+
+        var leaveCombatBtn = new Button();
+        leaveCombatBtn.Text = "Combat: Leave";
+        leaveCombatBtn.AddThemeFontSizeOverride("font_size", 24);
+        leaveCombatBtn.Pressed += () => {
+            _state.SetPhase(GamePhase.Movement);
+            Log.Debug("[UI]", "Dev: returned to Movement phase");
+        };
+        combatRow.AddChild(leaveCombatBtn);
+#endif
     }
 
     private static WorldMap BuildStartingMap() {

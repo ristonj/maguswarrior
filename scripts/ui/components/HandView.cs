@@ -83,6 +83,7 @@ public partial class HandView : Control {
         _stagingAreaView.UndoRequested += OnUndoRequested;
         _stagingAreaView.Initialize(state);
         deck.HandChanged += RefreshHand;
+        state.PhaseChanged += RefreshHand;
         RefreshHand();
     }
 

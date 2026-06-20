@@ -14,6 +14,7 @@ public class GameState {
     public event Action? ResourcesChanged;
     public event Action? DayNightChanged;
     public event Action? UndoGateCrossed;
+    public event Action? PhaseChanged;
     public GameStateSnapshot? LastGateSnapshot { get; private set; }
 
     public GamePhase CurrentPhase { get; private set; }
@@ -46,7 +47,11 @@ public class GameState {
     // SetPhase is the explicit phase-mutation API for the turn loop (TurnManager, RestView).
     // CurrentPhase is already in GameStateSnapshot, so phase transitions are captured by
     // TakeSnapshot/RestoreSnapshot without any additional snapshot changes.
-    public void SetPhase(GamePhase phase) { CurrentPhase = phase; }
+    public void SetPhase(GamePhase phase) {
+        if (CurrentPhase == phase) return;
+        CurrentPhase = phase;
+        PhaseChanged?.Invoke();
+    }
 
     public void SetIsDay(bool isDay) {
         if (IsDay == isDay) return;
@@ -98,7 +103,8 @@ public class GameState {
         IsDay);
 
     public void RestoreSnapshot(GameStateSnapshot snapshot) {
-        var dayChanged = IsDay != snapshot.IsDay;
+        var dayChanged   = IsDay != snapshot.IsDay;
+        var phaseChanged = CurrentPhase != snapshot.CurrentPhase;
         CurrentPhase = snapshot.CurrentPhase;
         MovePointsThisTurn = snapshot.MovePointsThisTurn;
         InfluencePointsThisTurn = snapshot.InfluencePointsThisTurn;
@@ -109,7 +115,8 @@ public class GameState {
         // notifications, or observers (StagingAreaView subscribes only to ResourcesChanged)
         // stay stale after an undo. See LOCKSTEP note: event-firing parity, not just field parity.
         ResourcesChanged?.Invoke();
-        if (dayChanged) DayNightChanged?.Invoke();
+        if (dayChanged)   DayNightChanged?.Invoke();
+        if (phaseChanged) PhaseChanged?.Invoke();
     }
 
     private static IReadOnlyList<CardDefinition> LoadCardsOrThrow() {

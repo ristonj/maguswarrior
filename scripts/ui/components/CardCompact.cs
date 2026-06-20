@@ -1,5 +1,6 @@
 using Godot;
 using MagusWarrior.Cards;
+using MagusWarrior.Cards.Effects;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 
@@ -70,8 +71,12 @@ public partial class CardCompact : Control {
     }
 
     private static bool IsCardPlayable(CardDefinition card, GamePhase phase) {
-        // 1b-1: return true for all cards — greying of native-play happens inside CardExpanded.
-        // Wounds never reach here — they return early in Initialize.
-        return true;
+        if (card.Unpowered != null && PhaseGate.IsLegal(card.Unpowered.EffectType, phase))
+            return true;
+        if (card.Powered != null && PhaseGate.IsLegal(card.Powered.EffectType, phase))
+            return true;
+        foreach (var alt in card.AlternateEffectTypes)
+            if (PhaseGate.IsLegal(alt, phase)) return true;
+        return false;
     }
 }

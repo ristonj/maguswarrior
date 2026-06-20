@@ -188,4 +188,33 @@ public class GameStateTest {
         state.AddFame(1);
         Assert.True(fired);
     }
+
+    [Fact]
+    public void SetPhase_FiresPhaseChangedEvent() {
+        var state = EmptyState();
+        bool fired = false;
+        state.PhaseChanged += () => fired = true;
+        state.SetPhase(GamePhase.CombatRanged);
+        Assert.True(fired);
+    }
+
+    [Fact]
+    public void SetPhase_NoOp_WhenSamePhase_DoesNotFirePhaseChanged() {
+        var state = EmptyState();
+        int count = 0;
+        state.PhaseChanged += () => count++;
+        state.SetPhase(GamePhase.Movement);  // same as default
+        Assert.Equal(0, count);
+    }
+
+    [Fact]
+    public void RestoreSnapshot_FiresPhaseChangedWhenPhaseChanges() {
+        var state = EmptyState();
+        var snap = state.TakeSnapshot();     // captures Movement
+        state.SetPhase(GamePhase.CombatRanged);
+        int count = 0;
+        state.PhaseChanged += () => count++;
+        state.RestoreSnapshot(snap);         // restores to Movement
+        Assert.Equal(1, count);
+    }
 }

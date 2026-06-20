@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-19"  # story 3-0b done; 187 tests green
+last_updated: "2026-06-20"  # story 3-1 done; Opus code review passed; 202 tests green
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -85,7 +85,7 @@ development_status:
   # before 3-1 — combat introduces the triggered effects that need group undo.
   # Run: /gds-create-story 3-0b-unify-undo-controller
   3-0b-unify-undo-controller: done
-  3-1-see-current-combat-phase: backlog
+  3-1-see-current-combat-phase: done
   3-2-use-ranged-siege-attack-in-phase-1: backlog
   3-3-block-incoming-damage: backlog
   3-4-assign-damage-to-unit: backlog

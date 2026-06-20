@@ -37,5 +37,9 @@
     <Compile Include="../scripts/hex/**/*.cs" />
     <!-- scripts/map: fully pure C# -->
     <Compile Include="../scripts/map/**/*.cs" />
+    <!-- scripts/combat: pure C# — glob picks up all future combat files -->
+    <Compile Include="../scripts/combat/**/*.cs" />
+    <!-- scripts/broker: pure C# — glob picks up all future broker files -->
+    <Compile Include="../scripts/broker/**/*.cs" />
   </ItemGroup>
 </Project>
