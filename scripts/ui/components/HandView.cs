@@ -178,16 +178,22 @@ public partial class HandView : Control {
             Log.Debug("[UI]", "OnUndoRequested: nothing to undo");
             return;
         }
+
+        // Recall the cost card FIRST: it is the only step that can fail. If the cost card is
+        // not in the discard pile, abort before mutating anything else — otherwise resources
+        // would roll back while the cost card stays lost (partial rollback).
+        if (ev.CostCardId != null) {
+            var recall = _deck.RecallFromDiscard(ev.CostCardId);
+            if (!recall.IsSuccess) {
+                Log.Warn("[UI]", $"OnUndoRequested: cost card '{ev.CostCardId}' not in discard — aborting undo ({recall.Error})");
+                return;
+            }
+        }
+
         _state.EventLog.PopLast();
 
         var card = _state.Cards.FirstOrDefault(c => c.Id == ev.SourceCardId);
         if (card != null) _deck.ReturnCard(card);
-
-        if (ev.CostCardId != null) {
-            var recall = _deck.RecallFromDiscard(ev.CostCardId);
-            if (!recall.IsSuccess)
-                Log.Warn("[UI]", $"OnUndoRequested: cost card '{ev.CostCardId}' not in discard — {recall.Error}");
-        }
 
         _state.RestoreSnapshot(ev.StateBefore);
         Log.Debug("[UI]", $"Undo play: {ev.SourceCardId}/{ev.EffectType} reversed" +

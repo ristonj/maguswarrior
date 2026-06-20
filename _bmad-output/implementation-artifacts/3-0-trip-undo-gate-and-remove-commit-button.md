@@ -2,7 +2,7 @@
 
 **Epic:** 3 — Combat System (infrastructure prerequisite)
 **Story ID:** 3-0
-**Status:** ready-for-dev
+**Status:** done
 **Created:** 2026-06-19
 **Dependencies:** 2-0 (InputLock), 2-3 (WorldMap move path), 2-4 (RevealTile/ClearMovePath), 2-5 (StagingAreaView display)
 **Reviewer model:** Use Opus 4.8 for code review (per project feedback convention)
@@ -592,3 +592,34 @@ pattern as `OnPlaySidewaysRequested`. Remove from `deferred-work.md` when story 
   - [ ] AC7: Improvisation → select resource → resolves immediately, view closes
   - [ ] AC10: Move undo via hex tap still works
   - [ ] AC11: Move undo blocked after tile reveal
+
+---
+
+## Review Findings
+
+Opus 4.8 adversarial review (Blind Hunter + Edge Case Hunter + Acceptance Auditor), 2026-06-19.
+Build clean, 184 tests green, all 11 ACs implemented. Findings below.
+
+### Decisions needed
+
+**RESOLVED 2026-06-19 (John): all three are handed to a dedicated successor story — `3-0b-unify-undo-controller` — to be created via create-story. They converge into one redesign: a tested pure-C# `UndoController` that owns a single ordered, group-aware undo stack for both card plays and hero moves. 3-0's own spec/ACs are met; this is net-new scope. Full context lives here + in deferred-work.md.**
+
+- [x] [Review][Decision→Story 3-0b] **Undo of a multi-effect play only reverses the LAST effect** (blind+edge, High, latent) — chose (a) play-group grouping. `EffectScheduler.ResolveAll` appends one `EffectFiredEvent` per dequeued effect, including every `result.Triggered` child. One Play that yields triggered effects produces N log entries, but `OnUndoRequested` does `PopLast()` once — half-rollback. No effect emits `Triggered` today, but Epic 3 combat (attack/wound chains) is the source, so this must land before 3-1. [scripts/cards/effects/EffectScheduler.cs:20, scripts/ui/components/HandView.cs OnUndoRequested]
+- [x] [Review][Decision→Story 3-0b] **Card-undo after a hero move desyncs move points from board position** (edge, Medium, reachable today) — chose (b) unify moves and card plays onto one ordered undo stack. Play Move, walk (spends points, hero relocates, no log entry), tap Undo → points rewind + card returns but hero stays moved = free move. Hero-move undo (today `WorldMap.UndoLastMove` + `HexMapView` Branch 1) reroutes through the new `UndoController`. [scripts/ui/components/HexMapView.cs:114-141, scripts/ui/components/HandView.cs OnUndoRequested]
+- [x] [Review][Decision→Story 3-0b] **Core undo logic (AC3/AC4/AC5) has zero automated coverage** (auditor) — chose (a) extract undo into a pure-C# `UndoController` seam and unit-test it (red-first). Also makes the grouping above testable. [scripts/ui/components/HandView.cs OnUndoRequested]
+
+### Patches
+
+- [x] [Review][Patch] **Failed `RecallFromDiscard` still proceeds with `RestoreSnapshot` (partial rollback, cost card lost)** [scripts/ui/components/HandView.cs OnUndoRequested] — FIXED 2026-06-19: reordered `OnUndoRequested` to recall the cost card first; a recall failure now aborts the undo before `PopLast`/`ReturnCard`/`RestoreSnapshot`, so nothing is mutated. Build clean, 184 tests green.
+
+### Deferred (pre-existing or per-spec; logged to deferred-work.md)
+
+- [x] [Review][Defer] **`OnUndoRequested` checks `_lock.IsLocked` but never acquires it** [scripts/ui/components/HandView.cs] — per-spec (synchronous handler); same class as deferred D1/D2, only a race once awaitable effects land (UIBroker). Deferred.
+- [x] [Review][Defer] **`StagingManager` is now dead production code with a live test** [scripts/deck/StagingManager.cs, tests/unit/StagingManagerTest.cs] — spec deliberately retained it for possible combat reuse; revisit when Epic 3 confirms. Deferred.
+- [x] [Review][Defer] **Undo button always enabled, no disabled-state feedback** [scripts/ui/components/StagingAreaView.cs] — per-spec (handler no-ops on empty log); minor UX. Could disable when `EventLog.Events` is empty. Deferred.
+- [x] [Review][Defer] **Undo recovers cards by Id, not by played instance** [scripts/ui/components/HandView.cs, scripts/deck/DeckManager.cs] — harmless while `CardDefinition` is value-by-Id; recalls an arbitrary match if duplicate Ids sit in discard, and returns null for cards not in the master list (e.g. Wounds, currently unplayable). Store the actual played instance in the event when hand-state hardening is tackled. Deferred.
+- [x] [Review][Defer] **`UndoGateCrossed` has no unsubscribe on teardown** [scripts/ui/screens/PlaceholderMainMenu.cs] — single bootstrap today; latent handler leak once scene reload exists. Deferred.
+
+### Dismissed (4)
+
+Duplicate-card-in-discard after undo (false premise — `PlayCard` never adds to the discard pile); stale `_discardedCard` after early return (cleared by `Activate` on every entry); `LastGateSnapshot` captures post-spend state (per-spec, only consumer is `ClearMovePath`, save-checkpoint use deferred to 3-6); missing `_discardedCard` non-null assert (UI flow enforces discard-before-resource).
