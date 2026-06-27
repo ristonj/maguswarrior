@@ -1,6 +1,6 @@
 # Story 3.2: Use Ranged/Siege Attack in Phase 1
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -46,42 +46,51 @@ The stub method changes signature from `Task` to `Task<IReadOnlyList<RangedAttac
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — `EnemyTokenInstance.EffectiveArmor`** (AC: 6)
-  - [ ] Write red test: `EffectiveArmor_IsBaseArmorPlusModifier` and `EffectiveArmor_FloorsAtOne` (e.g. base 2, modifier −5 → 1).
-  - [ ] Add `public int EffectiveArmor => System.Math.Max(1, Definition.Armor + ArmorModifier);` to `scripts/combat/EnemyToken.cs`.
+- [x] **Task 1 — `EnemyTokenInstance.EffectiveArmor`** (AC: 6)
+  - [x] Write red test: `EffectiveArmor_IsBaseArmorPlusModifier` and `EffectiveArmor_FloorsAtOne` (e.g. base 2, modifier −5 → 1).
+  - [x] Add `public int EffectiveArmor => System.Math.Max(1, Definition.Armor + ArmorModifier);` to `scripts/combat/EnemyToken.cs`.
 
-- [ ] **Task 2 — `RangedAttackDeclaration` + broker signature** (AC: 7)
-  - [ ] Add `public record RangedAttackDeclaration(IReadOnlyList<AttackContribution> Contributions, IReadOnlyList<EnemyTokenInstance> Targets);` to `scripts/combat/CombatContributions.cs`.
-  - [ ] Change `UIBroker.PromptHeroRangedAttacks` to `public Task<IReadOnlyList<RangedAttackDeclaration>> PromptHeroRangedAttacks(CombatState combat) => Task.FromResult<IReadOnlyList<RangedAttackDeclaration>>(new List<RangedAttackDeclaration>());` (stub still resolves immediately, now with an empty-pass default).
-  - [ ] In `CombatResolverTest`, add a test double broker (subclass `UIBroker`, override `PromptHeroRangedAttacks` to return scripted declarations).
+- [x] **Task 2 — `RangedAttackDeclaration` + broker signature** (AC: 7)
+  - [x] Add `public record RangedAttackDeclaration(IReadOnlyList<AttackContribution> Contributions, IReadOnlyList<EnemyTokenInstance> Targets);` to `scripts/combat/CombatContributions.cs`.
+  - [x] Change `UIBroker.PromptHeroRangedAttacks` to `public Task<IReadOnlyList<RangedAttackDeclaration>> PromptHeroRangedAttacks(CombatState combat) => Task.FromResult<IReadOnlyList<RangedAttackDeclaration>>(new List<RangedAttackDeclaration>());` (stub still resolves immediately, now with an empty-pass default).
+  - [x] In `CombatResolverTest`, add a test double broker (subclass `UIBroker`, override `PromptHeroRangedAttacks` to return scripted declarations).
 
-- [ ] **Task 3 — `ComputeEffectiveAttack` modifier chain** (AC: 5)
-  - [ ] Red test: empty modifiers returns input value; a registered `PhysicalAttackDoublerModifier`-style stub doubles a Physical contribution.
-  - [ ] Implement `int ComputeEffectiveAttack(AttackContribution contrib, CombatState combat)` applying `combat.AttackModifiers` in order (per LLD §8.5).
+- [x] **Task 3 — `ComputeEffectiveAttack` modifier chain** (AC: 5)
+  - [x] Red test: empty modifiers returns input value; a registered `PhysicalAttackDoublerModifier`-style stub doubles a Physical contribution.
+  - [x] Implement `int ComputeEffectiveAttack(AttackContribution contrib, CombatState combat)` applying `combat.AttackModifiers` in order (per LLD §8.5).
 
-- [ ] **Task 4 — `FortificationLevel` + delivery gating** (AC: 4)
-  - [ ] Red tests: unfortified site + plain enemy → ranged & siege allowed; fortified site OR Fortified enemy (level 1) → ranged blocked, siege allowed; site AND Fortified enemy (level 2) → both blocked.
-  - [ ] Implement `int FortificationLevel(EnemyTokenInstance enemy, CombatState combat)`.
-  - [ ] Implement a per-declaration delivery filter using the **max** fortification level across targets.
+- [x] **Task 4 — `FortificationLevel` + delivery gating** (AC: 4)
+  - [x] Red tests: unfortified site + plain enemy → ranged & siege allowed; fortified site OR Fortified enemy (level 1) → ranged blocked, siege allowed; site AND Fortified enemy (level 2) → both blocked.
+  - [x] Implement `int FortificationLevel(EnemyTokenInstance enemy, CombatState combat)`.
+  - [x] Implement a per-declaration delivery filter using the **max** fortification level across targets.
 
-- [ ] **Task 5 — `ResolveRangedPhase` resolution core** (AC: 1, 2, 3)
-  - [ ] Red tests (single target): exact-armor kill; over-armor kill; under-armor no-op (enemy stays in `ActiveEnemies`).
-  - [ ] Red tests (combined target): total ≥ summed armor defeats all; below defeats none; union-resistance halves the resisted type (e.g. Physical 6 vs two enemies armor 3+3=6 where one resists Physical → effective 3 < 6 → no defeat).
-  - [ ] Red test: mixed-type union (Physical 4 + Fire 4 vs enemy resisting Physical only → floor(4/2)+4 = 6).
-  - [ ] Red test: hero passes (empty declarations) → no enemies defeated.
-  - [ ] Implement `ResolveRangedPhase`: `SetPhase(CombatRanged)` → `FirePhaseCallbacks` → `var decls = await _broker.PromptHeroRangedAttacks(combat)` → for each declaration: append contributions to `AttackPool`, filter by fortification, group surviving contributions by `AttackType`, apply `ComputeEffectiveAttack`, apply union-resistance halving per type, sum, compare to summed `EffectiveArmor`, on success move all targets `ActiveEnemies → DefeatedEnemies`.
+- [x] **Task 5 — `ResolveRangedPhase` resolution core** (AC: 1, 2, 3)
+  - [x] Red tests (single target): exact-armor kill; over-armor kill; under-armor no-op (enemy stays in `ActiveEnemies`).
+  - [x] Red tests (combined target): total ≥ summed armor defeats all; below defeats none; union-resistance halves the resisted type (e.g. Physical 6 vs two enemies armor 3+3=6 where one resists Physical → effective 3 < 6 → no defeat).
+  - [x] Red test: mixed-type union (Physical 4 + Fire 4 vs enemy resisting Physical only → floor(4/2)+4 = 6).
+  - [x] Red test: hero passes (empty declarations) → no enemies defeated.
+  - [x] Implement `ResolveRangedPhase`: `SetPhase(CombatRanged)` → `FirePhaseCallbacks` → `var decls = await _broker.PromptHeroRangedAttacks(combat)` → for each declaration: append contributions to `AttackPool`, filter by fortification, group surviving contributions by `AttackType`, apply `ComputeEffectiveAttack`, apply union-resistance halving per type, sum, compare to summed `EffectiveArmor`, on success move all targets `ActiveEnemies → DefeatedEnemies`.
 
-- [ ] **Task 6 — Wire `ResolveCombat` + harden `ResolveStartOfCombat`** (AC: 1, 8)
-  - [ ] Add `combat.ActiveEnemies.Clear();` before `AddRange` in `ResolveStartOfCombat`.
-  - [ ] Update `ResolveCombat` to: `await ResolveStartOfCombat(combat); if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat); return BuildResult(combat);`
-  - [ ] Confirm existing 3-1 `CombatResolverTest` cases still pass unchanged.
+- [x] **Task 6 — Wire `ResolveCombat` + harden `ResolveStartOfCombat`** (AC: 1, 8)
+  - [x] Add `combat.ActiveEnemies.Clear();` before `AddRange` in `ResolveStartOfCombat`.
+  - [x] Update `ResolveCombat` to: `await ResolveStartOfCombat(combat); if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat); return BuildResult(combat);`
+  - [x] Confirm existing 3-1 `CombatResolverTest` cases still pass unchanged.
 
-- [ ] **Task 7 — `AttackSiege` BuildEffect fix** (AC: 9)
-  - [ ] Add the `EffectType.AttackSiege` arm to `HandView.BuildEffect`. Do not touch the sideways path (rulebook p9: sideways cannot produce Ranged/Siege).
+- [x] **Task 7 — `AttackSiege` BuildEffect fix** (AC: 9)
+  - [x] Add the `EffectType.AttackSiege` arm to `HandView.BuildEffect`. Do not touch the sideways path (rulebook p9: sideways cannot produce Ranged/Siege).
 
-- [ ] **Task 8 — Full regression** (AC: 10)
-  - [ ] `dotnet test tests/maguswarrior.Tests.csproj` → green. Fix fallout.
-  - [ ] Update `deferred-work.md`: mark #94 resolved; update #194 to note re-entry `Clear()` landed (the `ToList()` snapshot and stub `HeroWon` notes remain open for later phases).
+- [x] **Task 8 — Full regression** (AC: 10)
+  - [x] `dotnet test tests/maguswarrior.Tests.csproj` → green. Fix fallout.
+  - [x] Update `deferred-work.md`: mark #94 resolved; update #194 to note re-entry `Clear()` landed (the `ToList()` snapshot and stub `HeroWon` notes remain open for later phases).
+
+### Review Findings
+
+_Code review 2026-06-26 (Blind Hunter + Edge Case Hunter + Acceptance Auditor). All 10 ACs confirmed satisfied. 2 defensive-hardening patches, 2 deferred, 8 dismissed (spec-mandated behavior or unreachable malformed-input)._
+
+- [x] [Review][Patch] Empty `Targets` list crashes the ranged phase via `Enumerable.Max` [scripts/combat/CombatResolver.cs:~57] — `decl.Targets.Max(...)` throws `InvalidOperationException` on an empty target list, hard-aborting `ResolveRangedPhase`/`ResolveCombat`. Violates the spec's "resolver is defensive, no throw" principle. Guard: skip declarations with no targets. (blind+edge, High) — FIXED: `if (decl.Targets.Count == 0) continue;` after AttackPool append; covered by `ResolveRangedPhase_EmptyTargets_SkipsDeclarationWithoutThrowing`.
+- [x] [Review][Patch] Defeat loop adds to `DefeatedEnemies` without confirming the target was active [scripts/combat/CombatResolver.cs:~73-76] — `ActiveEnemies.Remove(target)` returns false silently when the target is already gone (same enemy across two declarations, or a stale/foreign reference), but `DefeatedEnemies.Add(target)` runs unconditionally → duplicate/phantom entries in `DefeatedEnemies` (inflates downstream Fame). Fix: `if (combat.ActiveEnemies.Remove(target)) combat.DefeatedEnemies.Add(target);`. (blind+edge, High/Med) — FIXED: guard applied; covered by `ResolveRangedPhase_SameEnemyDefeatedTwice_NoPhantomDefeatEntry`.
+- [x] [Review][Defer] Type/Delivery-changing attack modifiers not reflected in fortification filter, type-grouping, or resistance keys [scripts/combat/CombatResolver.cs:~59-68] — deferred, no such modifier exists today; element-conversion modeling is a future design decision.
+- [x] [Review][Defer] `AttackPool` carries raw (pre-modifier) contributions including fortification-blocked ones [scripts/combat/CombatResolver.cs:~52-53] — deferred; appending all raw contributions is spec-mandated by AC7 ("for record/consistency"), nothing consumes `AttackPool` yet. Revisit the raw-vs-effective semantics when a later phase reads the pool.
 
 ## Dev Notes
 
@@ -159,9 +168,29 @@ The stub method changes signature from `Task` to `Task<IReadOnlyList<RangedAttac
 ## Dev Agent Record
 
 ### Agent Model Used
+Claude Sonnet 4.6
 
 ### Debug Log References
+- `Log.cs` excluded from test project (uses Godot GD.Print) — removed `Log.Debug` calls from `ResolveRangedPhase`; all other combat scripts follow the same pattern, so this is correct behavior.
+- Existing 3-1 test `ResolveStartOfCombat_TransitionsToCombatRangedAfterPhase0` updated to `ResolveStartOfCombat_LeavesPhaseAtCombatStart` — the phase-handoff to `CombatRanged` moved from `ResolveStartOfCombat` into `ResolveRangedPhase` as intended by 3-2's scope.
 
 ### Completion Notes List
+- **AC6**: `EnemyTokenInstance.EffectiveArmor` added with `Math.Max(1, ...)` floor; 3 tests in new `EnemyTokenTest.cs`.
+- **AC7**: `RangedAttackDeclaration` record added to `CombatContributions.cs`; `UIBroker.PromptHeroRangedAttacks` upgraded from `Task` → `Task<IReadOnlyList<RangedAttackDeclaration>>` with `virtual` so `TestBroker` in tests can override it. `TestBroker` + `MakeResolverWith` helper added to `CombatResolverTest`.
+- **AC5**: `ComputeEffectiveAttack` chains `combat.AttackModifiers` in registration order; 2 tests.
+- **AC4**: `FortificationLevel` = site(0/1) + Fortified ability(0/1); per-declaration max governs delivery filter (Ranged blocked ≥ 1, Siege blocked = 2); 4 tests.
+- **AC1/2/3**: `ResolveRangedPhase` implements the full algorithm — phase set, callbacks fired, broker awaited, contributions appended to `AttackPool`, delivery filtered, per-type union-resistance halved (floor), summed against `EffectiveArmor` threshold, all-or-nothing defeat; 13 tests covering single-target, combined, union-resistance (single and mixed type), fortification levels 0/1/2, empty-pass, phase-set assertion, and `AttackPool` population.
+- **AC8**: `ResolveStartOfCombat` now calls `Clear()` before `AddRange`; re-entry hardening test added.
+- **AC9**: `BuildEffect` `AttackSiege` arm added.
+- **AC10**: 227 tests green (202 prior + 23 story + 2 review-patch). No regressions.
+- **deferred-work.md**: item #94 marked RESOLVED; item #194 updated to note `Clear()` fix landed, remaining open items documented.
 
 ### File List
+- `scripts/combat/EnemyToken.cs` — added `EffectiveArmor` property
+- `scripts/combat/CombatContributions.cs` — added `RangedAttackDeclaration` record, added `using System.Collections.Generic`
+- `scripts/combat/CombatResolver.cs` — added `ResolveRangedPhase`, `FortificationLevel`, `ComputeEffectiveAttack`; hardened `ResolveStartOfCombat` (`Clear()`); wired `ResolveCombat`
+- `scripts/broker/UIBroker.cs` — `PromptHeroRangedAttacks` upgraded to `virtual Task<IReadOnlyList<RangedAttackDeclaration>>`
+- `scripts/ui/components/HandView.cs` — `BuildEffect` `AttackSiege` arm added
+- `tests/unit/EnemyTokenTest.cs` — new file, 3 `EffectiveArmor` tests
+- `tests/unit/CombatResolverTest.cs` — added `TestBroker`, `MakeResolverWith`, `MultiEnemyGroup`, `FortifiedSiteGroup`, `TestEnemyWithArmor` helpers; 20 new tests
+- `_bmad-output/implementation-artifacts/deferred-work.md` — items #94 resolved, #194 updated

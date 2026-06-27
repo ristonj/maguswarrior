@@ -24,6 +24,7 @@ public class EnemyTokenInstance {
     public EnemyTokenDefinition Definition   { get; }
     public int  BaseArmor       => Definition.Armor;
     public int  ArmorModifier   { get; set; } = 0;
+    public int  EffectiveArmor  => System.Math.Max(1, Definition.Armor + ArmorModifier);
     public int  AttackModifier  { get; set; } = 0;
     public bool AttackCancelled { get; set; } = false;
     public int  WoundCount      { get; private set; } = 0;

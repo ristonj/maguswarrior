@@ -234,6 +234,7 @@ public partial class HandView : Control {
             EffectType.Move         => new MoveEffect(spec.Move),
             EffectType.AttackMelee  => new AttackEffect(spec.Attack, EffectType.AttackMelee, AttackElement.Physical),
             EffectType.AttackRanged => new AttackEffect(spec.Attack, EffectType.AttackRanged, AttackElement.Physical),
+            EffectType.AttackSiege  => new AttackEffect(spec.Attack, EffectType.AttackSiege, AttackElement.Physical),
             EffectType.Block        => new BlockEffect(spec.Block, AttackElement.Physical),
             EffectType.Influence    => new InfluenceEffect(spec.Influence),
             _                       => null
