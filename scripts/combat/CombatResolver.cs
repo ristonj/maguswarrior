@@ -45,7 +45,23 @@ public class CombatResolver {
     public async Task<CombatResult> ResolveCombat(CombatState combat) {
         await ResolveStartOfCombat(combat);
         if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat);
-        return BuildResult(combat);
+        var result = BuildResult(combat);
+        TearDownCombatState(combat);
+        return result;
+    }
+
+    private void TearDownCombatState(CombatState combat) {
+        combat.AttackPool.Clear();
+        combat.BlockPool.Clear();
+        combat.DamageAssignments.Clear();
+        combat.AttackModifiers.Clear();
+        combat.PhaseCallbacks.Clear();
+        combat.ActiveInfluenceConversion = null;
+        combat.ActiveMoveConversion      = null;
+        foreach (var e in combat.Group.Enemies)
+            e.ClearCombatModifiers();
+        _state.ClearAttackAndBlockPools();
+        _state.SetPhase(GamePhase.EndOfTurn);
     }
 
     public async Task ResolveRangedPhase(CombatState combat) {

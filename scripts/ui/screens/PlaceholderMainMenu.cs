@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using MagusWarrior.Broker;
 using MagusWarrior.Cards;
 using MagusWarrior.Cards.Effects;
+using MagusWarrior.Combat;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 using MagusWarrior.Deck;
@@ -23,6 +25,11 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private TileCountView _tileCountView = null!;
     private RestView _restView = null!;
     private ImprovisationView _improvView = null!;
+    private UIBroker _broker = null!;
+    private CombatResolver _combatResolver = null!;
+    private List<EnemyTokenDefinition> _enemyDefs = null!;
+    private CombatInterstitialPanel _combatInterstitialPanel = null!;
+    private RangedTargetingPanel _rangedTargetingPanel = null!;
 
     // First Reconnaissance scenario deck sizes (V-shape: 8 countryside + 3 core).
     // Hardcoded for now; real per-scenario configuration lands in Epic 7.
@@ -112,32 +119,81 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _improvView.Initialize(_deckManager, _state, _effectScheduler, _inputLock);
         handView.SetImprovisationView(_improvView);
 
+        // Combat system setup. Open with an explicit error check — GetFileAsString returns
+        // "" on a failed open, which would deserialize to null and throw far from the cause.
+        using (var enemiesFile = FileAccess.Open("res://data/enemies.yaml", FileAccess.ModeFlags.Read)) {
+            if (enemiesFile == null)
+                throw new System.IO.IOException(
+                    $"res://data/enemies.yaml not found (Godot error {FileAccess.GetOpenError()})");
+            _enemyDefs = EnemyLoader.ParseAll(enemiesFile.GetAsText());
+        }
+
+        _broker = new UIBroker();
+
+        _combatInterstitialPanel = new CombatInterstitialPanel();
+        _combatInterstitialPanel.Name = "CombatInterstitialPanel";
+        AddChild(_combatInterstitialPanel);
+        _broker.InterstitialProvider = c => _combatInterstitialPanel.ShowAndAwait(c);
+
+        _rangedTargetingPanel = new RangedTargetingPanel();
+        _rangedTargetingPanel.Name = "RangedTargetingPanel";
+        AddChild(_rangedTargetingPanel);
+        _broker.RangedAttackProvider = c => _rangedTargetingPanel.ShowAndAwait(c, _state);
+
+        _combatResolver = new CombatResolver(_state, _broker, _effectScheduler, new EffectHookRegistry());
+
 #if DEBUG
-        // Dev combat trigger — remove/replace when CombatResolver.ResolveCombat is wired in 3-2
-        var combatRow = new HBoxContainer();
-        combatRow.AddThemeConstantOverride("separation", 10);
-        combatRow.Position = new Vector2(10f, 540f);
-        AddChild(combatRow);
-
-        var startCombatBtn = new Button();
-        startCombatBtn.Text = "Combat: Start";
-        startCombatBtn.AddThemeFontSizeOverride("font_size", 24);
-        startCombatBtn.Pressed += () => {
-            _state.SetPhase(GamePhase.CombatRanged);
-            Log.Debug("[UI]", "Dev: entered CombatRanged phase");
-        };
-        combatRow.AddChild(startCombatBtn);
-
-        var leaveCombatBtn = new Button();
-        leaveCombatBtn.Text = "Combat: Leave";
-        leaveCombatBtn.AddThemeFontSizeOverride("font_size", 24);
-        leaveCombatBtn.Pressed += () => {
-            _state.SetPhase(GamePhase.Movement);
-            Log.Debug("[UI]", "Dev: returned to Movement phase");
-        };
-        combatRow.AddChild(leaveCombatBtn);
+        var devCombatBtn = new Button();
+        devCombatBtn.Name = "DevCombatBtn";
+        devCombatBtn.Text = "Combat: Dev (Brown Token)";
+        devCombatBtn.AddThemeFontSizeOverride("font_size", 24);
+        devCombatBtn.Position = new Vector2(10f, 540f);
+        devCombatBtn.Pressed += OnDevCombatPressed;
+        AddChild(devCombatBtn);
 #endif
     }
+
+#if DEBUG
+    private bool _combatInProgress;
+
+    private async void OnDevCombatPressed() {
+        if (!_inputLock.TryAcquire()) return;
+        _inputLock.Release();   // release immediately — panels and HandView share the lock;
+                                // holding it across ResolveCombat would block card plays during targeting
+
+        // The lock is released immediately, so it cannot guard against a second press during
+        // combat — _combatInProgress does. Without it, a re-press spawns a concurrent
+        // ResolveCombat and a second interstitial over the first.
+        if (_combatInProgress) return;
+
+        var def = _enemyDefs.FirstOrDefault(e => e.Color == TokenColor.Brown);
+        if (def == null) {
+            Log.Error("[Combat]", "No Brown enemy tokens loaded — cannot start dev combat");
+            return;
+        }
+
+        _combatInProgress = true;
+        try {
+            var group  = new CombatGroup { Enemies = new List<EnemyTokenInstance> { new(def) }, IsAtFortifiedSite = false };
+            var combat = new CombatState { Group = group };
+
+            _state.TripUndoGate();   // enemy token is being revealed — undo cannot go past this point
+
+            var result = await _combatResolver.ResolveCombat(combat);
+
+            Log.Debug("[Combat]", result.HeroWon
+                ? $"Dev combat WON — {result.DefeatedEnemies.Count} token(s) defeated"
+                : $"Dev combat LOST — {result.DefeatedEnemies.Count} token(s) defeated");
+        } catch (System.Exception ex) {
+            // async void swallows exceptions silently — catch and log so a resolver fault is visible.
+            Log.Error("[Combat]", $"Dev combat threw: {ex.Message}");
+        } finally {
+            // TearDownCombatState left phase at EndOfTurn; return to Movement for continued dev play.
+            _state.SetPhase(GamePhase.Movement);
+            _combatInProgress = false;
+        }
+    }
+#endif
 
     private static WorldMap BuildStartingMap() {
         var startingTile = new MapTile(

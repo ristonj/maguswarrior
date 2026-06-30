@@ -78,6 +78,12 @@ public class GameState {
         ResourcesChanged?.Invoke();
     }
 
+    public void ClearAttackAndBlockPools() {
+        _attackPool.Clear();
+        _blockPool.Clear();
+        ResourcesChanged?.Invoke();
+    }
+
     public void TripUndoGate() {
         LastGateSnapshot = TakeSnapshot();
         EventLog.Clear();

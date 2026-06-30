@@ -43,7 +43,7 @@ enemies:
     attacks:
       - value: 3
         attack_type: physical
-        modifiers: [swiftness]
+        modifiers: [swift]
 
   - id: ironclads
     name: Ironclads
@@ -78,7 +78,7 @@ enemies:
     attacks:
       - value: 4
         attack_type: physical
-        modifiers: [swiftness]
+        modifiers: [swift]
 
   - id: guardsmen
     name: Guardsmen
@@ -118,7 +118,7 @@ enemies:
   # ─── Purple ─────────────────────────────────────────────────────────────────
   - id: monks
     name: Monks
-    color: purple
+    color: violet
     count: 2
     armor: 5
     fame: 4
@@ -129,7 +129,7 @@ enemies:
 
   - id: illusionists
     name: Illusionists
-    color: purple
+    color: violet
     count: 2
     armor: 3
     fame: 4
@@ -141,7 +141,7 @@ enemies:
 
   - id: ice_mages
     name: Ice Mages
-    color: purple
+    color: violet
     count: 2
     armor: 6
     fame: 5
@@ -153,7 +153,7 @@ enemies:
 
   - id: ice_golems
     name: Ice Golems
-    color: purple
+    color: violet
     count: 1
     armor: 4
     fame: 5
@@ -166,7 +166,7 @@ enemies:
 
   - id: fire_mages
     name: Fire Mages
-    color: purple
+    color: violet
     count: 2
     armor: 5
     fame: 5
@@ -177,7 +177,7 @@ enemies:
 
   - id: fire_golems
     name: Fire Golems
-    color: purple
+    color: violet
     count: 1
     armor: 5
     fame: 4
@@ -244,7 +244,7 @@ enemies:
     attacks:
       - value: 7
         attack_type: physical
-        modifiers: [swiftness]
+        modifiers: [swift]
 
   # ─── White ──────────────────────────────────────────────────────────────────
   - id: freezers
@@ -257,7 +257,7 @@ enemies:
     attacks:
       - value: 3
         attack_type: ice
-        modifiers: [swiftness, paralyze]
+        modifiers: [swift, paralyze]
 
   - id: gunners
     name: Gunners
@@ -305,7 +305,7 @@ enemies:
     attacks:
       - value: 5
         attack_type: physical
-        modifiers: [poison, swiftness]
+        modifiers: [poison, swift]
 
   - id: fire_dragon
     name: Fire Dragon
@@ -347,7 +347,7 @@ enemies:
 #
 #  - id: snake_case_id
 #    name: Display Name
-#    color: green                         # green / brown / gray / red / purple / white
+#    color: green                         # green / brown / gray / red / violet / white
 #    count: 2                             # number of tokens of this type in the game
 #    armor: 3
 #    fame: 2
@@ -356,7 +356,7 @@ enemies:
 #    attacks:
 #      - value: 3
 #        attack_type: physical   # physical / fire / ice / cold_fire / summon
-#        modifiers: []           # any of: poison, brutal, swiftness, paralyze
+#        modifiers: []           # any of: poison, brutal, swift, paralyze
 #                                # omit the modifiers line entirely if none
 #
 # Note: resistances are physical, fire, and/or ice only.
