@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-06-28"  # story 3-2b code review complete — 7 patches applied, status done
+last_updated: "2026-06-30"  # story 3-3 (block resolver-core) done — code review passed (1 patch applied, 3 deferred), 275 tests green; 3-3b live-wire queued
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -88,7 +88,11 @@ development_status:
   3-1-see-current-combat-phase: done
   3-2-use-ranged-siege-attack-in-phase-1: done
   3-2b-live-wire-ranged-phase: done
-  3-3-block-incoming-damage: backlog
+  3-3-block-incoming-damage: done
+  # 3-3 is resolver-core only (Phase 2 block math → DamageAssignments; no Hero/wound
+  # model, no panels). 3-3b live-wires it (BlockTargetingPanel + dev trigger), mirroring
+  # the 3-2 → 3-2b split. Create 3-3b after 3-3 is done.
+  3-3b-live-wire-block-phase: backlog
   3-4-assign-damage-to-unit: backlog
   3-5-enter-knockdown-when-hand-is-all-wounds: backlog
   3-6-force-quit-mid-combat-and-restore-to-exact-decision-point: backlog

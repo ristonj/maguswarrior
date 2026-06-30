@@ -16,6 +16,14 @@ public record RangedAttackDeclaration(
     IReadOnlyList<EnemyTokenInstance>  Targets
 );
 
+// A single block declaration: a set of block contributions aimed at one enemy's attack.
+// Block is per-enemy (all-or-nothing, LLD §9.3) — block allocated to one enemy never
+// covers another — so this carries a single Target, unlike RangedAttackDeclaration.
+public record BlockDeclaration(
+    IReadOnlyList<BlockContribution>  Contributions,
+    EnemyTokenInstance                Target
+);
+
 public interface ICombatAttackModifier {
     AttackContribution Modify(AttackContribution contrib);
 }

@@ -45,9 +45,50 @@ public class CombatResolver {
     public async Task<CombatResult> ResolveCombat(CombatState combat) {
         await ResolveStartOfCombat(combat);
         if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat);
+        if (!combat.AllEnemiesDefeated && !combat.SkipBlockAndDamagePending)
+            await ResolveBlockPhase(combat);
         var result = BuildResult(combat);
         TearDownCombatState(combat);
         return result;
+    }
+
+    public async Task ResolveBlockPhase(CombatState combat) {
+        SetPhase(GamePhase.CombatBlock, combat);
+        await FirePhaseCallbacks(GamePhase.CombatBlock, combat);
+
+        var declarations = await _broker.PromptHeroBlock(combat);
+
+        // Each active enemy attacks once (LLD §9.1). Resolve every attack the enemy has.
+        foreach (var enemy in combat.ActiveEnemies.ToList()) {
+            // A nullified or destroyed enemy deals no damage this combat. (IsDestroyed has no
+            // callers yet, but Destroy() leaves the token in ActiveEnemies — guard defensively.)
+            if (enemy.AttackCancelled || enemy.IsDestroyed) continue;
+
+            // All block contributions the hero allocated to this enemy.
+            var allocated = declarations
+                .Where(d => d.Target == enemy)
+                .SelectMany(d => d.Contributions)
+                .ToList();
+
+            foreach (var attack in enemy.Definition.Attacks) {
+                if (attack.Type == AttackType.None) continue;   // summon-only "attack"; no damage in Phase 2
+
+                // Sum same-type block FIRST, then apply efficiency once per type (mirrors
+                // ResolveRangedPhase's GroupBy-then-sum). Per-contribution floor would lose
+                // points when same-type block is split across declarations.
+                int effectiveBlock = allocated
+                    .GroupBy(b => b.Type)
+                    .Sum(g => BlockEfficiency.Effective(g.Key, attack.Type, g.Sum(b => b.Value)));
+
+                int threshold = attack.Value * (enemy.HasAbility(EnemyAbility.Swift) ? 2 : 1);
+
+                // All-or-nothing: block must fully meet the threshold or the FULL raw attack
+                // gets through. RawValue is the PRINTED value (Swift only raises the threshold).
+                if (effectiveBlock < threshold)
+                    combat.DamageAssignments.Add(
+                        new DamageAssignment(enemy, attack.Type, attack.Value));
+            }
+        }
     }
 
     private void TearDownCombatState(CombatState combat) {

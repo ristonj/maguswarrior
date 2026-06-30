@@ -487,6 +487,257 @@ public class CombatResolverTest {
                 : contrib;
     }
 
+    // --- Story 3-3: ResolveBlockPhase ---
+
+    private static EnemyTokenInstance BlockEnemy(int attackValue, AttackType type,
+            params EnemyAbility[] abilities) =>
+        new(new EnemyTokenDefinition("be", "Block Enemy", TokenColor.Brown,
+            Armor: 4,
+            Attacks: new List<EnemyAttack> { new(attackValue, type) },
+            FameValue: 0,
+            Abilities: new List<EnemyAbility>(abilities),
+            IsRampaging: false, Summon: null));
+
+    private static BlockDeclaration BlockDecl(EnemyTokenInstance target,
+            params BlockContribution[] contribs) =>
+        new(new List<BlockContribution>(contribs), target);
+
+    private static CombatResolver MakeResolverWithBlock(GameState state,
+            params BlockDeclaration[] blocks) =>
+        new(state, new TestBroker(new List<RangedAttackDeclaration>(),
+            new List<BlockDeclaration>(blocks)),
+            new EffectScheduler(), new EffectHookRegistry());
+
+    [Fact]
+    public async Task BlockPhase_FullyBlockedAttack_NoDamageAssignment() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 4)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Empty(combat.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_PartialBlock_FullAttackGetsThrough() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 3)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        var da = Assert.Single(combat.DamageAssignments);
+        Assert.Equal(enemy,               da.Source);
+        Assert.Equal(AttackType.Physical, da.DamageType);
+        Assert.Equal(4,                   da.RawValue); // all-or-nothing: full value, not 1
+    }
+
+    [Fact]
+    public async Task BlockPhase_NoBlock_DamageAssignmentRawValue() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(5, AttackType.Fire);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state); // no declarations
+
+        await resolver.ResolveBlockPhase(combat);
+
+        var da = Assert.Single(combat.DamageAssignments);
+        Assert.Equal(5, da.RawValue);
+    }
+
+    [Fact]
+    public async Task BlockPhase_InefficientBlock_NeedsDouble() {
+        // Fire attack 4; Physical block is 2:1 vs Fire.
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Fire);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+
+        // Physical block 6 -> effective 3 < 4 -> unblocked.
+        var under = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 6)));
+        await under.ResolveBlockPhase(combat);
+        Assert.Single(combat.DamageAssignments);
+
+        // Physical block 8 -> effective 4 >= 4 -> blocked.
+        var combat2 = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat2.ActiveEnemies.Add(enemy);
+        var over = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 8)));
+        await over.ResolveBlockPhase(combat2);
+        Assert.Empty(combat2.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_EfficientElementalBlock() {
+        // Fire attack 4; Ice block is 1:1 vs Fire (elements oppose).
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Fire);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Ice, 4)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Empty(combat.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_SwiftDoublesThreshold() {
+        // Swift Physical attack 4 -> threshold 8.
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical, EnemyAbility.Swift);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+
+        // Physical block 4 -> effective 4 < 8 -> unblocked; RawValue is printed 4, not 8.
+        var under = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 4)));
+        await under.ResolveBlockPhase(combat);
+        var da = Assert.Single(combat.DamageAssignments);
+        Assert.Equal(4, da.RawValue);
+
+        // Physical block 8 -> effective 8 >= 8 -> blocked.
+        var combat2 = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat2.ActiveEnemies.Add(enemy);
+        var over = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Physical, 8)));
+        await over.ResolveBlockPhase(combat2);
+        Assert.Empty(combat2.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_MixedBlockTypes_Sum() {
+        // Fire attack 4. effect-lld example: 1 Ice (eff 1) + 2 Physical (2:1 -> eff 1) = 2 < 4.
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Fire);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var under = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Ice, 1),
+                             new BlockContribution(BlockType.Physical, 2)));
+        await under.ResolveBlockPhase(combat);
+        Assert.Single(combat.DamageAssignments);
+
+        // Ice 2 (eff 2) + Physical 4 (2:1 -> eff 2) = 4 >= 4 -> blocked.
+        var combat2 = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat2.ActiveEnemies.Add(enemy);
+        var over = MakeResolverWithBlock(state,
+            BlockDecl(enemy, new BlockContribution(BlockType.Ice, 2),
+                             new BlockContribution(BlockType.Physical, 4)));
+        await over.ResolveBlockPhase(combat2);
+        Assert.Empty(combat2.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_BlockForOneEnemy_DoesNotCoverAnother() {
+        var state  = EmptyState();
+        var eA     = BlockEnemy(4, AttackType.Physical);
+        var eB     = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(eA, eB) };
+        combat.ActiveEnemies.Add(eA);
+        combat.ActiveEnemies.Add(eB);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(eA, new BlockContribution(BlockType.Physical, 4)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        var da = Assert.Single(combat.DamageAssignments);
+        Assert.Equal(eB, da.Source); // A blocked; B got through
+    }
+
+    [Fact]
+    public async Task BlockPhase_AttackCancelledEnemy_NoAssignment() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        enemy.AttackCancelled = true;
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state); // no block needed
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Empty(combat.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_SummonOnlyAttack_NoAssignment() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(0, AttackType.None);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state);
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Empty(combat.DamageAssignments);
+    }
+
+    [Fact]
+    public async Task BlockPhase_SetsPhaseToBlock() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state);
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Equal(GamePhase.CombatBlock, combat.CurrentPhase);
+    }
+
+    [Fact]
+    public async Task ResolveCombat_RunsBlockPhase_WhenEnemiesSurvive() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var broker = new TestBroker(new List<RangedAttackDeclaration>()); // ranged defeats nothing
+        var resolver = new CombatResolver(state, broker, new EffectScheduler(), new EffectHookRegistry());
+
+        await resolver.ResolveCombat(combat);
+
+        Assert.True(broker.BlockPrompted);
+    }
+
+    [Fact]
+    public async Task ResolveCombat_SkipsBlockPhase_WhenSkipBlockAndDamagePending() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy), SkipBlockAndDamagePending = true };
+        var broker = new TestBroker(new List<RangedAttackDeclaration>());
+        var resolver = new CombatResolver(state, broker, new EffectScheduler(), new EffectHookRegistry());
+
+        await resolver.ResolveCombat(combat);
+
+        Assert.False(broker.BlockPrompted);
+    }
+
+    [Fact]
+    public async Task ResolveCombat_SkipsBlockPhase_WhenAllEnemiesDefeated() {
+        var state  = EmptyState();
+        var enemy  = BlockEnemy(4, AttackType.Physical); // Armor 4
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var rangedDecl = new RangedAttackDeclaration(
+            new List<AttackContribution> {
+                new(AttackType.Physical, AttackDelivery.Ranged, 4) },
+            new List<EnemyTokenInstance> { enemy });
+        var broker = new TestBroker(new List<RangedAttackDeclaration> { rangedDecl });
+        var resolver = new CombatResolver(state, broker, new EffectScheduler(), new EffectHookRegistry());
+
+        await resolver.ResolveCombat(combat);
+
+        Assert.False(broker.BlockPrompted);
+    }
+
     // --- helpers ---
 
     private static EnemyTokenInstance TestEnemyWithArmor(int armor, bool physicalResistance = false) {
@@ -518,15 +769,24 @@ public class CombatResolverTest {
         public Task Execute(CombatState combat, UIBroker broker) { _action(); return Task.CompletedTask; }
     }
 
-    // Scriptable test double for UIBroker — override PromptHeroRangedAttacks to
-    // supply declarations without touching any live UI.
+    // Scriptable test double for UIBroker — override PromptHeroRangedAttacks /
+    // PromptHeroBlock to supply declarations without touching any live UI.
     private sealed class TestBroker : UIBroker {
         private readonly IReadOnlyList<RangedAttackDeclaration> _declarations;
-        public TestBroker(IReadOnlyList<RangedAttackDeclaration> declarations) {
-            _declarations = declarations;
+        private readonly IReadOnlyList<BlockDeclaration>        _blockDeclarations;
+        public bool BlockPrompted { get; private set; }
+
+        public TestBroker(IReadOnlyList<RangedAttackDeclaration> declarations,
+                          IReadOnlyList<BlockDeclaration>? blockDeclarations = null) {
+            _declarations      = declarations;
+            _blockDeclarations = blockDeclarations ?? new List<BlockDeclaration>();
         }
         public override Task<IReadOnlyList<RangedAttackDeclaration>> PromptHeroRangedAttacks(CombatState combat) =>
             Task.FromResult(_declarations);
+        public override Task<IReadOnlyList<BlockDeclaration>> PromptHeroBlock(CombatState combat) {
+            BlockPrompted = true;
+            return Task.FromResult(_blockDeclarations);
+        }
     }
 
     private static CombatResolver MakeResolverWith(GameState state, UIBroker broker) =>
