@@ -29,7 +29,8 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private CombatResolver _combatResolver = null!;
     private List<EnemyTokenDefinition> _enemyDefs = null!;
     private CombatInterstitialPanel _combatInterstitialPanel = null!;
-    private RangedTargetingPanel _rangedTargetingPanel = null!;
+    private RangedTargetingPanel    _rangedTargetingPanel    = null!;
+    private BlockTargetingPanel     _blockTargetingPanel     = null!;
 
     // First Reconnaissance scenario deck sizes (V-shape: 8 countryside + 3 core).
     // Hardcoded for now; real per-scenario configuration lands in Epic 7.
@@ -139,6 +140,11 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         _rangedTargetingPanel.Name = "RangedTargetingPanel";
         AddChild(_rangedTargetingPanel);
         _broker.RangedAttackProvider = c => _rangedTargetingPanel.ShowAndAwait(c, _state);
+
+        _blockTargetingPanel = new BlockTargetingPanel();
+        _blockTargetingPanel.Name = "BlockTargetingPanel";
+        AddChild(_blockTargetingPanel);
+        _broker.BlockProvider = c => _blockTargetingPanel.ShowAndAwait(c, _state);
 
         _combatResolver = new CombatResolver(_state, _broker, _effectScheduler, new EffectHookRegistry());
 

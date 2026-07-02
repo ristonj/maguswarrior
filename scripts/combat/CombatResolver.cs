@@ -58,33 +58,27 @@ public class CombatResolver {
 
         var declarations = await _broker.PromptHeroBlock(combat);
 
-        // Each active enemy attacks once (LLD §9.1). Resolve every attack the enemy has.
         foreach (var enemy in combat.ActiveEnemies.ToList()) {
             // A nullified or destroyed enemy deals no damage this combat. (IsDestroyed has no
             // callers yet, but Destroy() leaves the token in ActiveEnemies — guard defensively.)
             if (enemy.AttackCancelled || enemy.IsDestroyed) continue;
 
-            // All block contributions the hero allocated to this enemy.
-            var allocated = declarations
-                .Where(d => d.Target == enemy)
-                .SelectMany(d => d.Contributions)
-                .ToList();
-
-            foreach (var attack in enemy.Definition.Attacks) {
+            var attacks = enemy.Definition.Attacks;
+            for (int i = 0; i < attacks.Count; i++) {
+                var attack = attacks[i];
                 if (attack.Type == AttackType.None) continue;   // summon-only "attack"; no damage in Phase 2
 
-                // Sum same-type block FIRST, then apply efficiency once per type (mirrors
-                // ResolveRangedPhase's GroupBy-then-sum). Per-contribution floor would lose
-                // points when same-type block is split across declarations.
-                int effectiveBlock = allocated
-                    .GroupBy(b => b.Type)
-                    .Sum(g => BlockEfficiency.Effective(g.Key, attack.Type, g.Sum(b => b.Value)));
+                // Block allocated to THIS attack only (per-attack consumption — block declared
+                // against attack i never covers attack j, LLD §9.3).
+                var allocated = declarations
+                    .Where(d => d.Target == enemy && d.AttackIndex == i)
+                    .SelectMany(d => d.Contributions)
+                    .ToList();
 
-                int threshold = attack.Value * (enemy.HasAbility(EnemyAbility.Swift) ? 2 : 1);
-
-                // All-or-nothing: block must fully meet the threshold or the FULL raw attack
-                // gets through. RawValue is the PRINTED value (Swift only raises the threshold).
-                if (effectiveBlock < threshold)
+                // All-or-nothing: block must fully meet the threshold or the FULL printed attack
+                // gets through. BlockOutcome.IsFullyBlocked encapsulates the sum-then-efficiency
+                // logic and the Swift multiplier — shared with the panel (6c).
+                if (!BlockOutcome.IsFullyBlocked(attack, enemy.HasAbility(EnemyAbility.Swift), allocated))
                     combat.DamageAssignments.Add(
                         new DamageAssignment(enemy, attack.Type, attack.Value));
             }

@@ -498,9 +498,15 @@ public class CombatResolverTest {
             Abilities: new List<EnemyAbility>(abilities),
             IsRampaging: false, Summon: null));
 
+    // Default overload: attack index 0 (all existing single-attack tests use this).
     private static BlockDeclaration BlockDecl(EnemyTokenInstance target,
             params BlockContribution[] contribs) =>
-        new(new List<BlockContribution>(contribs), target);
+        new(new List<BlockContribution>(contribs), target, 0);
+
+    // Indexed overload for per-attack multi-attack tests.
+    private static BlockDeclaration BlockDecl(EnemyTokenInstance target, int attackIndex,
+            params BlockContribution[] contribs) =>
+        new(new List<BlockContribution>(contribs), target, attackIndex);
 
     private static CombatResolver MakeResolverWithBlock(GameState state,
             params BlockDeclaration[] blocks) =>
@@ -736,6 +742,57 @@ public class CombatResolverTest {
         await resolver.ResolveCombat(combat);
 
         Assert.False(broker.BlockPrompted);
+    }
+
+    // --- Story 3-3b: per-attack block allocation (multi-attack enemies) ---
+
+    private static EnemyTokenInstance TwoAttackEnemy(AttackType type, int value) =>
+        new(new EnemyTokenDefinition("multi", "Multi Enemy", TokenColor.Brown,
+            Armor: 4,
+            Attacks: new List<EnemyAttack> { new(value, type), new(value, type) },
+            FameValue: 0,
+            Abilities: new List<EnemyAbility>(),
+            IsRampaging: false, Summon: null));
+
+    [Fact]
+    public async Task BlockPhase_MultiAttack_BlockConsumedPerAttack() {
+        // Synthetic two-attack enemy: Physical 4 + Physical 4.
+        // Declare Physical block 4 against attack index 0 ONLY.
+        // Under the 3-3 resolver, allocated was per-enemy (ignoring AttackIndex), so block
+        // covered BOTH attacks and this test would pass with zero DamageAssignments — wrong.
+        // The per-attack resolver must emit exactly one DamageAssignment for the unblocked attack 1.
+        var state  = EmptyState();
+        var enemy  = TwoAttackEnemy(AttackType.Physical, 4);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(enemy, 0, new BlockContribution(BlockType.Physical, 4)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        // Attack 0: blocked — no damage.
+        // Attack 1: not blocked — damage gets through.
+        var da = Assert.Single(combat.DamageAssignments);
+        Assert.Equal(enemy,               da.Source);
+        Assert.Equal(AttackType.Physical, da.DamageType);
+        Assert.Equal(4,                   da.RawValue);
+    }
+
+    [Fact]
+    public async Task BlockPhase_MultiAttack_SeparateDeclarationsBlockBoth() {
+        // Same two-attack enemy; declare Physical block 4 vs index 0 AND Physical block 4 vs index 1.
+        // Both attacks individually satisfied → no DamageAssignments.
+        var state  = EmptyState();
+        var enemy  = TwoAttackEnemy(AttackType.Physical, 4);
+        var combat = new CombatState { Group = MultiEnemyGroup(enemy) };
+        combat.ActiveEnemies.Add(enemy);
+        var resolver = MakeResolverWithBlock(state,
+            BlockDecl(enemy, 0, new BlockContribution(BlockType.Physical, 4)),
+            BlockDecl(enemy, 1, new BlockContribution(BlockType.Physical, 4)));
+
+        await resolver.ResolveBlockPhase(combat);
+
+        Assert.Empty(combat.DamageAssignments);
     }
 
     // --- helpers ---
