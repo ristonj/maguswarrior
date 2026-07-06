@@ -5,6 +5,7 @@ using MagusWarrior.Broker;
 using MagusWarrior.Cards.Effects;
 using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
+using MagusWarrior.Units;
 
 namespace MagusWarrior.Combat;
 
@@ -45,8 +46,10 @@ public class CombatResolver {
     public async Task<CombatResult> ResolveCombat(CombatState combat) {
         await ResolveStartOfCombat(combat);
         if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat);
-        if (!combat.AllEnemiesDefeated && !combat.SkipBlockAndDamagePending)
+        if (!combat.AllEnemiesDefeated && !combat.SkipBlockAndDamagePending) {
             await ResolveBlockPhase(combat);
+            await ResolveAssignDamagePhase(combat);   // consumes the DamageAssignments Block emits
+        }
         var result = BuildResult(combat);
         TearDownCombatState(combat);
         return result;
@@ -81,6 +84,65 @@ public class CombatResolver {
                 if (!BlockOutcome.IsFullyBlocked(attack, enemy.HasAbility(EnemyAbility.Swift), allocated))
                     combat.DamageAssignments.Add(
                         new DamageAssignment(enemy, attack.Type, attack.Value));
+            }
+        }
+    }
+
+    public async Task ResolveAssignDamagePhase(CombatState combat) {
+        SetPhase(GamePhase.CombatAssignDamage, combat);
+        await FirePhaseCallbacks(GamePhase.CombatAssignDamage, combat);
+
+        var alreadyAssigned = new HashSet<UnitInstance>(); // a unit may be assigned damage only ONCE per combat
+        foreach (var assignment in combat.DamageAssignments)
+            await ApplyOneDamageAssignment(assignment, alreadyAssigned, combat);
+    }
+
+    // Per-assignment algorithm (combat-flow-lld §10.1). Everything except the hero's
+    // Option-A-vs-B choice is deterministic; the choice flows through the broker seam.
+    private async Task ApplyOneDamageAssignment(
+            DamageAssignment a, HashSet<UnitInstance> alreadyAssigned, CombatState combat) {
+        var hero = _state.Hero;
+
+        int d = a.RawValue;
+        if (a.Source.HasAbility(EnemyAbility.Brutal)) d *= 2;   // Brutal doubles BEFORE any assignment
+
+        while (d > 0) {
+            // Eligible units: not wounded, not destroyed, not already used this combat — and only if
+            // units are not damage-locked (Into the Heat). Empty list ⇒ no prompt, damage falls to hero.
+            var eligible = combat.UnitDamageLocked
+                ? new List<UnitInstance>()
+                : hero.Units.Where(u => u.CanAbsorbDamage && !alreadyAssigned.Contains(u)).ToList();
+
+            UnitInstance? target = eligible.Count == 0
+                ? null                                                   // nothing to choose ⇒ hero
+                : await _broker.PromptHeroDamageTarget(a, eligible, combat);
+
+            if (target == null || !eligible.Contains(target)) {
+                // Option B — assign remaining damage to the hero. Floor the divisor at 1
+                // (mirrors EnemyTokenInstance.EffectiveArmor): a 0 armor would make the double
+                // division +Infinity → (int) = int.MinValue → DrawWoundsToHand(negative) silently
+                // draws zero wounds (unreachable today — Armor is fixed at 2 — but a nasty
+                // silent-wrong-output trap for any future armor-reduction effect).
+                int wounds = (int)System.Math.Ceiling((double)d / System.Math.Max(1, hero.Armor));
+                hero.DrawWoundsToHand(wounds);
+                if (a.Source.HasAbility(EnemyAbility.Poison))
+                    hero.AddWoundsToDiscard(wounds);
+                // NOTE: knockout threshold + Paralyze-vs-hero hand-emptying are story 3-5 — not here.
+                d = 0;
+            } else {
+                // Option A — assign to a unit. Marked "used" regardless of outcome.
+                alreadyAssigned.Add(target);
+                if (target.HasResistanceTo(a.DamageType)) d -= target.Armor; // resistant ⇒ armor twice total
+                if (d <= 0) break;                                           // resistance absorbed all ⇒ no wound
+                d -= target.Armor;                                           // base armor always subtracted
+                if (a.Source.HasAbility(EnemyAbility.Paralyze)) {
+                    target.Destroy();                                        // destroyed WITHOUT a wound
+                } else {
+                    target.TakeWound();
+                    if (a.Source.HasAbility(EnemyAbility.Poison))
+                        target.TakeWound();                                 // Poison ⇒ 2nd wound
+                }
+                // loop continues with remaining d (may fall to hero or another eligible unit)
             }
         }
     }

@@ -23,6 +23,7 @@
     <Compile Include="../scripts/core/Result.cs" />
     <Compile Include="../scripts/core/GameConstants.cs" />
     <Compile Include="../scripts/core/GameState.cs" />
+    <Compile Include="../scripts/core/Hero.cs" />
     <Compile Include="../scripts/core/UndoController.cs" />
     <Compile Include="../scripts/core/SaveMigrator.cs" />
     <Compile Include="../scripts/core/types/**/*.cs" />
@@ -41,5 +42,7 @@
     <Compile Include="../scripts/combat/**/*.cs" />
     <!-- scripts/broker: pure C# — glob picks up all future broker files -->
     <Compile Include="../scripts/broker/**/*.cs" />
+    <!-- scripts/units: fully pure C# -->
+    <Compile Include="../scripts/units/**/*.cs" />
   </ItemGroup>
 </Project>

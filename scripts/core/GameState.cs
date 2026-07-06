@@ -35,6 +35,25 @@ public class GameState {
     public GameEventLog EventLog { get; } = new();
     public UndoController UndoController { get; } = new();
 
+    // Hero is deliberately EXCLUDED from the undo snapshot (TakeSnapshot/RestoreSnapshot).
+    // The hero's combat wound-state is mutated only during combat resolution. Per
+    // combat-flow-lld §15, the undo gate closes the instant hidden information is revealed —
+    // a face-down enemy drawn, a garrison flipped, a ruins token turned — or any die is rolled;
+    // for those combats that reveal happens at the START of combat, before the Assign-Damage
+    // phase draws wounds. So wounds are always drawn AFTER the gate has closed and can never be
+    // rolled back by undo, which makes snapshotting Hero unnecessary. (Base combat rolls no dice
+    // — verified against MKUE Rulebook pp. 8–9 — so the reveal is the only gate trigger.)
+    //
+    // KNOWN GAP (not reachable today): a FACE-UP rampaging enemy (orc/draconum) provoked with no
+    // die roll reveals nothing, so per §15 undo stays OPEN through that whole combat — there,
+    // excluding Hero would let combat wounds survive an undo (half-rollback). Unreachable now:
+    // the dev-combat handler trips the gate at combat start (PlaceholderMainMenu), and rampager
+    // provocation is Epic-4 story 4-5. When that lands, handle wound rollback by unwinding the
+    // whole combat on undo of the trigger-move — NOT by field-level snapshotting. Do not add
+    // Hero to the snapshot without that design. Mid-combat SAVE persistence is a separate
+    // serialization path (story 3-6), also not this undo snapshot. See deferred-work.md.
+    public Hero Hero { get; } = new Hero(GameConstants.HeroBaseArmor);
+
     private Dictionary<(EffectType Distance, AttackElement Element), int> _attackPool = new();
     private Dictionary<AttackElement, int> _blockPool = new();
 
@@ -100,6 +119,11 @@ public class GameState {
     // MovePointsThisTurn, InfluencePointsThisTurn,
     // AttackPool (keyed by distance+element), BlockPool (keyed by element), IsDay.
     // Add Hand, Fame, Reputation, etc. here the moment they land in GameState.
+    // EXCEPTION: Hero is deliberately NOT snapshotted. Its wound-state changes only during
+    // combat, and for every combat reachable today the undo gate has already closed before
+    // wounds are drawn (combat-flow-lld §15). The one open case — a face-up rampager fight, in
+    // which undo stays open — is unreachable until Epic-4 story 4-5 and is tracked in
+    // deferred-work.md. See the full rationale on the Hero property above.
     public GameStateSnapshot TakeSnapshot() => new(
         CurrentPhase,
         MovePointsThisTurn,
