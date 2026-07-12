@@ -135,7 +135,40 @@ public PlayResult PlayCard(Card card, Target target) {
 ```
 
 Exceptions are only for unrecoverable startup failures: bad card data, corrupt save,
-missing asset. These throw immediately and loudly. Normal game flow never throws.
+missing asset. These throw immediately and loudly. Normal game flow never throws **at the
+player** — see the third category below.
+
+### Three categories of failure — pick the right one
+
+| Category | Example | Mechanism |
+| --- | --- | --- |
+| **Expected failure** — the player did something the rules disallow | Card not legal in this phase; not enough Move to enter a hex | `Result<T>.Fail`. Caller decides. **Never throw.** |
+| **Unrecoverable startup failure** — the game cannot run | Corrupt `cards.yaml`; bad save schema; missing asset | Throw immediately and loudly. No recovery possible. |
+| **Internal invariant violation** — *our own code* broke a contract | A `UIBroker` provider returns a unit the resolver never offered; an unhandled case in a closed union | Throw immediately. This is a **programmer error**, not a player action. |
+
+The third category is the one people get wrong. It is *not* an exception to "normal game flow
+never throws" — it is a case where **the game flow is already broken**, and the only honest
+response is to stop. `Result<T>` is strictly worse here, because it pushes a decision onto a
+caller that has no better option than to crash anyway, and because a silently-swallowed
+invariant violation surfaces later as inexplicable game state.
+
+The rule for telling categories 1 and 3 apart: **can the player produce this by playing the
+game?** If yes, it is category 1 — return `Result<T>`. If the only way to reach it is a bug in
+our own code, it is category 3 — throw.
+
+```csharp
+// CORRECT — category 3. The panel only ever renders buttons over `eligible`, so a unit outside
+// that list cannot come from the player. It can only come from a broken provider.
+if (!eligible.Contains(target))
+    throw new InvalidOperationException(
+        "DamageTargetProvider returned an ineligible unit; the panel must only offer eligible units.");
+```
+
+**When you throw for category 3, the surrounding code must still clean up.** A throw that
+leaves half-mutated state behind and lets play continue is worse than the bug it reported.
+`CombatResolver.ResolveCombat` tears combat state down in a `finally` for exactly this reason,
+and the `async void` handler that calls it logs the **full** exception (`$"{ex}"`), never just
+`ex.Message` — a bare message with no type and no stack trace is not "loud".
 
 ---
 

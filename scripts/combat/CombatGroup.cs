@@ -11,5 +11,7 @@ public record CombatResult(
     bool                     HeroWon,
     List<EnemyTokenInstance> DefeatedEnemies,
     int                      FameEarned,
-    int                      ReputationEarned
+    int                      ReputationEarned,
+    int                      WoundsDrawn,      // Wounds that entered Hero.Hand
+    int                      WoundsToDiscard   // Wounds sent straight to Hero.DiscardPile (Poison)
 );

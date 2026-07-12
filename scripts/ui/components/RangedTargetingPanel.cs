@@ -46,20 +46,33 @@ public partial class RangedTargetingPanel : Control {
         sheet.GrowVertical   = GrowDirection.Begin;
         AddChild(sheet);
 
+        // Inner margins: without these the Pass button sits flush against (and clips at) the
+        // right edge of the viewport, because the sheet is anchored edge-to-edge.
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left",   24);
+        margin.AddThemeConstantOverride("margin_right",  24);
+        margin.AddThemeConstantOverride("margin_top",    8);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+        sheet.AddChild(margin);
+
         var layout = new HBoxContainer();
         layout.AddThemeConstantOverride("separation", 16);
-        sheet.AddChild(layout);
+        margin.AddChild(layout);
 
         var leftCol = new VBoxContainer();
         leftCol.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         layout.AddChild(leftCol);
 
         var title = new Label();
-        title.Text = "Combat: Ranged Phase";
+        title.Text = "ui.combat.ranged.title";                    // static ⇒ key + auto-translate
+        title.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         title.AddThemeFontSizeOverride("font_size", 28);
         leftCol.AddChild(title);
 
         _attacksLabel = new Label();
+        // Takes both a static and an interpolated value depending on branch, so it is composed
+        // via Strings and auto-translate stays off (see Strings.cs for the two mechanisms).
+        _attacksLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;
         _attacksLabel.AddThemeFontSizeOverride("font_size", 22);
         leftCol.AddChild(_attacksLabel);
 
@@ -67,7 +80,8 @@ public partial class RangedTargetingPanel : Control {
         leftCol.AddChild(_enemyList);
 
         var passBtn = new Button();
-        passBtn.Text = "Pass";
+        passBtn.Text = "ui.common.pass";                          // static ⇒ key + auto-translate
+        passBtn.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         passBtn.AddThemeFontSizeOverride("font_size", 28);
         passBtn.SizeFlagsVertical = SizeFlags.ShrinkCenter;
         passBtn.Pressed += OnPassPressed;
@@ -102,31 +116,43 @@ public partial class RangedTargetingPanel : Control {
     }
 
     private void RefreshEnemyDisplay() {
-        foreach (Node child in _enemyList.GetChildren())
-            child.QueueFree();
+        _enemyList.ClearChildren();
 
         if (_combat == null) return;
 
         foreach (var e in _combat.ActiveEnemies) {
             var fortLevel = (_combat.IsAtFortifiedSite ? 1 : 0) + (e.HasAbility(EnemyAbility.Fortified) ? 1 : 0);
-            var fortNote  = fortLevel > 0 ? $" [Fortification:{fortLevel}]" : "";
+            var fortNote  = fortLevel > 0
+                ? Strings.Format("ui.combat.ranged.fortified_note", fortLevel)
+                : "";
 
             var row = new HBoxContainer();
             row.AddThemeConstantOverride("separation", 12);
 
             var nameLabel = new Label();
-            nameLabel.Text = $"{e.Definition.Name}{fortNote}  Armor:{e.EffectiveArmor}";
+            nameLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;   // interpolated
+            nameLabel.Text = Strings.Format("ui.combat.ranged.enemy_row",
+                e.Definition.Name, fortNote, e.EffectiveArmor);
             nameLabel.AddThemeFontSizeOverride("font_size", 24);
-            nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            // Fill, NOT ExpandFill — see BlockTargetingPanel. Expand flung the declare button to the
+            // far right of the column, colliding with the vertically-centred Pass button.
+            nameLabel.SizeFlagsHorizontal = SizeFlags.Fill;
             row.AddChild(nameLabel);
 
             var declareBtn = new Button();
             declareBtn.Name = $"DeclareBtn_{e.Definition.Id}";
-            declareBtn.Text = $"Declare vs {e.Definition.Name}";
+            declareBtn.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;  // interpolated
+            declareBtn.Text = Strings.Format("ui.combat.ranged.declare_vs", e.Definition.Name);
             declareBtn.AddThemeFontSizeOverride("font_size", 24);
             var capturedEnemy = e;
             declareBtn.Pressed += () => OnDeclarePressed(capturedEnemy);
             row.AddChild(declareBtn);
+
+            // Trailing spacer absorbs the row's spare width, keeping the name + declare button
+            // grouped on the left instead of the button being pushed against Pass on the right.
+            var spacer = new Control();
+            spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            row.AddChild(spacer);
 
             _enemyList.AddChild(row);
         }
@@ -136,10 +162,11 @@ public partial class RangedTargetingPanel : Control {
         if (_state == null) { _attacksLabel.Text = ""; return; }
         var available = AvailableContribs();
         if (available.Count == 0) {
-            _attacksLabel.Text = "No ranged/siege attacks available";
+            _attacksLabel.Text = Strings.Get("ui.combat.ranged.none_available");
             SetDeclareButtonsDisabled(true);
         } else {
-            _attacksLabel.Text = "Available: " + string.Join(", ", available.Select(c => $"{c.Delivery} {c.Type} {c.Value}"));
+            _attacksLabel.Text = Strings.Format("ui.combat.ranged.available",
+                string.Join(", ", available.Select(c => $"{c.Delivery} {c.Type} {c.Value}")));
             SetDeclareButtonsDisabled(false);
         }
     }

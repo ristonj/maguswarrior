@@ -12,7 +12,7 @@ public class UIBroker {
     public Func<CombatState, Task>?                                           InterstitialProvider  { get; set; }
     public Func<CombatState, Task<IReadOnlyList<RangedAttackDeclaration>>>?   RangedAttackProvider  { get; set; }
     public Func<CombatState, Task<IReadOnlyList<BlockDeclaration>>>?          BlockProvider         { get; set; }
-    public Func<DamageAssignment, IReadOnlyList<UnitInstance>, CombatState, Task<UnitInstance?>>?
+    public Func<DamageAssignment, int, IReadOnlyList<UnitInstance>, CombatState, Task<DamageChoice>>?
         DamageTargetProvider { get; set; }
 
     public Task ShowStartOfCombatInterstitial(CombatState combat) =>
@@ -26,13 +26,15 @@ public class UIBroker {
         BlockProvider?.Invoke(combat)
         ?? Task.FromResult<IReadOnlyList<BlockDeclaration>>(new List<BlockDeclaration>());
 
-    // Returns the unit the hero chose to absorb this assignment, or null to assign to the hero.
-    // Default (no provider registered): null ⇒ hero takes the damage. This is the correct fallback
-    // for the not-yet-live-wired dev flow — all unblocked damage lands on the hero.
-    public virtual Task<UnitInstance?> PromptHeroDamageTarget(
-            DamageAssignment assignment, IReadOnlyList<UnitInstance> eligibleUnits, CombatState combat) =>
-        DamageTargetProvider?.Invoke(assignment, eligibleUnits, combat)
-        ?? Task.FromResult<UnitInstance?>(null);
+    // Returns the hero's choice for THIS decision step. `remainingDamage` is the running, post-armor
+    // damage still to assign (NOT the printed RawValue) so the panel can show "N still to assign" without
+    // re-deriving the resolver's math. Default (no provider): HeroAbsorbs — the correct fallback when the
+    // panel is not registered (all unblocked damage lands on the hero).
+    public virtual Task<DamageChoice> PromptHeroDamageTarget(
+            DamageAssignment assignment, int remainingDamage,
+            IReadOnlyList<UnitInstance> eligibleUnits, CombatState combat) =>
+        DamageTargetProvider?.Invoke(assignment, remainingDamage, eligibleUnits, combat)
+        ?? Task.FromResult<DamageChoice>(new DamageChoice.HeroAbsorbs());
 
     public Task ResolveEnemyAttackVsHero(EnemyTokenInstance enemy, CombatState combat) => Task.CompletedTask;
     public Task PromptHeroMeleeAttacks(CombatState combat) => Task.CompletedTask;

@@ -46,20 +46,33 @@ public partial class BlockTargetingPanel : Control {
         sheet.GrowVertical   = GrowDirection.Begin;
         AddChild(sheet);
 
+        // Inner margins: without these the Pass button sits flush against (and clips at) the
+        // right edge of the viewport, because the sheet is anchored edge-to-edge.
+        var margin = new MarginContainer();
+        margin.AddThemeConstantOverride("margin_left",   24);
+        margin.AddThemeConstantOverride("margin_right",  24);
+        margin.AddThemeConstantOverride("margin_top",    8);
+        margin.AddThemeConstantOverride("margin_bottom", 8);
+        sheet.AddChild(margin);
+
         var layout = new HBoxContainer();
         layout.AddThemeConstantOverride("separation", 16);
-        sheet.AddChild(layout);
+        margin.AddChild(layout);
 
         var leftCol = new VBoxContainer();
         leftCol.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         layout.AddChild(leftCol);
 
         var title = new Label();
-        title.Text = "Combat: Block Phase";
+        title.Text = "ui.combat.block.title";                     // static ⇒ key + auto-translate
+        title.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         title.AddThemeFontSizeOverride("font_size", 28);
         leftCol.AddChild(title);
 
         _blockLabel = new Label();
+        // Takes both a static and an interpolated value depending on branch, so it is composed
+        // via Strings and auto-translate stays off (see Strings.cs for the two mechanisms).
+        _blockLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;
         _blockLabel.AddThemeFontSizeOverride("font_size", 22);
         leftCol.AddChild(_blockLabel);
 
@@ -67,7 +80,8 @@ public partial class BlockTargetingPanel : Control {
         leftCol.AddChild(_attackList);
 
         var passBtn = new Button();
-        passBtn.Text = "Pass";
+        passBtn.Text = "ui.common.pass";                          // static ⇒ key + auto-translate
+        passBtn.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         passBtn.AddThemeFontSizeOverride("font_size", 28);
         passBtn.SizeFlagsVertical = SizeFlags.ShrinkCenter;
         passBtn.Pressed += OnPassPressed;
@@ -109,13 +123,11 @@ public partial class BlockTargetingPanel : Control {
     // SpinBoxes, no split needed.  If there are ≥ 2 blockable attacks, keep the AC5
     // per-type SpinBox picker so the player can split the pool across attacks.
     private void RefreshAttackRows() {
-        foreach (Node child in _attackList.GetChildren())
-            child.QueueFree();
+        _attackList.ClearChildren();
 
         if (_combat == null) return;
 
-        var available    = AvailableContribs();
-        bool hasAnyBlock = available.Count > 0;
+        var available = AvailableContribs();
 
         // Count total blockable attacks (skip AttackType.None) to choose UI mode.
         int totalBlockable = 0;
@@ -131,29 +143,58 @@ public partial class BlockTargetingPanel : Control {
                 var attack = attacks[i];
                 if (attack.Type == AttackType.None) continue;  // summon-only; skip
 
-                var swiftNote = e.HasAbility(EnemyAbility.Swift) ? " [Swift: needs 2×]" : "";
+                var swiftNote = e.HasAbility(EnemyAbility.Swift)
+                    ? Strings.Get("ui.combat.block.swift_note")
+                    : "";
 
                 var row = new HBoxContainer();
                 row.AddThemeConstantOverride("separation", 12);
 
                 var nameLabel = new Label();
-                nameLabel.Text = $"{e.Definition.Name}  {attack.Type} {attack.Value}{swiftNote}";
+                nameLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;   // interpolated
+                nameLabel.Text = Strings.Format("ui.combat.block.attack_row",
+                    e.Definition.Name, attack.Type, attack.Value, swiftNote);
                 nameLabel.AddThemeFontSizeOverride("font_size", 24);
-                nameLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                // Fill, NOT ExpandFill. With Expand the label ate all the row's spare width and
+                // flung the declare button to the far right edge of the column — where it collided
+                // with the Pass button (which is ShrinkCenter'd vertically in the sheet, so the two
+                // sat at different heights and read as misaligned). The button belongs next to the
+                // attack it blocks; the spare width goes in a spacer AFTER it (see below).
+                nameLabel.SizeFlagsHorizontal = SizeFlags.Fill;
                 row.AddChild(nameLabel);
+
+                // Block is ALL-OR-NOTHING (LLD §9.3): a declaration that cannot reach the attack's
+                // threshold blocks nothing, so offering the button before the pool can actually
+                // cover the attack is offering a move that can only hurt. Previously this was
+                // `Disabled = !hasAnyBlock`, so Block 1 vs Physical 5 was clickable — it consumed
+                // the whole pool into a declaration that could never succeed, dropped "Available"
+                // to zero with no sign the block had gone anywhere, and left the player in the panel.
+                //
+                // Gate on the real rule instead, via the same shared helper the resolver uses.
+                // Declarations AGGREGATE per (enemy, attackIndex), so the test is "everything already
+                // declared against THIS attack, plus everything still in the pool" — that keeps an
+                // incremental declaration path valid rather than assuming the pool is the whole story.
+                var declaredHere = _declarations
+                    .Where(d => d.Target == e && d.AttackIndex == i)
+                    .SelectMany(d => d.Contributions);
+                bool canFullyBlock = BlockOutcome.IsFullyBlocked(
+                    attack, e.HasAbility(EnemyAbility.Swift), declaredHere.Concat(available));
 
                 var declareBtn = new Button();
                 declareBtn.Name     = $"BlockBtn_{e.Definition.Id}_{i}";
-                declareBtn.Text     = $"Block {e.Definition.Name} ({attack.Type} {attack.Value})";
-                declareBtn.Disabled = !hasAnyBlock;
+                declareBtn.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;  // interpolated
+                declareBtn.Text     = Strings.Format("ui.combat.block.declare_vs",
+                    e.Definition.Name, attack.Type, attack.Value);
+                declareBtn.Disabled = !canFullyBlock;
                 declareBtn.AddThemeFontSizeOverride("font_size", 24);
-                var capturedEnemy = e;
-                var capturedIndex = i;
+                var capturedEnemy  = e;
+                var capturedIndex  = i;
+                var capturedAttack = attack;
 
                 if (singleAttack) {
                     // No split possible: one attack gets the whole available pool.
-                    // Plain button — no SpinBoxes. Disabled when no block available.
-                    declareBtn.Pressed += () => OnBlockPressedDumpAll(capturedEnemy, capturedIndex);
+                    // Plain button — no SpinBoxes. Disabled until the pool can fully block.
+                    declareBtn.Pressed += () => OnBlockPressedDumpAll(capturedEnemy, capturedIndex, capturedAttack);
                 } else {
                     // Multiple attacks: per-block-type SpinBoxes let the player split
                     // the pool across attacks. Button commits only non-zero amounts.
@@ -175,10 +216,18 @@ public partial class BlockTargetingPanel : Control {
                     }
 
                     var capturedSpinBoxes = spinBoxes;
-                    declareBtn.Pressed += () => OnBlockPressed(capturedEnemy, capturedIndex, capturedSpinBoxes);
+                    declareBtn.Pressed += () =>
+                        OnBlockPressed(capturedEnemy, capturedIndex, capturedAttack, capturedSpinBoxes);
                 }
 
                 row.AddChild(declareBtn);
+
+                // Trailing spacer absorbs the row's spare width, keeping the name + declare button
+                // grouped on the left instead of the button being pushed against Pass on the right.
+                var spacer = new Control();
+                spacer.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+                row.AddChild(spacer);
+
                 _attackList.AddChild(row);
             }
         }
@@ -191,9 +240,10 @@ public partial class BlockTargetingPanel : Control {
         if (_state == null) { _blockLabel.Text = ""; return; }
         var available = AvailableContribs();
         if (available.Count == 0) {
-            _blockLabel.Text = "No block available";
+            _blockLabel.Text = Strings.Get("ui.combat.block.none_available");
         } else {
-            _blockLabel.Text = "Available: " + string.Join(", ", available.Select(c => $"{c.Type} {c.Value}"));
+            _blockLabel.Text = Strings.Format("ui.combat.block.available",
+                string.Join(", ", available.Select(c => $"{c.Type} {c.Value}")));
         }
         RefreshAttackRows();  // Rebuild so SpinBox maxes and button disabled states reflect updated pool.
     }
@@ -224,12 +274,27 @@ public partial class BlockTargetingPanel : Control {
     // (no block committed). After a valid commit, rebuilds rows so SpinBox maxes
     // reflect the reduced remaining pool, then auto-closes if all attacks are
     // fully blocked (6b).
-    private void OnBlockPressed(EnemyTokenInstance enemy, int attackIndex, List<(BlockType type, SpinBox box)> spinBoxes) {
+    private void OnBlockPressed(EnemyTokenInstance enemy, int attackIndex, EnemyAttack attack,
+            List<(BlockType type, SpinBox box)> spinBoxes) {
         var chosen = spinBoxes
             .Where(sb => sb.box.Value > 0)
             .Select(sb => new BlockContribution(sb.type, (int)sb.box.Value))
             .ToList();
         if (chosen.Count == 0) return;  // all zeros; ignore tap
+
+        // All-or-nothing: reject a commit that still cannot reach the threshold, rather than
+        // silently swallowing the block into a declaration that blocks nothing. The button's
+        // Disabled state already covers "the pool can never cover this attack"; this covers
+        // "the pool could, but the SpinBox amounts the player picked don't".
+        var declaredHere = _declarations
+            .Where(d => d.Target == enemy && d.AttackIndex == attackIndex)
+            .SelectMany(d => d.Contributions);
+        if (!BlockOutcome.IsFullyBlocked(attack, enemy.HasAbility(EnemyAbility.Swift),
+                declaredHere.Concat(chosen))) {
+            Log.Debug("[UI]", $"BlockTargetingPanel: {enemy.Definition.Name} attack {attackIndex} — " +
+                "chosen block does not fully cover the attack (all-or-nothing); ignoring tap");
+            return;
+        }
 
         _declarations.Add(new BlockDeclaration(chosen, enemy, attackIndex));
         _declaredContribs.AddRange(chosen);
@@ -241,9 +306,21 @@ public partial class BlockTargetingPanel : Control {
     // Single-attack dump-all handler (6a): commits the entire available pool to the
     // one attack. Used when there is no allocation decision to make (totalBlockable == 1).
     // Ignores taps when no block is available. Auto-closes when fully blocked (6b).
-    private void OnBlockPressedDumpAll(EnemyTokenInstance enemy, int attackIndex) {
+    private void OnBlockPressedDumpAll(EnemyTokenInstance enemy, int attackIndex, EnemyAttack attack) {
         var available = AvailableContribs();
         if (available.Count == 0) return;  // no block; ignore tap
+
+        // Defence in depth: the button is Disabled unless this can fully block, but a stale row
+        // (or a future caller) must not be able to dump the pool into a doomed declaration.
+        var declaredHere = _declarations
+            .Where(d => d.Target == enemy && d.AttackIndex == attackIndex)
+            .SelectMany(d => d.Contributions);
+        if (!BlockOutcome.IsFullyBlocked(attack, enemy.HasAbility(EnemyAbility.Swift),
+                declaredHere.Concat(available))) {
+            Log.Debug("[UI]", $"BlockTargetingPanel: {enemy.Definition.Name} attack {attackIndex} — " +
+                "available block cannot fully cover the attack (all-or-nothing); ignoring tap");
+            return;
+        }
 
         _declarations.Add(new BlockDeclaration(available, enemy, attackIndex));
         _declaredContribs.AddRange(available);

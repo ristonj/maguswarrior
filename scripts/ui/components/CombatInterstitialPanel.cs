@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Godot;
 using MagusWarrior.Combat;
+using MagusWarrior.Core;
 using MagusWarrior.Core.Types;
 
 namespace MagusWarrior.UI;
@@ -35,7 +36,8 @@ public partial class CombatInterstitialPanel : Control {
         backdrop.AddChild(layout);
 
         var title = new Label();
-        title.Text = "Combat: Prepare";
+        title.Text = "ui.combat.prepare.title";                   // static ⇒ key + auto-translate
+        title.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         title.AddThemeFontSizeOverride("font_size", 36);
         layout.AddChild(title);
 
@@ -43,7 +45,8 @@ public partial class CombatInterstitialPanel : Control {
         layout.AddChild(_enemyList);
 
         var beginBtn = new Button();
-        beginBtn.Text = "Begin Combat";
+        beginBtn.Text = "ui.combat.prepare.begin";                // static ⇒ key + auto-translate
+        beginBtn.AutoTranslateMode = Node.AutoTranslateModeEnum.Always;
         beginBtn.AddThemeFontSizeOverride("font_size", 32);
         beginBtn.Pressed += OnBeginCombatPressed;
         layout.AddChild(beginBtn);
@@ -58,8 +61,7 @@ public partial class CombatInterstitialPanel : Control {
     }
 
     private void PopulateEnemyDisplay(List<EnemyTokenInstance> enemies) {
-        foreach (Node child in _enemyList.GetChildren())
-            child.QueueFree();
+        _enemyList.ClearChildren();
 
         foreach (var e in enemies) {
             var row = new HBoxContainer();
@@ -72,7 +74,8 @@ public partial class CombatInterstitialPanel : Control {
             row.AddChild(nameLabel);
 
             var armorLabel = new Label();
-            armorLabel.Text = $"Armor:{e.EffectiveArmor}";
+            armorLabel.AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled;   // interpolated
+            armorLabel.Text = Strings.Format("ui.combat.prepare.armor", e.EffectiveArmor);
             armorLabel.AddThemeFontSizeOverride("font_size", 28);
             row.AddChild(armorLabel);
 

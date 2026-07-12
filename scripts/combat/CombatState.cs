@@ -23,6 +23,11 @@ public class CombatState {
 
     public int FameEarned       { get; set; }
     public int ReputationEarned { get; set; }
+    public int WoundsToHand     { get; set; }   // Wounds drawn to Hero.Hand this combat (for the post-combat readout)
+    // Wounds sent straight to Hero.DiscardPile this combat (Poison). Tracked SEPARATELY rather than
+    // folded into WoundsToHand: the two are equal per assignment, but NOT per combat — a group with
+    // one Poison and one plain enemy draws hand-wounds from both and discard-wounds from only one.
+    public int WoundsToDiscard  { get; set; }
 
     public bool AllEnemiesDefeated => ActiveEnemies.Count == 0;
 }

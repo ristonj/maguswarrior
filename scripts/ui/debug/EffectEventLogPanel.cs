@@ -49,8 +49,7 @@ public partial class EffectEventLogPanel : Panel {
     }
 
     public void RefreshDisplay() {
-        foreach (Node child in _entriesContainer.GetChildren())
-            child.QueueFree();
+        _entriesContainer.ClearChildren();
 
         if (_state == null || _state.EventLog.Events.Count == 0) {
             _entriesContainer.AddChild(new Label { Text = "(no events)" });

@@ -94,8 +94,7 @@ public partial class ImprovisationView : Control {
     }
 
     private void BuildDiscardPanel() {
-        foreach (Node child in _discardPanel.GetChildren())
-            child.QueueFree();
+        _discardPanel.ClearChildren();
 
         foreach (var card in _deck.Hand) {
             if (card.Type == CardType.Wound)
@@ -128,8 +127,9 @@ public partial class ImprovisationView : Control {
         _discardedCard = card;
         Log.Debug("[UI]", $"ImprovisationView: {card.Id} discarded, building resource panel in {_state.CurrentPhase}");
 
-        foreach (Node child in _discardPanel.GetChildren())
-            child.QueueFree();
+        // Must clear (not just QueueFree) or the discard rows stay visible for the rest of the
+        // frame, overlapping the resource panel shown immediately below.
+        _discardPanel.ClearChildren();
 
         _statusLabel.Text = "Choose your resource:";
         BuildResourcePanel();
@@ -137,8 +137,7 @@ public partial class ImprovisationView : Control {
     }
 
     private void BuildResourcePanel() {
-        foreach (Node child in _resourcePanel.GetChildren())
-            child.QueueFree();
+        _resourcePanel.ClearChildren();
 
         (EffectType type, string label)[] options = {
             (EffectType.Move,        $"Move {ImprovisationRule.GetAmount(false)}"),

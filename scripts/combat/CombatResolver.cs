@@ -44,15 +44,22 @@ public class CombatResolver {
     }
 
     public async Task<CombatResult> ResolveCombat(CombatState combat) {
-        await ResolveStartOfCombat(combat);
-        if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat);
-        if (!combat.AllEnemiesDefeated && !combat.SkipBlockAndDamagePending) {
-            await ResolveBlockPhase(combat);
-            await ResolveAssignDamagePhase(combat);   // consumes the DamageAssignments Block emits
+        try {
+            await ResolveStartOfCombat(combat);
+            if (!combat.AllEnemiesDefeated) await ResolveRangedPhase(combat);
+            if (!combat.AllEnemiesDefeated && !combat.SkipBlockAndDamagePending) {
+                await ResolveBlockPhase(combat);
+                await ResolveAssignDamagePhase(combat);   // consumes the DamageAssignments Block emits
+            }
+            return BuildResult(combat);   // evaluated BEFORE the finally runs — counters are still live
+        } finally {
+            // Teardown MUST run even when a phase throws (e.g. the ineligible-unit assert in
+            // ApplyOneDamageAssignment). Without this, the attack/block pools, the AttackModifiers,
+            // and every enemy's combat modifiers survive the fault and leak into normal play and
+            // into the NEXT combat — a corrupt-state-and-keep-playing failure that is far worse
+            // than the assert it came from.
+            TearDownCombatState(combat);
         }
-        var result = BuildResult(combat);
-        TearDownCombatState(combat);
-        return result;
     }
 
     public async Task ResolveBlockPhase(CombatState combat) {
@@ -113,23 +120,17 @@ public class CombatResolver {
                 ? new List<UnitInstance>()
                 : hero.Units.Where(u => u.CanAbsorbDamage && !alreadyAssigned.Contains(u)).ToList();
 
-            UnitInstance? target = eligible.Count == 0
-                ? null                                                   // nothing to choose ⇒ hero
-                : await _broker.PromptHeroDamageTarget(a, eligible, combat);
+            DamageChoice choice = eligible.Count == 0
+                ? new DamageChoice.HeroAbsorbs()                       // nothing to choose ⇒ hero
+                : await _broker.PromptHeroDamageTarget(a, d, eligible, combat);   // pass running d, not RawValue
 
-            if (target == null || !eligible.Contains(target)) {
-                // Option B — assign remaining damage to the hero. Floor the divisor at 1
-                // (mirrors EnemyTokenInstance.EffectiveArmor): a 0 armor would make the double
-                // division +Infinity → (int) = int.MinValue → DrawWoundsToHand(negative) silently
-                // draws zero wounds (unreachable today — Armor is fixed at 2 — but a nasty
-                // silent-wrong-output trap for any future armor-reduction effect).
-                int wounds = (int)System.Math.Ceiling((double)d / System.Math.Max(1, hero.Armor));
-                hero.DrawWoundsToHand(wounds);
-                if (a.Source.HasAbility(EnemyAbility.Poison))
-                    hero.AddWoundsToDiscard(wounds);
-                // NOTE: knockout threshold + Paralyze-vs-hero hand-emptying are story 3-5 — not here.
-                d = 0;
-            } else {
+            // NOTE: if/else-if/else, deliberately NOT a switch statement — the `break` below must
+            // exit the `while (d > 0)` loop, and inside a switch it would only exit the switch.
+            if (choice is DamageChoice.AssignToUnit assign) {
+                var target = assign.Unit;
+                if (!eligible.Contains(target))
+                    throw new System.InvalidOperationException(
+                        "DamageTargetProvider returned an ineligible unit; the panel must only offer eligible units.");
                 // Option A — assign to a unit. Marked "used" regardless of outcome.
                 alreadyAssigned.Add(target);
                 if (target.HasResistanceTo(a.DamageType)) d -= target.Armor; // resistant ⇒ armor twice total
@@ -143,6 +144,28 @@ public class CombatResolver {
                         target.TakeWound();                                 // Poison ⇒ 2nd wound
                 }
                 // loop continues with remaining d (may fall to hero or another eligible unit)
+            } else if (choice is DamageChoice.HeroAbsorbs) {
+                // Option B — hero absorbs the remaining damage. Floor the divisor at 1
+                // (mirrors EnemyTokenInstance.EffectiveArmor): a 0 armor would make the double
+                // division +Infinity → (int) = int.MinValue → DrawWoundsToHand(negative) silently
+                // draws zero wounds (unreachable today — Armor is fixed at 2 — but a nasty
+                // silent-wrong-output trap for any future armor-reduction effect).
+                int wounds = (int)System.Math.Ceiling((double)d / System.Math.Max(1, hero.Armor));
+                hero.DrawWoundsToHand(wounds);
+                combat.WoundsToHand += wounds;                          // for the post-combat readout
+                if (a.Source.HasAbility(EnemyAbility.Poison)) {
+                    hero.AddWoundsToDiscard(wounds);
+                    combat.WoundsToDiscard += wounds;                  // counted separately — see CombatState
+                }
+                // NOTE: knockout threshold + Paralyze-vs-hero hand-emptying are story 3-5 — not here.
+                d = 0;
+            } else {
+                // Exhaustiveness guard. DamageChoice is a closed hierarchy, so this is unreachable
+                // today — but if a case is ever added, it fails HERE rather than being silently
+                // absorbed by the hero branch (which is precisely the bug the typed choice killed).
+                throw new System.InvalidOperationException(
+                    $"Unhandled DamageChoice case '{choice.GetType().Name}' — every case must be " +
+                    "handled explicitly; hero-absorb is not a catch-all.");
             }
         }
     }
@@ -217,6 +240,8 @@ public class CombatResolver {
             HeroWon:          combat.ActiveEnemies.Count == 0,
             DefeatedEnemies:  new List<EnemyTokenInstance>(combat.DefeatedEnemies),
             FameEarned:       combat.FameEarned,
-            ReputationEarned: combat.ReputationEarned
+            ReputationEarned: combat.ReputationEarned,
+            WoundsDrawn:      combat.WoundsToHand,
+            WoundsToDiscard:  combat.WoundsToDiscard
         );
 }

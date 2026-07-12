@@ -803,7 +803,7 @@ public class CombatResolverTest {
         new(armor, resistances);
 
     private static CombatResolver MakeResolverWithDamageChoices(GameState state,
-            params UnitInstance?[] damageChoices) =>
+            params DamageChoice[] damageChoices) =>
         new(state, new TestBroker(new List<RangedAttackDeclaration>(), null, damageChoices),
             new EffectScheduler(), new EffectHookRegistry());
 
@@ -841,7 +841,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Physical);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 3));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -857,7 +857,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Fire);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Fire, 3));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -873,7 +873,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Fire);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Fire, 8));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -889,7 +889,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Physical, EnemyAbility.Paralyze);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 3));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -905,7 +905,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Physical, EnemyAbility.Poison);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 3));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -936,7 +936,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Physical);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 4));
-        var resolver = MakeResolverWithDamageChoices(state, unit); // scripted, but should never be offered
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit)); // scripted, but should never be offered
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -955,7 +955,8 @@ public class CombatResolverTest {
         var enemy  = BlockEnemy(0, AttackType.Fire);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Fire, 3));
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 4));
-        var resolver = MakeResolverWithDamageChoices(state, unit, unit);
+        var resolver = MakeResolverWithDamageChoices(state,
+            new DamageChoice.AssignToUnit(unit), new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -972,7 +973,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Physical);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 4));
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -1013,7 +1014,7 @@ public class CombatResolverTest {
         state.Hero.Units.Add(unit);
         var enemy  = BlockEnemy(0, AttackType.Fire);
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Fire, 5)); // 5-3=2 (>0), 2-3=-1
-        var resolver = MakeResolverWithDamageChoices(state, unit);
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -1036,7 +1037,8 @@ public class CombatResolverTest {
         // RawValue 5 → Brutal → d=10. unit1: 10-3=7, +2 wounds. unit2: 7-3=4, +2 wounds.
         // No units left → hero: ceil(4/2)=2 to hand, Poison → 2 to discard.
         combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 5));
-        var resolver = MakeResolverWithDamageChoices(state, unit1, unit2);
+        var resolver = MakeResolverWithDamageChoices(state,
+            new DamageChoice.AssignToUnit(unit1), new DamageChoice.AssignToUnit(unit2));
 
         await resolver.ResolveAssignDamagePhase(combat);
 
@@ -1044,6 +1046,135 @@ public class CombatResolverTest {
         Assert.Equal(2, unit2.WoundCount);
         Assert.Equal(2, state.Hero.Hand.Count);
         Assert.Equal(2, state.Hero.DiscardPile.Count);
+    }
+
+    // --- Story 3-4b: seam reshape (DamageChoice + remainingDamage) ---
+
+    [Fact]
+    public async Task AssignDamage_IneligibleUnitChoice_Throws() {
+        var state  = EmptyState();
+        var combat = new CombatState { Group = new CombatGroup() };
+        var eligibleUnit = TestUnit(3);
+        state.Hero.Units.Add(eligibleUnit);   // present so eligible.Count > 0 ⇒ the broker IS consulted
+        var foreignUnit  = TestUnit(3);       // never added to hero.Units ⇒ not in `eligible`
+        var enemy  = BlockEnemy(0, AttackType.Physical);
+        combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 4));
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(foreignUnit));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => resolver.ResolveAssignDamagePhase(combat));
+    }
+
+    [Fact]
+    public async Task AssignDamage_SeamReceivesRunningDamage_NotRawValue() {
+        var state  = EmptyState();
+        var combat = new CombatState { Group = new CombatGroup() };
+        // unit1 resists Physical (double-armor path: 8 -3(resist) -3(armor) = 2 running d).
+        // unit2 is a plain SECOND eligible unit whose only purpose is to keep `eligible`
+        // non-empty for the SECOND decision step — with only one unit, that unit would be
+        // excluded (already-assigned) after the first choice and the resolver would
+        // short-circuit locally to HeroAbsorbs without ever calling the broker again.
+        var unit1 = TestUnit(3, AttackType.Physical);
+        var unit2 = TestUnit(3);
+        state.Hero.Units.Add(unit1);
+        state.Hero.Units.Add(unit2);
+        var enemy  = BlockEnemy(0, AttackType.Physical);
+        combat.DamageAssignments.Add(new DamageAssignment(enemy, AttackType.Physical, 8));
+        var broker = new TestBroker(new List<RangedAttackDeclaration>(), null,
+            new DamageChoice[] { new DamageChoice.AssignToUnit(unit1), new DamageChoice.HeroAbsorbs() });
+        var resolver = new CombatResolver(state, broker, new EffectScheduler(), new EffectHookRegistry());
+
+        await resolver.ResolveAssignDamagePhase(combat);
+
+        Assert.Equal(2, broker.RemainingDamageSeen.Count);
+        Assert.Equal(8, broker.RemainingDamageSeen[0]);  // first call: nothing spent yet (== RawValue here)
+        Assert.Equal(2, broker.RemainingDamageSeen[1]);  // second call: the running d, NOT RawValue (8)
+    }
+
+    // --- Story 3-4b: WoundsDrawn readout data ---
+
+    [Fact]
+    public async Task AssignDamage_ResultReportsWoundsDrawn() {
+        var state    = EmptyState();
+        var enemy    = BlockEnemy(5, AttackType.Physical);   // Armor 4, single Physical 5 attack
+        var combat   = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var resolver = MakeResolverWithDamageChoices(state); // no units, no scripted choices ⇒ hero absorbs
+
+        var result = await resolver.ResolveCombat(combat);
+
+        Assert.Equal(3, result.WoundsDrawn); // ceil(5/2), hero armor 2
+    }
+
+    [Fact]
+    public async Task AssignDamage_UnitAbsorbs_WoundsDrawnZero() {
+        var state  = EmptyState();
+        var unit   = TestUnit(3);
+        state.Hero.Units.Add(unit);
+        var enemy    = BlockEnemy(3, AttackType.Physical);   // Armor 4, single Physical 3 attack
+        var combat   = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(unit));
+
+        var result = await resolver.ResolveCombat(combat);
+
+        Assert.Equal(0, result.WoundsDrawn); // fully absorbed by the unit — nothing reaches the hero
+    }
+
+    // --- Story 3-4b review: WoundsToDiscard (Poison) reported separately ---
+
+    [Fact]
+    public async Task AssignDamage_PoisonHeroAbsorb_ReportsWoundsToDiscard() {
+        var state    = EmptyState();
+        var enemy    = BlockEnemy(5, AttackType.Physical, EnemyAbility.Poison);
+        var combat   = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var resolver = MakeResolverWithDamageChoices(state);   // no units ⇒ hero absorbs
+
+        var result = await resolver.ResolveCombat(combat);
+
+        Assert.Equal(3, result.WoundsDrawn);      // ceil(5/2), hero armor 2
+        Assert.Equal(3, result.WoundsToDiscard);  // Poison ⇒ an equal number straight to discard
+        Assert.Equal(3, state.Hero.Hand.Count);
+        Assert.Equal(3, state.Hero.DiscardPile.Count);
+    }
+
+    // The readout must NOT derive discard-wounds from hand-wounds. The two are equal per
+    // ASSIGNMENT but not per COMBAT: a mixed group draws hand-wounds from every enemy and
+    // discard-wounds from only the Poison ones. This is why WoundsToDiscard is its own counter.
+    [Fact]
+    public async Task AssignDamage_MixedPoisonGroup_WoundsToDiscardDiffersFromWoundsDrawn() {
+        var state    = EmptyState();
+        var poisoner = BlockEnemy(5, AttackType.Physical, EnemyAbility.Poison);  // 3 to hand, 3 to discard
+        var plain    = BlockEnemy(3, AttackType.Physical);                       // 2 to hand, 0 to discard
+        var combat   = new CombatState { Group = MultiEnemyGroup(poisoner, plain) };
+        var resolver = MakeResolverWithDamageChoices(state);   // no units ⇒ hero absorbs both
+
+        var result = await resolver.ResolveCombat(combat);
+
+        Assert.Equal(5, result.WoundsDrawn);      // 3 + 2
+        Assert.Equal(3, result.WoundsToDiscard);  // only the Poison enemy contributes
+        Assert.NotEqual(result.WoundsDrawn, result.WoundsToDiscard);
+    }
+
+    // --- Story 3-4b review: a faulting phase must still tear combat state down ---
+
+    // The ineligible-unit assert is a programmer-error throw, but it must not leave the game
+    // half-torn-down: without the finally in ResolveCombat, the attack/block pools, the
+    // AttackModifiers, and the enemies' combat modifiers survive the fault and leak into the
+    // next combat — corrupt-state-and-keep-playing, which is worse than the bug it reported.
+    [Fact]
+    public async Task ResolveCombat_AssignDamageThrows_StillTearsDownCombatState() {
+        var state = EmptyState();
+        state.Hero.Units.Add(TestUnit(3));                 // one genuinely eligible unit
+        var foreignUnit = TestUnit(3);                     // never added ⇒ not in `eligible`
+        var enemy    = BlockEnemy(4, AttackType.Physical);
+        var combat   = new CombatState { Group = MultiEnemyGroup(enemy) };
+        var resolver = MakeResolverWithDamageChoices(state, new DamageChoice.AssignToUnit(foreignUnit));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => resolver.ResolveCombat(combat));
+
+        Assert.Empty(combat.DamageAssignments);
+        Assert.Empty(combat.AttackPool);
+        Assert.Empty(combat.BlockPool);
+        Assert.Empty(combat.AttackModifiers);
     }
 
     // --- helpers ---
@@ -1082,15 +1213,19 @@ public class CombatResolverTest {
     private sealed class TestBroker : UIBroker {
         private readonly IReadOnlyList<RangedAttackDeclaration> _declarations;
         private readonly IReadOnlyList<BlockDeclaration>        _blockDeclarations;
-        private readonly Queue<UnitInstance?>                   _damageChoices;
+        private readonly Queue<DamageChoice>                    _damageChoices;
         public bool BlockPrompted { get; private set; }
+
+        // Records the `remainingDamage` argument of every PromptHeroDamageTarget call, in order —
+        // lets tests prove the seam receives the running d, not the printed RawValue (3-4b AC1).
+        public List<int> RemainingDamageSeen { get; } = new();
 
         public TestBroker(IReadOnlyList<RangedAttackDeclaration> declarations,
                           IReadOnlyList<BlockDeclaration>? blockDeclarations = null,
-                          IEnumerable<UnitInstance?>? damageChoices = null) {
+                          IEnumerable<DamageChoice>? damageChoices = null) {
             _declarations      = declarations;
             _blockDeclarations = blockDeclarations ?? new List<BlockDeclaration>();
-            _damageChoices     = new Queue<UnitInstance?>(damageChoices ?? Enumerable.Empty<UnitInstance?>());
+            _damageChoices     = new Queue<DamageChoice>(damageChoices ?? Enumerable.Empty<DamageChoice>());
         }
         public override Task<IReadOnlyList<RangedAttackDeclaration>> PromptHeroRangedAttacks(CombatState combat) =>
             Task.FromResult(_declarations);
@@ -1098,9 +1233,13 @@ public class CombatResolverTest {
             BlockPrompted = true;
             return Task.FromResult(_blockDeclarations);
         }
-        public override Task<UnitInstance?> PromptHeroDamageTarget(
-                DamageAssignment a, IReadOnlyList<UnitInstance> eligible, CombatState combat) =>
-            Task.FromResult(_damageChoices.Count > 0 ? _damageChoices.Dequeue() : null);
+        public override Task<DamageChoice> PromptHeroDamageTarget(
+                DamageAssignment a, int remainingDamage, IReadOnlyList<UnitInstance> eligible, CombatState combat) {
+            RemainingDamageSeen.Add(remainingDamage);
+            return Task.FromResult(_damageChoices.Count > 0
+                ? _damageChoices.Dequeue()
+                : new DamageChoice.HeroAbsorbs());
+        }
     }
 
     private static CombatResolver MakeResolverWith(GameState state, UIBroker broker) =>

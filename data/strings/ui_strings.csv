@@ -1,2 +1,31 @@
 keys,en
 ui.placeholder_menu.title,Magus Warrior — PLACEHOLDER
+ui.common.pass,Pass
+ui.combat.prepare.title,Combat: Prepare
+ui.combat.prepare.begin,Begin Combat
+ui.combat.prepare.armor,Armor:{0}
+ui.combat.ranged.title,Combat: Ranged Phase
+ui.combat.ranged.none_available,No ranged/siege attacks available
+ui.combat.ranged.available,Available: {0}
+ui.combat.ranged.enemy_row,{0}{1}  Armor:{2}
+ui.combat.ranged.declare_vs,Declare vs {0}
+ui.combat.ranged.fortified_note," [Fortification:{0}]"
+ui.combat.block.title,Combat: Block Phase
+ui.combat.block.none_available,No block available
+ui.combat.block.available,Available: {0}
+ui.combat.block.attack_row,{0}  {1} {2}{3}
+ui.combat.block.declare_vs,Block {0} ({1} {2})
+ui.combat.block.swift_note, [Swift: needs 2×]
+ui.combat.damage.title,Combat: Assign Damage
+ui.combat.damage.info,{0}: {1} — {2} damage to assign{3}
+ui.combat.damage.absorb_on,Absorb on {0} (Armor {1}{2})
+ui.combat.damage.resists,", resists {0}"
+ui.combat.damage.hero_takes_it,Hero takes it
+ui.combat.damage.unit,Unit
+ui.combat.damage.unit_numbered,Unit {0}
+ui.combat.ability.poison, [Poison]
+ui.combat.ability.paralyze, [Paralyze]
+ui.combat.ability.brutal, [Brutal]
+ui.combat.result.won,"Combat WON — {0} defeated, took {1} Wound(s)"
+ui.combat.result.lost,"Combat LOST — {0} defeated, took {1} Wound(s)"
+ui.combat.result.also_discard," (also {0} Wound(s) straight to discard)"

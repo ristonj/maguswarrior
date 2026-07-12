@@ -92,8 +92,7 @@ public partial class HandView : Control {
     }
 
     private void RefreshHand() {
-        foreach (Node child in _cardsContainer.GetChildren())
-            child.QueueFree();
+        _cardsContainer.ClearChildren();
 
         foreach (var card in _deck.Hand) {
             var node = new CardCompact();
@@ -105,6 +104,16 @@ public partial class HandView : Control {
     }
 
     private void OnCardTapped(string cardId) {
+        // Another view owns the current interaction (e.g. DamageAssignmentPanel holds the lock for
+        // the whole of a damage decision — assign-damage is resolution, not a play window). Do not
+        // even OPEN the card: the play handlers below already reject the lock, so without this the
+        // detail panel opens with live-looking Play/Sideways/Power buttons that silently do nothing.
+        // A dead button is worse than an absent one. This is the InputLock contract the rest of the
+        // view already honours — "while any view holds the lock, all other views reject user input".
+        if (_lock.IsLocked) {
+            Log.Debug("[UI]", $"OnCardTapped: '{cardId}' — input locked by another view; ignoring tap");
+            return;
+        }
         if (_expandedPanel.Visible)
             _expandedPanel.Close();
         var card = _deck.Hand.FirstOrDefault(c => c.Id == cardId);

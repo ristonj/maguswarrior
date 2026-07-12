@@ -109,8 +109,7 @@ public partial class RestView : Control {
     }
 
     private void BuildDiscardRows() {
-        foreach (Node child in _cardRows.GetChildren())
-            child.QueueFree();
+        _cardRows.ClearChildren();
 
         foreach (var card in _deck.Hand) {
             var row = new HBoxContainer();

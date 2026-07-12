@@ -11,6 +11,7 @@ using MagusWarrior.Deck;
 using MagusWarrior.Hex;
 using MagusWarrior.Map;
 using MagusWarrior.Save;
+using MagusWarrior.Units;
 
 namespace MagusWarrior.UI;
 
@@ -31,6 +32,7 @@ public partial class PlaceholderMainMenu : CanvasLayer {
     private CombatInterstitialPanel _combatInterstitialPanel = null!;
     private RangedTargetingPanel    _rangedTargetingPanel    = null!;
     private BlockTargetingPanel     _blockTargetingPanel     = null!;
+    private DamageAssignmentPanel   _damageAssignmentPanel   = null!;
 
     // First Reconnaissance scenario deck sizes (V-shape: 8 countryside + 3 core).
     // Hardcoded for now; real per-scenario configuration lands in Epic 7.
@@ -146,6 +148,13 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         AddChild(_blockTargetingPanel);
         _broker.BlockProvider = c => _blockTargetingPanel.ShowAndAwait(c, _state);
 
+        _damageAssignmentPanel = new DamageAssignmentPanel();
+        _damageAssignmentPanel.Name = "DamageAssignmentPanel";
+        AddChild(_damageAssignmentPanel);
+        _damageAssignmentPanel.Initialize(_inputLock);
+        _broker.DamageTargetProvider = (a, rem, eligible, c) =>
+            _damageAssignmentPanel.ShowAndAwait(a, rem, eligible, c, _state);
+
         _combatResolver = new CombatResolver(_state, _broker, _effectScheduler, new EffectHookRegistry());
 
 #if DEBUG
@@ -179,23 +188,53 @@ public partial class PlaceholderMainMenu : CanvasLayer {
         }
 
         _combatInProgress = true;
+
+        // Dev-only: give the hero two units so the assign-damage panel has real choices.
+        // Recruitment is Epic 5 — these are throwaway damage-sinks for live verification only.
+        // Keep the exact instances so the finally can remove THESE and only these: a blanket
+        // Hero.Units.Clear() would wipe the player's real roster once Epic 5 recruitment lands.
+        var devUnits = new List<UnitInstance> {
+            new(armor: 3),
+            new(armor: 3, resistances: new[] { AttackType.Fire }),
+        };
+
         try {
             var group  = new CombatGroup { Enemies = new List<EnemyTokenInstance> { new(def) }, IsAtFortifiedSite = false };
             var combat = new CombatState { Group = group };
+
+            _state.Hero.Units.AddRange(devUnits);
 
             _state.TripUndoGate();   // enemy token is being revealed — undo cannot go past this point
 
             var result = await _combatResolver.ResolveCombat(combat);
 
-            Log.Debug("[Combat]", result.HeroWon
-                ? $"Dev combat WON — {result.DefeatedEnemies.Count} token(s) defeated"
-                : $"Dev combat LOST — {result.DefeatedEnemies.Count} token(s) defeated");
+            var summary = Strings.Format(
+                result.HeroWon ? "ui.combat.result.won" : "ui.combat.result.lost",
+                result.DefeatedEnemies.Count, result.WoundsDrawn);
+            // Poison sends an EQUAL number of Wounds straight to the discard pile, per assignment —
+            // but not per combat (a mixed group draws hand-wounds from every enemy and discard-wounds
+            // from only the Poison ones), so it is reported from its own counter, never derived.
+            if (result.WoundsToDiscard > 0)
+                summary += Strings.Format("ui.combat.result.also_discard", result.WoundsToDiscard);
+
+            Log.Debug("[Combat]", summary);
+            var dlg = new AcceptDialog { DialogText = summary };
+            AddChild(dlg);
+            dlg.PopupCentered();
+            // Confirmed fires only on OK. Escape and the window's close button emit Canceled —
+            // without it, every dismissed-by-Escape dialog stays parented and hidden forever.
+            dlg.Confirmed += () => dlg.QueueFree();
+            dlg.Canceled  += () => dlg.QueueFree();
         } catch (System.Exception ex) {
             // async void swallows exceptions silently — catch and log so a resolver fault is visible.
-            Log.Error("[Combat]", $"Dev combat threw: {ex.Message}");
+            // Log the FULL exception, not ex.Message: a resolver assert (the ineligible-unit throw)
+            // is a programming error, and a bare message with no type or stack trace is not "loud".
+            Log.Error("[Combat]", $"Dev combat threw: {ex}");
         } finally {
             // TearDownCombatState left phase at EndOfTurn; return to Movement for continued dev play.
+            // (ResolveCombat now tears down in its own finally, so this holds even on a fault.)
             _state.SetPhase(GamePhase.Movement);
+            foreach (var u in devUnits) _state.Hero.Units.Remove(u);
             _combatInProgress = false;
         }
     }

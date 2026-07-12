@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: "2026-05-21"
-last_updated: "2026-07-05"  # story 3-4 DONE — Phase 3 assign-damage resolver-core + minimal Hero/UnitInstance models; Opus 3-layer review passed (all 7 ACs), 4 patches applied, 3 deferred; 317/317 tests green
+last_updated: "2026-07-12"  # story 3-4b DONE — code-reviewed (3 Opus layers, all 5 ACs clean), 4 decisions + 14 patches applied, AC5 verified on-device across ~8 combats. Beyond the review: fixed a real block-phase gameplay bug (declare button was clickable with insufficient block and silently ate the pool), a UI-wide stale-node rebuild bug (new ClearChildren() helper, 10 sites), and block/ranged panel misalignment. i18n convention adopted (Strings.cs + 30 keys + 4 combat panels). 324/324 tests green, build 0/0. NOTE for 3-5: DeckManager/Hero.Hand unification is now a PREREQUISITE — see deferred-work.md
 project: maguswarrior
 project_key: NOKEY
 tracking_system: file-system
@@ -94,6 +94,10 @@ development_status:
   # the 3-2 → 3-2b split. Create 3-3b after 3-3 is done.
   3-3b-live-wire-block-phase: done
   3-4-assign-damage-to-unit: done
+  # 3-4b live-wires 3-4's resolver-core: DamageAssignmentPanel (unit-vs-hero choice) + wound
+  # readout, plus the broker-seam reshape (typed DamageChoice + remainingDamage) that resolves
+  # the two 3-4 review defers. Mirrors 3-2→3-2b / 3-3→3-3b.
+  3-4b-live-wire-assign-damage-phase: done
   3-5-enter-knockdown-when-hand-is-all-wounds: backlog
   3-6-force-quit-mid-combat-and-restore-to-exact-decision-point: backlog
   epic-3-retrospective: optional
